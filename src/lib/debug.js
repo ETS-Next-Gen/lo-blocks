@@ -1,0 +1,10 @@
+import React from 'react';
+
+export const debug = ()=> true;
+
+export const Trace = ({ children, override = debug() }) => {
+  if (override) {
+    return <pre>{children}</pre>;
+  }
+  return null;
+};

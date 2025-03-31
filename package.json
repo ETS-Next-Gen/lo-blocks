@@ -1,12 +1,14 @@
 {
   "name": "2toy-kids-app",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "xml2json": "node src/scripts/xml2json.js"
   },
   "dependencies": {
     "fast-xml-parser": "^5.0.9",

@@ -1,7 +1,7 @@
-<Lesson>
+<Lesson id="eigen_lesson">
   <TextBlock>Welcome to the Eigenvalues lesson!</TextBlock>
-  <problem url_name="eigen_q1">
+  <ProblemBlock id="eigen_q1">
     <QuestionBlock prompt="What is an eigenvector?" options="A vector,An eigenvalue,A matrix" />
-  </problem>
-  <problem url_name="eigen_q1"/>
+  </ProblemBlock>
+  <ProblemBlock id="eigen_q1"/>
 </Lesson>

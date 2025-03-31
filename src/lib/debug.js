@@ -8,3 +8,9 @@ export const Trace = ({ children, override = debug() }) => {
   }
   return null;
 };
+
+export const debugLog = (...args) => {
+  if (debug()) {
+    console.log(...args);
+  }
+};

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Trace } from '@/lib/debug';
 import { renderCompiledChildren } from '@/lib/render';
-import * as parsers from '@/lib/olx/childParsers';
+import * as parsers from '@/lib/olx/parsers';
 
 // Lesson gets children which may be XML nodes or real JSX
 export default function Lesson({ kids, idMap }) {

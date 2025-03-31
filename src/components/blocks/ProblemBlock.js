@@ -1,6 +1,6 @@
 import React from 'react';
 
-import * as parsers from '@/lib/olx/childParsers';
+import * as parsers from '@/lib/olx/parsers';
 import { renderCompiledChildren } from '@/lib/render';
 
 export default function ProblemBlock({ kids, idMap }) {

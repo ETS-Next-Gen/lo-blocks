@@ -1,6 +1,6 @@
 import React from 'react';
 
-import * as parsers from '@/lib/olx/childParsers';
+import * as parsers from '@/lib/olx/parsers';
 
 import { Trace } from '@/lib/debug';
 

@@ -1,7 +1,7 @@
 import { loadContentTree } from '@/lib/content/loadContentTree.js';
 
 export async function GET(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const { idMap, parsed } = await loadContentTree();

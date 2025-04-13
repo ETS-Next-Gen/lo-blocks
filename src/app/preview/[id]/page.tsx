@@ -1,11 +1,13 @@
-import { useRouter } from 'next/router';
+'use client';
+
 import { useEffect, useState } from 'react';
-import { debug } from '@/lib/debug'; // optional
+import { useParams } from 'next/navigation';
+import { debug } from '@/lib/debug';
 import { render } from '@/lib/render';
 
 export default function PreviewPage() {
-  const router = useRouter();
-  const { id } = router.query;
+  const params = useParams();
+  const id = params?.id as string;
 
   const [idMap, setIdMap] = useState(null);
   const [parsed, setParsed] = useState(null);

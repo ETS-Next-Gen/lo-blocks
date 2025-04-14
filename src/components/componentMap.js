@@ -2,9 +2,12 @@ import { debug, Trace } from '@/lib/debug';
 
 import { render } from '@/lib/render';
 
+import Spinner from '@/components/blocks/Spinner';
+import TextInput from '@/components/blocks/TextInput';
 import TextBlock from '@/components/blocks/TextBlock';
 import QuestionBlock from '@/components/blocks/QuestionBlock';
 import ProblemBlock from '@/components/blocks/ProblemBlock';
+import LLMFeedback from '@/components/blocks/LLMFeedback';
 import Lesson from '@/components/blocks/Lesson';
 import React from 'react';
 
@@ -65,13 +68,14 @@ export function createStubBlock(name) {
 
 // Block registry
 export const COMPONENT_MAP = {
+  Spinner,
   TextBlock,
   QuestionBlock,
   Lesson,
   ProblemBlock,
-  TextInput: createStubBlock('TextInput', 'org.mitros.dev'),
+  TextInput,
   LLMButton: createStubBlock('LLMButton', 'org.mitros.dev'),
-  LLMFeedback: createStubBlock('LLMFeedback', 'org.mitros.dev'),
+  LLMFeedback: LLMFeedback,
   LLMPrompt: createStubBlock('LLMPrompt', 'org.mitros.dev'),
   Element: createStubBlock('Element', 'org.mitros.dev'),
   SideBarPanel: createStubBlock('SideBarPanel', 'org.mitros.dev'),

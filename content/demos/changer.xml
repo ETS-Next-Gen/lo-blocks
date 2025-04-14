@@ -1,0 +1,17 @@
+<Lesson id="rewrite_lesson">
+  <TextBlock>Welcome to the Rewriting Station!</TextBlock>
+  <TextInput id="student_essay"/>
+  <LLMFeedback id="essay_rewrite"/>
+  <SideBarPanel>
+    <MainPane>
+      <TextBlock>Choose a rewrite style:</TextBlock>
+    </MainPane>
+    <LLMButton>
+      <LLMPrompt target="essay_rewrite">
+        Please rewrite this in first person: 
+        <Element>student_essay</Element>
+      </LLMPrompt>
+      First person
+    </LLMButton>
+  </SideBarPanel>
+</Lesson>

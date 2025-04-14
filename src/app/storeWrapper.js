@@ -8,6 +8,11 @@ import * as lo_event from 'lo_event';
 import * as debug from 'lo_event/lo_event/debugLog.js';
 import { consoleLogger } from 'lo_event/lo_event/consoleLogger.js';
 
+// HACK: This has code to initialize the reducers.
+//
+// lo_event.init should manage this.
+import * as reducers from 'lo_event/lo_event/lo_assess/reducers';
+
 lo_event.init(
   "org.ets.sba",
   "0.0.1",

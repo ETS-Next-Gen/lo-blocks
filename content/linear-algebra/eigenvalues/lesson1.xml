@@ -1,4 +1,4 @@
-<Lesson id="eigen_lesson">
+<Lesson id="eigen_lesson" launchable="true">
   <TextBlock>Welcome to the Eigenvalues lesson!</TextBlock>
   <ProblemBlock id="eigen_q1">
     <QuestionBlock prompt="What is an eigenvector?" options="A vector,An eigenvalue,A matrix" />

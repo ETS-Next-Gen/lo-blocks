@@ -2,6 +2,7 @@ import { debug, Trace } from '@/lib/debug';
 
 import { render } from '@/lib/render';
 
+import SideBarPanel from '@/components/blocks/SideBarPanel';
 import Spinner from '@/components/blocks/Spinner';
 import TextInput from '@/components/blocks/TextInput';
 import TextBlock from '@/components/blocks/TextBlock';
@@ -78,6 +79,7 @@ export const COMPONENT_MAP = {
   LLMFeedback: LLMFeedback,
   LLMPrompt: createStubBlock('LLMPrompt', 'org.mitros.dev'),
   Element: createStubBlock('Element', 'org.mitros.dev'),
-  SideBarPanel: createStubBlock('SideBarPanel', 'org.mitros.dev'),
+  SideBarPanel, //: createStubBlock('SideBarPanel', 'org.mitros.dev'),
+  Sidebar: createStubBlock('Sidebar', 'org.mitros.dev'),
   MainPane: createStubBlock('MainPane', 'org.mitros.dev'),
 };

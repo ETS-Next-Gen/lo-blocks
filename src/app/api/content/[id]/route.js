@@ -6,6 +6,21 @@ export async function GET(request, { params }) {
   try {
     const { idMap, parsed } = await loadContentTree();
 
+    // TODO: Break out into /api/content/root
+    if (id === 'root') {
+      const launchableEntries = Object.fromEntries(
+        Object.entries(idMap).filter(([_, val]) =>
+          val?.attributes?.launchable === 'true'
+        )
+      );
+
+      return Response.json({
+        ok: true,
+        idMap: launchableEntries
+      });
+    }
+
+    // TODO: Break out into /api/content/by-id/[id]/
     if (!id || !idMap[id]) {
       return Response.json(
         {

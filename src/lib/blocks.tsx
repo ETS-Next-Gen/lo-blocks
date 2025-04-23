@@ -45,12 +45,16 @@ function createBlock(config: BlockConfig): React.ComponentType<any> {
 
   (Block as any)._isBlock = true;
   (Block as any).OLXName = olxName;
+
+  // Simple types from parsed zod versions
   (Block as any).isAction = typeof parsed.action === 'function';
-  (Block as any).action = parsed.action;
-  (Block as any).parser = parsed.parser;
-  (Block as any).reducers = parsed.reducers ?? [];
-  (Block as any).getValue = parsed.getValue;
   (Block as any).namespace = parsed.namespace;
+
+  // Functions from config (to maintain metadata
+  (Block as any).action = config.action;
+  (Block as any).parser = config.parser;
+  (Block as any).reducers = config.reducers ?? [];
+  (Block as any).getValue = config.getValue;
 
   assertUnimplemented(parsed.reducers, 'reducers');
 

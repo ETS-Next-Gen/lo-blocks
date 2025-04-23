@@ -1,4 +1,4 @@
-<Lesson id="rewrite_lesson">
+<Lesson id="rewrite_lesson" launchable="true" title="Rewriting Lesson">
   <TextBlock>Welcome to the Rewriting Station!</TextBlock>
   <TextInput id="student_essay"/>
   <LLMFeedback id="essay_rewrite"/>
@@ -6,12 +6,14 @@
     <MainPane>
       <TextBlock>Choose a rewrite style:</TextBlock>
     </MainPane>
-    <LLMButton>
-      <LLMPrompt target="essay_rewrite">
-        Please rewrite this in first person: 
-        <Element>student_essay</Element>
-      </LLMPrompt>
-      First person
-    </LLMButton>
+    <Sidebar>
+      <LLMButton>
+        <LLMPrompt target="essay_rewrite">
+          Please rewrite this in first person:
+          <Element>student_essay</Element>
+        </LLMPrompt>
+        First person
+      </LLMButton>
+    </Sidebar>
   </SideBarPanel>
 </Lesson>

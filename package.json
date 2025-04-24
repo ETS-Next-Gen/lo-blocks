@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "xml2json": "node src/scripts/xml2json.js"
+    "xml2json": "node src/scripts/xml2json.js",
+    "clean": "rm -rf .next node_modules .turbo out"
   },
   "dependencies": {
     "fast-xml-parser": "^5.0.9",

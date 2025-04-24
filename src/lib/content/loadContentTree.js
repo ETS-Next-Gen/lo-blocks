@@ -24,6 +24,9 @@ const xmlParser = new XMLParser({
 export async function loadContentTree(contentDir = './content') {
   const xmlFiles = await getXmlFilesRecursively(contentDir);
   const seenFiles = new Set();
+  console.log("Component map >>>> ", COMPONENT_MAP);
+  console.log("SideBar >>>>", COMPONENT_MAP.SideBar);
+  console.log("SideBarPanel >>>>", COMPONENT_MAP.SideBarPanel);
 
   for (const fullPath of xmlFiles) {
     const relativePath = path.relative(contentDir, fullPath);
@@ -80,7 +83,11 @@ function indexParsed(parsedTree, sourceFile) {
     const id = attributes.id || attributes.url_name || createId(node);
 
     const Component = COMPONENT_MAP[tag] || COMPONENT_MAP[tag.charAt(0).toUpperCase() + tag.slice(1)];
+    if (!Component) {
+      console.warn(`[OLX] No component found for tag: <${tag}> — using defaultParser`);
+    }
     const parser = Component?.parser || defaultParser;
+    //console.log(`[OLX] Using parser: ${parser} / ${parser.name} for tag: <${tag}>`);
 
     const children = parser({
       rawParsed: element,

@@ -26,7 +26,7 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 // === Main factory ===
 function createBlock(config: BlockConfig): React.ComponentType<any> {
   const parsed = BlockConfigSchema.parse(config);
-  const Component = parsed.component ?? (() => null);
+  const Component = config.component ?? (() => null);
 
   // === Strict name resolution ===
   const rawName =
@@ -41,25 +41,29 @@ function createBlock(config: BlockConfig): React.ComponentType<any> {
     );
   }
 
-  const Block = Component;
+  // HACK: Blocks should be react components with properties. We wrapped this up in a dictionary for debugging.
+  // We should annotate the component itself with:   
+  // (Block as any)._isBlock = true
+  // And similar.
+  // Commit 430ab50f062a538d95c7d5d9630e7783d696de25 is the last one using the preferred format.
+  const Block = {
+    component: Component,
+    _isBlock: true,
 
-  (Block as any)._isBlock = true;
-  (Block as any).OLXName = olxName;
+    action: config.action,
+    parser: config.parser,
+    reducers: config.reducers ?? [],
+    getValue: config.getValue,
 
-  // Simple types from parsed zod versions
-  (Block as any).isAction = typeof parsed.action === 'function';
-  (Block as any).namespace = parsed.namespace;
+    OLXName: olxName,
+    description: parsed.description,
+    namespace: parsed.namespace,
 
-  // Functions from config (to maintain metadata
-  (Block as any).action = config.action;
-  (Block as any).parser = config.parser;
-  (Block as any).reducers = config.reducers ?? [];
-  (Block as any).getValue = config.getValue;
+    isAction: parsed.action === 'function'
+  }
+
 
   assertUnimplemented(parsed.reducers, 'reducers');
-
-  // === Metadata: attach flat fields for JS/TS symmetry ===
-  (Block as any).description = parsed.description;
 
   return Block;
 }

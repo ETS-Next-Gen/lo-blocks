@@ -31,6 +31,14 @@ export default function Home() {
               {entry.attributes?.title || entry.id}
             </Link>
             <span className="ml-2 text-gray-500 text-sm">({entry.tag})</span>
+            [
+            <Link href={`/graph/${entry.id}`} className="ml-2 text-blue-600 hover:underline">
+              graph
+            </Link>
+            <Link href={`/api/content/${entry.id}`} className="ml-2 text-green-700 hover:underline" target="_blank">
+              api
+            </Link>
+            ]
           </li>
         ))}
       </ul>

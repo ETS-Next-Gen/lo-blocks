@@ -6,15 +6,9 @@ import { dev } from '../blocks';
 import { Trace } from '@/lib/debug';
 
 function _BlockMath({ kids, url_name }) {
-  const latex = kids
-    ?.filter(k => k && k.type === 'text')
-    .map(k => k.text)
-    .join(' ')
-    .trim();
-
   let html = '';
   try {
-    html = katex.renderToString(latex, {
+    html = katex.renderToString(kids, {
       displayMode: true
     });
   } catch (err) {

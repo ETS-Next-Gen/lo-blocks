@@ -172,6 +172,6 @@ export function peggyParser(peggyParser, preprocess = (x) => ({ text: x.text }),
       throw err;
     }
 
-    return postprocess({ type: 'parsed', value: parsed, ...rest });
+    return postprocess({ type: 'parsed', parsed, ...rest });
   });
 }

@@ -5,15 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run build:grammars && npm run build:gen-block-registry",
     "start": "next start",
     "lint": "next lint",
-
     "xml2json": "node src/scripts/xml2json.js",
     "build:grammars": "node src/scripts/compile-grammars.js",
     "build:gen-block-registry": "node src/scripts/generateBlockRegistry.js",
-    "build": "npm run build:grammars && npm run build:gen-block-registry",
-
     "clean": "rm -rf .next node_modules .turbo out"
   },
   "dependencies": {
@@ -22,6 +19,7 @@
     "fast-xml-parser": "^5.0.9",
     "katex": "^0.16.22",
     "lo_event": "file:lo_event-0.0.3.tgz",
+    "lucide-react": "^0.510.0",
     "next": "15.2.4",
     "peggy": "^5.0.2",
     "react": "^19.0.0",

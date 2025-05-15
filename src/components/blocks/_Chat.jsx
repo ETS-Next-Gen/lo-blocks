@@ -1,0 +1,242 @@
+'use client';
+
+import React from 'react';
+
+import { useState, useRef, useEffect } from 'react';
+import { User } from 'lucide-react';
+
+// Mock data for testing
+const sampleConversation = [
+  {
+    type: "Line",
+    speaker: "JJ",
+    text: "What's going on? Is it something you can tell us?",
+    metadata: {}
+  },
+  {
+    type: "Line",
+    speaker: "Annie",
+    text: "Oh, yeah, it's not a secret. She's got a babysitting gig for some extra cash, but the kid is giving her all kinds of trouble, just like his parents warned her. He's six, and he doesn't want to go to bed. He just runs around when it's his bedtime.",
+    metadata: {}
+  },
+  {
+    type: "Line",
+    speaker: "Lin",
+    text: "What do the parents say?",
+    metadata: {}
+  },
+  {
+    type: "SystemMessage",
+    text: "Annie is typing...",
+    metadata: {}
+  },
+  {
+    type: "Line",
+    speaker: "JJ",
+    text: "I had a similar experience when I was babysitting my nephew. Kids can be challenging at bedtime.",
+    metadata: {}
+  },
+  {
+    type: "Line",
+    speaker: "Annie",
+    text: "They told her to be firm but gentle. They said he responds well to stories, so she's been trying that approach.",
+    metadata: {}
+  },
+  {
+    type: "DateSeparator",
+    date: "Today",
+    metadata: {}
+  },
+  {
+    type: "Line",
+    speaker: "Lin",
+    text: "Has she tried playing soft music? That usually works with my little brother.",
+    metadata: {}
+  },
+  {
+    type: "Line",
+    speaker: "JJ",
+    text: "That's a good idea. Maybe a nightlight would help too if he's afraid of the dark.",
+    metadata: {}
+  }
+];
+
+// Generate random colors based on name (consistent for same name)
+const getAvatarColor = (name) => {
+  const colors = [
+    'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 
+    'bg-purple-500', 'bg-pink-500', 'bg-indigo-500',
+    'bg-red-500', 'bg-teal-500', 'bg-orange-500'
+  ];
+  
+  // Simple hash function to get consistent color for same name
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
+
+// Avatar component
+const Avatar = ({ name }) => {
+  const initials = name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+  
+  const bgColor = getAvatarColor(name);
+  
+  return (
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${bgColor}`}>
+      {initials}
+    </div>
+  );
+};
+
+// Message component for chat lines
+const ChatMessage = ({ message, isSequential }) => {
+  return (
+    <div className={`flex ${isSequential ? 'mt-1' : 'mt-4'}`}>
+      {!isSequential ? (
+        <div className="mr-2 flex-shrink-0">
+          <Avatar name={message.speaker} />
+        </div>
+      ) : (
+        <div className="w-10 flex-shrink-0"></div> // Space for alignment
+      )}
+      <div className="flex flex-col">
+        {!isSequential && (
+          <span className="text-sm font-semibold mb-1">{message.speaker}</span>
+        )}
+        <div className="bg-gray-100 p-2 px-3 rounded-lg max-w-md">
+          {message.text}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// System message component
+const SystemMessage = ({ message }) => {
+  return (
+    <div className="flex justify-center my-2">
+      <span className="text-xs text-gray-500 bg-gray-100 py-1 px-3 rounded-full">
+        {message.text}
+      </span>
+    </div>
+  );
+};
+
+// Date separator component
+const DateSeparator = ({ message }) => {
+  return (
+    <div className="flex justify-center my-4">
+      <span className="text-xs text-gray-500 bg-gray-100 py-1 px-3 rounded-full">
+        {message.date}
+      </span>
+    </div>
+  );
+};
+
+// Main Chat Component
+export function _Chat({
+  kids,
+  initialScrollPosition = 'bottom',
+  height = 'h-96'
+}) {
+  const conversation = kids.parsed.body;
+  const chatContainerRef = useRef(null);
+  const [visibleRange, setVisibleRange] = useState({
+    start: 0,
+    end: conversation.length
+  });
+
+  // Scroll to position on initial load
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      if (initialScrollPosition === 'bottom') {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      } else if (initialScrollPosition === 'top') {
+        chatContainerRef.current.scrollTop = 0;
+      } else if (typeof initialScrollPosition === 'number') {
+        // Scroll to a specific message index
+        const messageElements = chatContainerRef.current.querySelectorAll('.message-item');
+        if (messageElements[initialScrollPosition]) {
+          messageElements[initialScrollPosition].scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+  }, [initialScrollPosition]);
+
+  // Render the appropriate component based on message type
+  const renderMessage = (message, index) => {
+    // Check if this message is sequential (same speaker as previous)
+    const isSequential = index > 0 && 
+      conversation[index - 1].type === "Line" && 
+      conversation[index - 1].speaker === message.speaker;
+
+    switch (message.type) {
+      case "Line":
+        return (
+          <div key={index} className="message-item">
+            <ChatMessage message={message} isSequential={isSequential} />
+          </div>
+        );
+      case "SystemMessage":
+        return (
+          <div key={index} className="message-item">
+            <SystemMessage message={message} />
+          </div>
+        );
+      case "DateSeparator":
+        return (
+          <div key={index} className="message-item">
+            <DateSeparator message={message} />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden">
+      {/* Header */}
+      <div className="bg-white p-3 border-b border-gray-200">
+        <div className="flex items-center">
+          <span className="font-semibold">Chat</span>
+          <span className="ml-2 text-gray-500 text-sm">{conversation.length} messages</span>
+        </div>
+      </div>
+      
+      {/* Chat messages container */}
+      <div 
+        ref={chatContainerRef}
+        className={`${height} overflow-y-auto p-4 bg-white`}
+      >
+        {conversation.slice(visibleRange.start, visibleRange.end).map(renderMessage)}
+      </div>
+      
+      {/* Input area (for visual completeness) */}
+      <div className="bg-gray-50 p-3 border-t border-gray-200">
+        <div className="flex items-center">
+          <input
+            type="text"
+            className="flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Type a message..."
+            disabled
+          />
+          <button className="ml-2 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

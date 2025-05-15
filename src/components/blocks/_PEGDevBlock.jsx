@@ -1,7 +1,8 @@
 import React from 'react';
 
 export function _PEGDevBlock({ kids }) {
-  const parsed = kids?.[0]?.value;
+  console.log(kids);
+  const parsed = kids.parsed;
 
   return (
     <div className="border p-4 bg-white text-sm rounded shadow-sm">

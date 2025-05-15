@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { useState, useRef, useEffect } from 'react';
-import { User } from 'lucide-react';
+import { User, ChevronRight } from 'lucide-react';
 
 // Mock data for testing
 const sampleConversation = [
@@ -142,11 +142,93 @@ const DateSeparator = ({ message }) => {
   );
 };
 
+const InputFooter = ({ onSendMessage, disabled = false, placeholder = "Type a message..." }) => {
+  const [message, setMessage] = useState('');
+  
+  const handleSend = () => {
+    if (message.trim() && !disabled) {
+      onSendMessage(message);
+      setMessage('');
+    }
+  };
+  
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && message.trim() && !disabled) {
+      handleSend();
+    }
+  };
+  
+  return (
+    <div className="bg-gray-50 p-3 border-t border-gray-200">
+      <div className="flex items-center">
+        <input
+          type="text"
+          className={`flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none ${disabled ? 'bg-gray-100 text-gray-500' : 'focus:ring-2 focus:ring-blue-500'}`}
+          placeholder={disabled ? "Observation mode" : placeholder}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          disabled={disabled}
+        />
+        <button 
+          className={`ml-2 rounded-full p-2 ${disabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500'}`}
+          onClick={handleSend}
+          disabled={disabled}
+        >
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+// Continue/Advance Footer Component
+const AdvanceFooter = ({ onAdvance, currentMessageIndex, totalMessages }) => {
+  // Handle space key press for advancement
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === ' ') {
+        onAdvance();
+        e.preventDefault(); // Prevent page scrolling
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [onAdvance]);
+  
+  return (
+    <div className="bg-gray-50 p-3 border-t border-gray-200">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-500">
+          {currentMessageIndex} of {totalMessages}
+        </span>
+        <button 
+          onClick={onAdvance}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Continue <ChevronRight className="ml-1 w-4 h-4" />
+        </button>
+        <span className="text-xs text-gray-400">or press [space]</span>
+      </div>
+    </div>
+  );
+};
+
 // Main Chat Component
 export function _Chat({
   kids,
+  id,
   initialScrollPosition = 'bottom',
-  height = 'h-96'
+  footer='input',
+  onSendMessage = () => {},
+  onAdvance = () => {},
+  height = 'h-96',
+  currentMessageIndex = 0,
+  totalMessages = 0
 }) {
   const conversation = kids.parsed.body;
   const chatContainerRef = useRef(null);
@@ -221,22 +303,22 @@ export function _Chat({
         {conversation.slice(visibleRange.start, visibleRange.end).map(renderMessage)}
       </div>
       
-      {/* Input area (for visual completeness) */}
-      <div className="bg-gray-50 p-3 border-t border-gray-200">
-        <div className="flex items-center">
-          <input
-            type="text"
-            className="flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Type a message..."
-            disabled
-          />
-          <button className="ml-2 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
+      {/* FooterInput area (for visual completeness) */}
+            {/* Customizable Footer */}
+      {footer === 'input' ? (
+        <InputFooter onSendMessage={onSendMessage} />
+      ) : footer === 'advance' ? (
+        <AdvanceFooter 
+          onAdvance={onAdvance} 
+          currentMessageIndex={currentMessageIndex} 
+          totalMessages={totalMessages} 
+        />
+      ) : footer === 'disabled' ? (
+        <InputFooter disabled />
+      ) : (
+        // Custom footer component
+        footer
+      )}
     </div>
   );
 }

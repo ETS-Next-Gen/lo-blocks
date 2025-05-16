@@ -85,7 +85,7 @@ HeaderLine
 
 // Body of the document: could contain dialogues, commands, etc.
 ConversationBody
-  = lines:(CommentLine / BlankLine / CommandLine / DialogueGroup )* {
+  = lines:(CommentLine / BlankLine / CommandLine / DialogueGroup)* {
       return lines.filter(Boolean);
     }
 
@@ -95,19 +95,33 @@ CommandLine
   }
 
 
-// A single dialogue line, with optional metadata above and inline
 DialogueGroup
-  = metaAbove:MetadataLine? line:DialogueLine {
+  = metaAbove:MetadataLine? line:DialogueLine continuation:ContinuationLine* {
+      const textLines = [line.text].concat(continuation.map(c => c.text));
       return {
         type: "Line",
         speaker: line.speaker,
-        text: line.text,
+        text: textLines.join("\n"),
         metadata: {
           ...(metaAbove ? metaAbove.data : {}),
           ...(line.metadata || {})
         }
       };
   }
+
+ContinuationLine
+  = !DialogueLineStart !MetadataLineStart !CommandLineStart content:LineContent NewLine {
+      return { text: content };
+  }
+
+DialogueLineStart
+  = Key ":" _
+
+MetadataLineStart
+  = _ "["
+
+CommandLineStart
+  = _ ">>>"
 
 DialogueLine
   = speaker:Key ":" _ text:SpeechContent meta:InlineMetadata? NewLine {

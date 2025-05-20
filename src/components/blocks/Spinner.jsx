@@ -14,7 +14,9 @@
  */
  
 import React from 'react';
-import './Spinner.css';
+if (typeof window !== 'undefined') {
+  import('./Spinner.css');
+}
 
 import { dev } from '../blocks.js'; // adjust import path as needed
 

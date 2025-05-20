@@ -8,7 +8,7 @@
     "build": "npm run build:grammars && npm run build:gen-block-registry",
     "start": "next start",
     "lint": "next lint",
-    "xml2json": "node src/scripts/xml2json.js",
+    "xml2json": "npx tsx src/scripts/xml2json.js",
     "build:grammars": "node src/scripts/compile-grammars.js",
     "build:gen-block-registry": "node src/scripts/generateBlockRegistry.js",
     "clean": "rm -rf .next node_modules .turbo out"
@@ -36,6 +36,7 @@
     "eslint-config-next": "15.2.4",
     "glob": "^11.0.2",
     "tailwindcss": "^4",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.2"
   }
 }

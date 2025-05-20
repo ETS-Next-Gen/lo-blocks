@@ -1,6 +1,8 @@
 import React from 'react';
 import katex from 'katex';
-import 'katex/dist/katex.min.css';
+if (typeof window !== 'undefined') {
+  import('katex/dist/katex.min.css');
+}
 import * as parsers from '@/lib/olx/parsers';
 import { dev } from '../blocks';
 import { Trace } from '@/lib/debug';

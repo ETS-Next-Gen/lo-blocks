@@ -23,8 +23,10 @@ async function main() {
       const outFile = args[outIndex + 1];
       fs.writeFileSync(outFile, pretty);
       console.log(`✅ Output written to ${outFile}`);
+      process.exit(0);
     } else {
       console.log(pretty);
+      process.exit(0);
     }
   } catch (err) {
     console.error('❌ Error compiling XML:', err.message);

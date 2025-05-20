@@ -11,8 +11,8 @@
  * - Dialogue lines marked by speaker (e.g. "Bob: Hello there!")
  * - Inline and prefix metadata using [key=value] syntax, allowing annotations
  *   like mood, emotion, identifiers (id), class tags, and more
- * - Command lines using >>> command-style syntax for flow control, triggers,
- *   or side-effects (e.g. >>> waitFor: userInput)
+ * - Command lines using --- command-style syntax for flow control, triggers,
+ *   or side-effects (e.g. --- waitFor: userInput ---)
  * - Support for structured referencing via ids, allowing external tools to
  *   embed, skip, or navigate sections of the conversation
  * - Line-level comments (# or //), and whitespace-tolerant formatting
@@ -27,7 +27,7 @@
  *   Title: Clean Room Training
  *   Author: Dr. Z
  *   ----
- *   >>> waitFor: studentReady
+ *   --- waitFor: studentReady ---
  *   [id=start mood=excited]
  *   Bob: Welcome to the clean room! [expression=happy]
  *   Sue: Let’s get started. [class=highlight]
@@ -85,15 +85,28 @@ HeaderLine
 
 // Body of the document: could contain dialogues, commands, etc.
 ConversationBody
-  = lines:(CommentLine / BlankLine / CommandLine / DialogueGroup)* {
+  = lines:(CommentLine / BlankLine / CommandBlock / DialogueGroup)* {
       return lines.filter(Boolean);
     }
 
-CommandLine
-  = _ ">>>" _ cmd:LineContent NewLine {
-      return { type: "Command", command: cmd };
+StartCommandBlock
+  = "---"
+
+EndCommandBlock
+  = "---" _ NewLine
+
+CommandContent
+  = content:(!EndCommandBlock .)* {
+      return content.join('');
   }
 
+CommandBlock
+  = _ StartCommandBlock _ content:CommandContent EndCommandBlock {
+      return {
+        type: "CommandBlock",
+        command: content.trim()
+      };
+  }
 
 DialogueGroup
   = metaAbove:MetadataLine? line:DialogueLine continuation:ContinuationLine* {
@@ -110,7 +123,7 @@ DialogueGroup
   }
 
 ContinuationLine
-  = !DialogueLineStart !MetadataLineStart !CommandLineStart content:LineContent NewLine {
+  = !DialogueLineStart !MetadataLineStart !StartCommandBlock content:LineContent NewLine {
       return { text: content };
   }
 
@@ -119,9 +132,6 @@ DialogueLineStart
 
 MetadataLineStart
   = _ "["
-
-CommandLineStart
-  = _ ">>>"
 
 DialogueLine
   = speaker:Key ":" _ text:SpeechContent meta:InlineMetadata? NewLine {

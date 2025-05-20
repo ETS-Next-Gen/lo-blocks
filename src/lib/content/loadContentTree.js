@@ -89,10 +89,10 @@ function indexParsed(parsedTree, sourceFile) {
     const parser = Component?.parser || defaultParser;
     //console.log(`[OLX] Using parser: ${parser} / ${parser.name} for tag: <${tag}>`);
 
-    const { children } = parser({
+    const entry = parser({
       // Node data
       id,
-      rawParsed: element,
+      rawParsed: node,
       tag,
       attributes,
       sourceFile,
@@ -100,15 +100,6 @@ function indexParsed(parsedTree, sourceFile) {
       parseNode,
       storeEntry: (id) => index.push(id)
     }) || {};
-
-    const entry = {
-      id,
-      tag,
-      attributes,
-      children,
-      rawParsed: node,
-      sourceFile
-    };
 
     if (shouldUpdateExistingEntry(contentStore.byId[id], entry)) {
       contentStore.byId[id] = entry;

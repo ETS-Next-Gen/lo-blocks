@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import stringify from 'json-stable-stringify';
 
 import { loadContentTree } from '../lib/content/loadContentTree.js';
 import fs from 'fs';
@@ -16,7 +17,7 @@ async function main() {
       idMap
     };
 
-    const pretty = JSON.stringify(output, null, 2);
+    const pretty = stringify(output, { space: 2 });
 
     if (args.includes('--out')) {
       const outIndex = args.indexOf('--out');

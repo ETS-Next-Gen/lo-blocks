@@ -17,6 +17,7 @@
     "@xyflow/react": "^12.6.0",
     "dagre": "^0.8.5",
     "fast-xml-parser": "^5.0.9",
+    "json-stable-stringify": "^1.3.0",
     "katex": "^0.16.22",
     "lo_event": "file:lo_event-0.0.3.tgz",
     "lucide-react": "^0.510.0",

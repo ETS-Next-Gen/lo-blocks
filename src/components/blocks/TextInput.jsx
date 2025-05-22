@@ -1,6 +1,6 @@
 import { core } from '../blocks.js';
 import { text as textParser } from '@/lib/olx/parsers';
-import _TextInput from './TextInputClient';
+import _TextInput from './_TextInput';
 
 const TextInput = core({
   name: 'TextInput',

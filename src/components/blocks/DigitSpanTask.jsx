@@ -1,7 +1,7 @@
 import * as parsers from '@/lib/olx/parsers';
 import { dev } from '../blocks';
 
-import { _DigitSpanTask } from './DigitSpanTaskClient';
+import { _DigitSpanTask } from './_DigitSpanTask';
 
 // 📋 Friendly description for professors, LLMs, devs
 const description = `

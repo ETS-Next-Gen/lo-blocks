@@ -14,7 +14,7 @@
 
 import { dev } from '../blocks.js';
 import { childParser } from '@/lib/olx/parsers';
-import _SideBarPanel from './SideBarPanelClient';
+import _SideBarPanel from './_SideBarPanel';
 
 // === Custom parser to build named slots ===
 const sbParser = childParser(function sideBlockParser({ rawChildren, parseNode }) {

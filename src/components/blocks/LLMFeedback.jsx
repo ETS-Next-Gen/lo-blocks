@@ -3,7 +3,7 @@
 
 import * as parsers from '@/lib/olx/parsers';
 import { dev } from '../blocks.js';
-import _LLMFeedback from './LLMFeedbackClient';
+import _LLMFeedback from './_LLMFeedback';
 
 const LLMFeedback = dev({
   name: 'LLMFeedback',

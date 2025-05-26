@@ -1,7 +1,7 @@
 import React from 'react';
 import { dev } from '@/lib/blocks';
 import { peggyParser } from '@/lib/olx/parsers';
-import * as dp  from './_capaParser.js'; // <-- Tweak this line
+import * as dp  from './_demoParser.js'; // <-- Tweak this line
 import { _PEGDevBlock } from './_PEGDevBlock';
 
 const PEGDevBlock = dev({

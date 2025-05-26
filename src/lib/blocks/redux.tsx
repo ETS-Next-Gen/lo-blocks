@@ -2,13 +2,15 @@ import * as lo_event from 'lo_event';
 
 import { useComponentSelector } from 'lo_event/lo_event/lo_assess/selectors.js';
 
-const fieldToEventMap = {};
+const _fieldToEventMap = {};
+const _eventToFieldMap = {};
 
 /**
  * Converts a camelCase or PascalCase field name into a default event name string.
  *
  * Note this is only a default. We may handle some things differently
- * (e.g. this would take SQL => S_Q_L)
+ * (mostly in the case of complex, adjecent acronyms; if we e.g. had
+ * JSONSQLXMLTransmogifier for whatever reason)
  * 
  * Example:
  *   fieldNameToDefaultEventName('fieldName')      // returns 'UPDATE_FIELD_NAME'
@@ -17,70 +19,70 @@ function fieldNameToDefaultEventName(name) {
   return (
     'UPDATE_' +
     name
-      .replace(/([A-Z])/g, '_$1')    // add underscores
-      .replace(/^_/, '')             // remove leading underscore if present
+      .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+
       .toUpperCase()
   );
 }
 
-export function createFieldMapping({
-  stateFields = [],                  // Names for use in useReduxState
-  stateEventOverrides = {},          // Overrides for where fieldNameToDefaultEventName isn't appropraite
-  customReducers = {}                // Additional reducers
-}) {
-  function getEventName(field) {
-    return field in stateEventOverrides ? stateEventOverrides[field] : fieldNameToDefaultEventName(field);
-  }
-
-  const fields = [];
-  const events = [];
-  const fieldsToEvents = {};
-  const eventsToFields = {};
-
-  mapping = {
-    // For the simple updateResponseReducer
-    fields,             // e.g. ['inputText']
-    events,             // e.g. ['UPDATE_INPUT_TEXT']
-    fieldsToTvents,     // e.g. {'input_text': 'UPDATE_INPUT_TEXT'}
-    eventsToFields,     // e.g. {'UPDATE_INPUT_TEXT': ['input_text']} <-- one-to-many, since an event may be used for multiple fields
-
-    // For custom reducers
-    eventsToReducers    // e.g. {'RUN_LLM': llm_reducer}
-  }
-  for (const name of fieldNames) {
-    eventName = getEventName(field)
-    // Check for eventName collision in the global fieldToEventMap
-    if (fieldToEventMap[field] && fieldToEventMap[field] !== eventName) {
+/**
+ * Checks for conflicts between two field<->event mapping objects.
+ * Throws if a key maps to a different value in each map.
+ *
+ * @param {Object} globalMap - The persistent global mapping.
+ * @param {Object} newMap - The new mapping to check.
+ * @param {string} type - A string label for error clarity ("field" or "event").
+ */
+function checkConflicts(globalMap, newMap, type = "field") {
+  for (const [key, value] of Object.entries(newMap)) {
+    if (
+      globalMap.hasOwnProperty(key) &&
+      globalMap[key] !== value
+    ) {
       throw new Error(
-        `Field "${field}" is already mapped to event "${fieldToEventMap[field]}", cannot remap to "${eventName}".`
+        `[fields] Conflicting ${type} registration: "${key}" was previously mapped to "${globalMap[key]}", but attempted to map to "${value}".`
       );
     }
-    // Add to the global map, or noop
-    fieldToEventMap[field] = eventName;
+  }
+}
 
-    // Add to local maps
-    fields.push(field);
-    if (!events.includes(eventName)) {
-      events.push(eventName);
-    }
+export function fields(fieldnames) {
+  // Handle the array case: {field: null}
+  let initialMapping = Array.isArray(fieldnames)
+    ? Object.fromEntries(fieldnames.map(f => [f, null]))
+    : { ...fieldnames };
 
-    fieldsToEvents[field] = eventName;
-    if (!eventsToFields[eventName]) {
-      eventsToFields[eventName] = [];
-    }
-    if (!eventsToFields[eventName].includes(field)) {
-      eventsToFields[eventName].push(field);
-    }
+  // Convert nulls to default event names
+  let fieldToEventMap = {};
+  for (const [field, event] of Object.entries(initialMapping)) {
+    fieldToEventMap[field] = event ?? fieldNameToDefaultEventName(field);
   }
 
-  return {
-    fields,
-    events,
-    fieldsToEvents,
-    eventsToFields,
-    customReducers
-  };
+  // Reverse mapping: eventToFieldMap
+  const eventToFieldMap = Object.fromEntries(
+    Object.entries(fieldToEventMap).map(([k, v]) => [v, k])
+  );
 
+  // fields and events enums
+  const fieldsEnum = Object.fromEntries(
+    Object.keys(fieldToEventMap).map(f => [f, f])
+  );
+  const eventsEnum = Object.fromEntries(
+    Object.values(fieldToEventMap).map(e => [e, e])
+  );
+
+  checkConflicts(_fieldToEventMap, fieldToEventMap, "field");
+  checkConflicts(_eventToFieldMap, eventToFieldMap, "event");
+
+  Object.assign(_fieldToEventMap, fieldToEventMap);
+  Object.assign(_eventToFieldMap, eventToFieldMap);
+
+  return {
+    fields: fieldsEnum,
+    events: eventsEnum,
+    fieldToEventMap,
+    eventToFieldMap,
+  };
 }
 
 export function useReduxState(id, field, fallback) {
@@ -90,7 +92,7 @@ export function useReduxState(id, field, fallback) {
   });
 
   const setValue = (newValue) => {
-    const eventType = events[field]; // map field to event
+    const eventType = _fieldToEventMap[field]; // map field to event
 
     if (!eventType) {
       console.warn(`[useReduxState] No event mapping found for field "${field}"`);
@@ -107,4 +109,10 @@ export function useReduxState(id, field, fallback) {
 }
 
 /** @internal Used only for testing */
-export const __testables = { fieldNameToDefaultEventName };
+export const __testables = {
+  fieldNameToDefaultEventName,
+  reset: () => {
+    Object.keys(_fieldToEventMap).forEach(k => delete _fieldToEventMap[k]);
+    Object.keys(_eventToFieldMap).forEach(k => delete _eventToFieldMap[k]);
+  }
+};

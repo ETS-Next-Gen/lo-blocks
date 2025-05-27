@@ -1,4 +1,6 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
+import postcssNesting from 'postcss-nesting';
 
 export default defineConfig({
   test: {
@@ -8,4 +10,16 @@ export default defineConfig({
       'src/**/*.test.{js,ts,jsx,tsx}'
     ],
   },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [
+        postcssNesting
+      ],
+    },
+  }
 });

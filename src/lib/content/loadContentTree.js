@@ -3,7 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { XMLParser } from 'fast-xml-parser';
 import { COMPONENT_MAP } from '@/components/componentMap';
-import { transformTagName } from '@/lib/content/xmlTransforms';
+import { transformTagName } from '@/lib/olx/xmlTransforms';
 
 import * as parsers from '@/lib/olx/parsers';
 
@@ -24,45 +24,18 @@ const xmlParser = new XMLParser({
   transformTagName
 });
 
+
 export async function loadContentTree(contentDir = './content') {
-  const xmlFiles = await getXmlFilesRecursively(contentDir);
-  const seenFiles = new Set();
+  const { added, changed, unchanged, deleted } = await loadXmlFilesWithStats(contentDir, contentStore.byFile);
 
-  for (const fullPath of xmlFiles) {
-    const relativePath = path.relative(contentDir, fullPath);
-    seenFiles.add(relativePath);
+  deleteNodesByProvenance([...Object.keys(deleted), ...Object.keys(changed)]);
 
-    const stat = await fs.stat(fullPath);
-    const prev = contentStore.byFile[relativePath];
-
-    if (!prev || stat.mtimeMs > prev.mtimeMs) {
-      const xml = await fs.readFile(fullPath, 'utf-8');
-      const parsed = xmlParser.parse(xml);
-
-      if (prev?.nodes) {
-        for (const id of prev.nodes) {
-          delete contentStore.byId[id];
-        }
-      }
-
-      const indexedIds = indexParsed(parsed, relativePath);
-
-      contentStore.byFile[relativePath] = {
-        mtimeMs: stat.mtimeMs,
-        parsed,
-        nodes: indexedIds
-      };
-    }
-  }
-
-  // Remove deleted files
-  for (const oldFile of Object.keys(contentStore.byFile)) {
-    if (!seenFiles.has(oldFile)) {
-      for (const id of contentStore.byFile[oldFile].nodes) {
-        delete contentStore.byId[id];
-      }
-      delete contentStore.byFile[oldFile];
-    }
+  for (const [id, fileInfo] of Object.entries({ ...added, ...changed })) {
+    const indexedIds = indexXml(fileInfo.content, id);
+    contentStore.byFile[id] = {
+      nodes: indexedIds,
+      ...fileInfo
+    };
   }
 
   return {
@@ -71,7 +44,21 @@ export async function loadContentTree(contentDir = './content') {
   };
 }
 
-function indexParsed(parsedTree, sourceFile) {
+// Helper: remove all nodes for deleted/changed files
+function deleteNodesByProvenance(relativePaths) {
+  for (const relPath of relativePaths) {
+    const prev = contentStore.byFile[relPath];
+    if (prev?.nodes) {
+      for (const id of prev.nodes) {
+        delete contentStore.byId[id];
+      }
+    }
+    delete contentStore.byFile[relPath];
+  }
+}
+
+function indexXml(xml, sourceId) {
+  const parsedTree = xmlParser.parse(xml);
   const indexed = [];
 
   function parseNode(node) {
@@ -83,7 +70,7 @@ function indexParsed(parsedTree, sourceFile) {
     if(attributes.ref) {
       if (tag !== 'Use') {
         throw new Error(
-          `Invalid 'ref' attribute on <${tag}> in ${sourceFile}. Only <use> elements may have 'ref'.`
+          `Invalid 'ref' attribute on <${tag}> in ${sourceId}. Only <use> elements may have 'ref'.`
         );
       }
 
@@ -94,7 +81,7 @@ function indexParsed(parsedTree, sourceFile) {
       );
       if (childKeys.length > 0) {
         throw new Error(
-          `<Use ref="..."> in ${sourceFile} must not have child elements. Found children: ${childKeys.join(', ')}`
+          `<Use ref="..."> in ${sourceId} must not have child elements. Found children: ${childKeys.join(', ')}`
         );
       }
 
@@ -103,7 +90,7 @@ function indexParsed(parsedTree, sourceFile) {
       const extraAttrs = Object.keys(attributes).filter(attr => !allowedAttrs.includes(attr));
       if (extraAttrs.length > 0) {
         throw new Error(
-          `<Use ref="..."> in ${sourceFile} must not have additional attributes (${extraAttrs.join(', ')}). ` +
+          `<Use ref="..."> in ${sourceId} must not have additional attributes (${extraAttrs.join(', ')}). ` +
             `In the future, these will go into an 'overrides' dictionary.`
         );
       }
@@ -124,13 +111,13 @@ function indexParsed(parsedTree, sourceFile) {
       rawParsed: node,
       tag,
       attributes,
-      sourceFile,
+      sourceFile: sourceId, // TODO
       // Actions
       parseNode,
       storeEntry: (id, entry) => {
         if (contentStore.byId[id]) {
           throw new Error(
-            `Duplicate ID "${id}" found in ${sourceFile}. Each element must have a unique id.`
+            `Duplicate ID "${id}" found in ${sourceId}. Each element must have a unique id.`
           );
         }
         contentStore.byId[id] = entry;
@@ -150,6 +137,11 @@ function indexParsed(parsedTree, sourceFile) {
   return indexed;
 }
 
+
+// Every node needs an ID.
+//
+// Helper to make the ID for a node. Check if it has a url_name or an
+// id, and if not, make a sha hash.
 function createId(node) {
   const attributes = node[':@'] || {};
   const id = attributes.url_name || attributes.id;
@@ -159,19 +151,72 @@ function createId(node) {
   return crypto.createHash('sha1').update(canonical).digest('hex');
 }
 
-async function getXmlFilesRecursively(dir) {
-  const files = [];
+// Helper: walk directory, collect .xml/.olx files with stat info and detect changes
+export async function loadXmlFilesWithStats(dir, previous = {}) {
+  function olxFile(entry, fullPath) {
+    const fileName = entry.name || fullPath.split('/').pop();
+    return (
+      entry.isFile() &&
+      (fullPath.endsWith('.xml') || fullPath.endsWith('.olx')) &&
+      !fileName.includes('~') &&
+      !fileName.includes('#') &&
+      !fileName.startsWith('.')
+    );
+  }
 
-  const entries = await fs.readdir(dir, { withFileTypes: true });
+  function fileChanged(statA, statB) {
+    if (!statA || !statB) return true;
+    return (
+      statA.size !== statB.size ||
+      statA.mtimeMs !== statB.mtimeMs ||
+      statA.ctimeMs !== statB.ctimeMs
+    );
+  }
 
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await getXmlFilesRecursively(fullPath));
-    } else if (entry.isFile() && fullPath.endsWith('.xml')) {
-      files.push(fullPath);
+  const found = {};
+  const added = {};
+  const changed = {};
+  const unchanged = {};
+
+  async function walk(currentDir) {
+    const entries = await fs.readdir(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(fullPath);
+      } else if (olxFile(entry, fullPath)) {
+        const id = `file://${fullPath}`;
+        const stat = await fs.stat(fullPath);
+        found[id] = true;
+        const prev = previous[id];
+        if (prev) {
+          if (fileChanged(prev.stat, stat)) {
+            const content = await fs.readFile(fullPath, 'utf-8');
+            changed[id] = { id, stat, content };
+          } else {
+            unchanged[id] = prev;
+          }
+        } else {
+          const content = await fs.readFile(fullPath, 'utf-8');
+          added[id] = { id, stat, content };
+        }
+      }
     }
   }
 
-  return files;
+  await walk(dir);
+
+  // Files in previous, but not found now = deleted
+  const deleted = Object.keys(previous)
+    .filter(id => !(id in found))
+    .reduce((out, id) => {
+      out[id] = previous[id];
+      return out;
+    }, {});
+
+  return { added, changed, unchanged, deleted };
 }
+
+export const __testables = {
+  loadXmlFilesWithStats
+};

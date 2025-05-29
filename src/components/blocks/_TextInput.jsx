@@ -1,25 +1,18 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useComponentSelector } from 'lo_event/lo_event/lo_assess/selectors.js';
-import { fixCursor, handleInputChange } from './inputHelpers.js';
+import React from 'react';
+import { useReduxInput } from '@/lib/blocks';
 
-function _TextInput({ id, className, children }) {
-  const value = useComponentSelector(id, s => s?.value ?? '');
-  const selectionStart = useComponentSelector(id, s => s?.selectionStart ?? 1);
-  const selectionEnd = useComponentSelector(id, s => s?.selectionEnd ?? 1);
-
-  useEffect(fixCursor(id, selectionStart, selectionEnd), [value]);
+function _TextInput({ id, className, children, fields }) {
+  const [value, inputProps] = useReduxInput(id, fields.value, '');
 
   return (
     <>
       {children}
       <textarea
-        name={id}
+        {...inputProps}
         className={className || 'large-input'}
         required
-        value={value}
-        onChange={handleInputChange(id)}
       />
     </>
   );

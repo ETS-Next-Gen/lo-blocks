@@ -1,8 +1,14 @@
+'use client';
 // /src/lib/blocks/selectors.ts
 //
 // This file supercedes and obsoletes selectors.ts in lo_assess, which should eventually be removed.
 
 import { useSelector, shallowEqual } from 'react-redux';
+import { useRef, useEffect, useCallback } from 'react';
+
+import * as lo_event from 'lo_event';
+
+const UPDATE_INPUT = 'UPDATE_INPUT'; // TODO: Import
 
 // Unified options type
 export interface SelectorOptions<T = any> {
@@ -75,22 +81,19 @@ export function useFieldSelector<T = any>(
 }
 
 export function useReduxInput(id, field, fallback = '') {
-  // Value for this field from Redux, or fallback
   const value = useComponentSelector(id, state =>
     state && state[field] !== undefined ? state[field] : fallback
   );
 
-  // Selection info for this field (shallowEqual to prevent extra rerenders)
   const selection = useComponentSelector(
     id,
     state => ({
-      selectionStart: state?.[`${field}.selectionStart`] ?? null,
-      selectionEnd: state?.[`${field}.selectionEnd`] ?? null
+      selectionStart: state?.[`${field}.selectionStart`] ?? 0,
+      selectionEnd: state?.[`${field}.selectionEnd`] ?? 0
     }),
     shallowEqual
   );
 
-  // Handle input changes, dispatch Redux/log event, save cursor
   const onChange = useCallback((event) => {
     const val = event.target.value;
     const selStart = event.target.selectionStart;
@@ -104,23 +107,32 @@ export function useReduxInput(id, field, fallback = '') {
     });
   }, [id, field]);
 
-  // Restore cursor after Redux render (fixes input/cursor bugs)
-  const onFocus = useCallback(() => {
-    const inputs = document.getElementsByName(field);
-    for (const input of inputs) {
-      if (document.activeElement === input && selection.selectionStart != null) {
-        input.setSelectionRange(selection.selectionStart, selection.selectionEnd);
-      }
-    }
-  }, [field, selection.selectionStart, selection.selectionEnd]);
+  const ref = useRef();
 
-  // For use in <input {...props} />
-  return [value, {
-    name: field,
+  useEffect(() => {
+    const input = ref.current;
+    if (
+      input &&
+      document.activeElement === input &&
+      selection.selectionStart != null &&
+      selection.selectionEnd != null
+    ) {
+      try {
+        input.setSelectionRange(selection.selectionStart, selection.selectionEnd);
+      } catch (e) { /* ignore */ }
+    }
+  }, [value, selection.selectionStart, selection.selectionEnd]);
+
+  // Put ref in the returned props object!
+  return [
     value,
-    onChange,
-    onFocus
-  }];
+    {
+      name: field,
+      value,
+      onChange,
+      ref
+    }
+  ];
 }
 
 

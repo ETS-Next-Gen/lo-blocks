@@ -39,7 +39,7 @@ export default function PreviewPage() {
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Preview: {id}</h1>
       <div className="space-y-4">
-        {render({ node: id, idMap })}
+        {render({ node: id, idMap, parents: [] })}
       </div>
 
       {debug() && (

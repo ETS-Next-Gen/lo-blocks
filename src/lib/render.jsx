@@ -3,7 +3,7 @@ import { debugLog, DisplayError } from '@/lib/debug';
 import { COMPONENT_MAP } from '@/components/componentMap';
 
 // Main render function: handles single nodes, strings, JSX, and blocks
-export function render({ node, idMap, key }) {
+export function render({ node, idMap, key, parents=[] }) {
   if (!node) return null;
 
   // JSX passthrough
@@ -11,7 +11,7 @@ export function render({ node, idMap, key }) {
 
   // Handle list of children
   if (Array.isArray(node)) {
-    return renderCompiledChildren({ children: node, idMap });
+    return renderCompiledChildren({ children: node, idMap, parents });
   }
 
   // Handle string ID,
@@ -30,7 +30,7 @@ export function render({ node, idMap, key }) {
         />
       );
     }
-    return render({ node: entry, idMap, key });
+    return render({ node: entry, idMap, key, parents });
   }
 
   // Handle { type: 'xblock', id }
@@ -52,7 +52,7 @@ export function render({ node, idMap, key }) {
         />
       );
     }
-    return render({ node: entry, idMap, key });
+    return render({ node: entry, idMap, key, parents });
   }
 
   // Handle structured OLX-style node
@@ -71,6 +71,7 @@ export function render({ node, idMap, key }) {
 
   const Component = COMPONENT_MAP[tag].component;
 
+  console.log(parents);
   return (
     <Component
       {...attributes}
@@ -78,13 +79,14 @@ export function render({ node, idMap, key }) {
       idMap={idMap}
       spec={COMPONENT_MAP[tag].spec}
       fields={COMPONENT_MAP[tag].spec?.fieldToEventMap?.fields}
+      parents={ [ ...parents, node ] }
     />
   );
 }
 
 
 // Render children array that may include: text, JSX, OLX, etc.
-export function renderCompiledChildren({ children, idMap }) {
+export function renderCompiledChildren({ children, idMap, parents=[] }) {
   if (!Array.isArray(children)) {
     return [
       <DisplayError
@@ -111,7 +113,7 @@ export function renderCompiledChildren({ children, idMap }) {
       case 'xblock':
         return (
           <React.Fragment key={child.key}>
-            {render({ node: child.id, idMap, key: `${child.key}` })}
+            {render({ node: child.id, idMap, key: `${child.key}`, parents })}
           </React.Fragment>
         );
 
@@ -237,37 +239,7 @@ function assignReactKeys(children) {
   });
 }
 
-// ---------------------
-// Test case
-// ---------------------
-function testAssignReactKeys() {
-  const input = [
-    { id: "foo", data: 1 },
-    { id: "bar", data: 2 },
-    { id: "foo", data: 3 },
-    { id: "baz", data: 4 },
-    { id: "foo", data: 5 },
-    { data: 6 }, // No id
-    null,        // Primitive
-    "string",    // Primitive
-  ];
 
-  const expected = [
-    { id: "foo", data: 1, key: "foo" },
-    { id: "bar", data: 2, key: "bar" },
-    { id: "foo", data: 3, key: "foo.1" },
-    { id: "baz", data: 4, key: "baz" },
-    { id: "foo", data: 5, key: "foo.2" },
-    { data: 6, key: "__idx__5" },
-    null,
-    "string",
-  ];
-
-  const result = assignReactKeys(input);
-
-  console.assert(
-    JSON.stringify(result) === JSON.stringify(expected),
-    "Test failed! Got:", result, "\nExpected:", expected
-  );
-  console.log("assignReactKeys test passed.");
-}
+export const __testables = {
+  assignReactKeys,
+};

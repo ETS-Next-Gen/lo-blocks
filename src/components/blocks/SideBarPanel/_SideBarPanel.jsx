@@ -3,7 +3,7 @@
 import { render } from '@/lib/render';
 import { DisplayError } from '@/lib/debug';
 
-function _SideBarPanel({ kids = {}, idMap }) {
+function _SideBarPanel({ kids = {}, idMap, parents }) {
   if (!kids || typeof kids !== 'object') {
     return (
       <DisplayError
@@ -43,13 +43,13 @@ function _SideBarPanel({ kids = {}, idMap }) {
     <div className="flex flex-col md:flex-row gap-4">
       <div key="MainPane" className="flex-1">
         <h1>Main</h1>
-        {render({ node: main, idMap })}
+        {render({ node: main, idMap, parents })}
       </div>
       <div key="Sidebar" className="w-full md:w-64 space-y-3">
         <h1>Sidebar</h1>
         {sidebar.map((node, i) => (
           <div key={i} className="bg-white rounded shadow-sm border p-3 text-sm">
-            {render({ node, idMap, key: i })}
+            {render({ node, idMap, key: i, parents })}
           </div>
         ))}
       </div>

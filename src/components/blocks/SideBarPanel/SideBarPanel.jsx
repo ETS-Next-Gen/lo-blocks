@@ -7,9 +7,6 @@
 
   This version uses a structured parser to map <MainPane> and <Sidebar>
   into an object like: { main: xblock, sidebar: [xblock, ...] }
-
-  Note: children are not rendered automatically — the parent system is expected
-  to call `render({ node, idMap })` on each slot.
 */
 
 import { dev } from '@/lib/blocks';

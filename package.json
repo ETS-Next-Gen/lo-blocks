@@ -13,7 +13,6 @@
     "build:gen-block-registry": "node src/scripts/generateBlockRegistry.js",
     "clean": "rm -rf .next node_modules .turbo out",
     "clean-zombies": "pkill -f next-server; pkill -f transform.js; pkill -f 'node dev'",
-
     "test": "vitest",
     "test:ui": "vitest --ui"
   },
@@ -44,6 +43,7 @@
     "eslint-config-next": "15.2.4",
     "glob": "^11.0.2",
     "jsdom": "^26.1.0",
+    "minimatch": "^10.0.1",
     "postcss-nesting": "^13.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.19.4",

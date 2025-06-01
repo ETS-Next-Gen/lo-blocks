@@ -1,9 +1,22 @@
 // generateBlockRegistry.js
 import fs from 'fs';
 import path from 'path';
+import { minimatch } from 'minimatch';
 
 const blocksDir = path.resolve(process.cwd(), 'src/components/blocks/');
 const outputFile = path.resolve(process.cwd(), 'src/components/blockRegistry.js');
+const ignoreFile = path.join(blocksDir, '.blockignore');
+
+function readBlockIgnore(ignorePath) {
+  if (!fs.existsSync(ignorePath)) return [];
+  return fs
+    .readFileSync(ignorePath, 'utf8')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'));
+}
+
+const blockIgnorePatterns = readBlockIgnore(ignoreFile);
 
 function isBlockFile(filename) {
   return /^[A-Z].*\.(jsx|tsx|js|ts)$/.test(filename);
@@ -11,14 +24,15 @@ function isBlockFile(filename) {
 
 // Optional: exclude StubBlock or any flagged files
 function shouldExclude(filePath) {
-  if (filePath.endsWith('StubBlock.jsx') || filePath.endsWith('StubBlock.js')) return true;
+  // pattern matching (relative to blocksDir)
+  const relPath = path.relative(blocksDir, filePath).replace(/\\/g, '/');
+  for (const pattern of blockIgnorePatterns) {
+    if (minimatch(relPath, pattern)) return true;
+  }
 
   // Example: exclude files containing a specific comment string, e.g. "NO_EXPORT"
   const content = fs.readFileSync(filePath, 'utf8');
-  if (content.includes('NOT_A_BLOCK')) return true;
-
-  // Exclude any files ending with 'Client.jsx' or 'Client.tsx'
-  if (/Client\.(jsx|tsx|js|ts)$/.test(filePath)) return true;
+  if (content.includes('@block-registry-ignore')) return true;
 
   return false;
 }

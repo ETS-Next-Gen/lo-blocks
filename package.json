@@ -4,17 +4,17 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "npm run build:grammars && npm run build:gen-block-registry",
-    "start": "next start",
-    "lint": "next lint",
-    "xml2json": "npx tsx src/scripts/xml2json.js",
-    "build:grammars": "node src/scripts/compile-grammars.js",
-    "build:gen-block-registry": "node src/scripts/generateBlockRegistry.js",
-    "clean": "rm -rf .next node_modules .turbo out",
+    "dev": "firejail --noprofile --whitelist=$(pwd) next dev --turbopack",
+    "build": "firejail --whitelist=$(pwd) npm run build:grammars && npm run build:gen-block-registry",
+    "start": "firejail --noprofile --whitelist=$(pwd) next start",
+    "lint": "firejail --whitelist=$(pwd) next lint",
+    "xml2json": "firejail --whitelist=$(pwd) npx tsx src/scripts/xml2json.js",
+    "build:grammars": "firejail --whitelist=$(pwd) node src/scripts/compile-grammars.js",
+    "build:gen-block-registry": "firejail --whitelist=$(pwd) node src/scripts/generateBlockRegistry.js",
+    "clean": "firejail --whitelist=$(pwd) rm -rf .next node_modules .turbo out",
     "clean-zombies": "pkill -f next-server; pkill -f transform.js; pkill -f 'node dev'",
-    "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test": "firejail --noprofile --whitelist=$(pwd) vitest",
+    "test:ui": "firejail --noprofile --whitelist=$(pwd) vitest --ui"
   },
   "dependencies": {
     "@xyflow/react": "^12.6.0",

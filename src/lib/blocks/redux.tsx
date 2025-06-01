@@ -85,7 +85,15 @@ export function fields(fieldnames) {
   };
 }
 
+export function assertValidField(field) {
+  if (!_fieldToEventMap.hasOwnProperty(field)) {
+    throw new Error(`Invalid field: ${field}`);
+  }
+  return field; // optionally return the field for chaining
+}
+
 export function useReduxState(id, field, fallback) {
+  assertValidField(field);
   const value = useComponentSelector(id, state => {
     if (!state) return fallback;
     return state[field] !== undefined ? state[field] : fallback;

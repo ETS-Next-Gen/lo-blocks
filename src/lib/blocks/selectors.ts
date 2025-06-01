@@ -67,6 +67,8 @@ export function useSettingSelector<T = any>(
   );
 }
 
+// This should use redux.assertValidField, but we want to be mindful
+// of circular imports, etc.
 export function useFieldSelector<T = any>(
   id: string,
   field: string,
@@ -80,6 +82,10 @@ export function useFieldSelector<T = any>(
   );
 }
 
+// TODO: We should figure out where this goees.
+//
+// This should use redux.assertValidField, but we want to be mindful
+// of circular imports, etc.
 export function useReduxInput(id, field, fallback = '') {
   const value = useComponentSelector(id, state =>
     state && state[field] !== undefined ? state[field] : fallback

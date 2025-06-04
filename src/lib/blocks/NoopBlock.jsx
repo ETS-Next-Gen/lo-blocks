@@ -9,4 +9,4 @@
  * - Raising exceptions if passed children / unexpected attributes?
  */
 
-export const BlankBlock=({props}) => (<></>);
+export const NoopBlock=({props}) => (<></>);

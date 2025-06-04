@@ -1,0 +1,5 @@
+<Lesson id="hello_action_lesson" launchable="true">
+  <ActionButton label="Click me!">
+    <HelloAction/>
+  </ActionButton>
+</Lesson>

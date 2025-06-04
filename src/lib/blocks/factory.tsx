@@ -63,7 +63,7 @@ function createBlock(config: BlockConfig): React.ComponentType<any> {
     parser: config.parser,
     reducers: config.reducers ?? [],
     getValue: config.getValue,
-    fields: parsed.fields || {},
+    fields: parsed?.fields?.fieldToEventMap || {},
 
     OLXName: olxName,
     description: parsed.description,

@@ -1,0 +1,13 @@
+import * as parsers from '@/lib/olx/parsers';
+import * as blocks from '@/lib/blocks';
+
+const HelloAction = blocks.test({
+  ...parsers.ignore,
+  ...blocks.action({
+    action: ()=>alert("Hello, World!")
+  }),
+  name: 'HelloAction',
+  component: blocks.NoopBlock
+});
+
+export default HelloAction;

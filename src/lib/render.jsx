@@ -84,7 +84,7 @@ export function render({ node, idMap, key, nodeInfo, debug }) {
   // TODO: Check if this causes extra renders, and if we need to memoize anything
   let childNodeInfo = nodeInfo.renderedChildren[node.id];
   if (!childNodeInfo) {
-    childNodeInfo = { node, renderedChildren: {}, parent: nodeInfo };
+    childNodeInfo = { node, renderedChildren: {}, parent: nodeInfo, spec: COMPONENT_MAP[tag].spec };
     nodeInfo.renderedChildren[node.id] = childNodeInfo;
   }
 
@@ -112,8 +112,8 @@ export function render({ node, idMap, key, nodeInfo, debug }) {
 
 
 // Render children array that may include: text, JSX, OLX, etc.
-export function renderCompiledChildren( params ) {
-  let { kids, children, idMap, nodeInfo, debug } = params;
+export function renderCompiledChildren( props ) {
+  let { kids, children, idMap, nodeInfo, debug } = props;
   if (kids === undefined && children !== undefined) {
     console.log(
       "[renderCompiledChildren] WARNING: 'children' prop used instead of 'kids'. Please migrate to 'kids'."

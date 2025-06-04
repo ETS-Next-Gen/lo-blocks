@@ -35,9 +35,7 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
 
   const handleLog = () => console.log('[props]', props);
 
-  const extra = typeof spec?.extraDebug === 'function'
-    ? spec.extraDebug(props)
-    : null;
+  const DebugComponent = spec?.extraDebug;
 
   return (
     <div style={{ border: '1px dashed #999', padding: 4, margin: 2 }}>
@@ -45,7 +43,7 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
         [{tag} / {id}] {link && <a href={link}>src</a>}
         <button onClick={handleLog} style={{ marginLeft: 4 }}>log</button>
       </div>
-      {extra}
+      {DebugComponent && <DebugComponent {...props} />}
       {children}
     </div>
   );

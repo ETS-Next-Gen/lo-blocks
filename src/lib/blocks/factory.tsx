@@ -9,7 +9,6 @@ export const BlockConfigSchema = z.object({
   name: z.string().optional(),
   namespace: z.string().nonempty(),
   component: z.custom<React.ComponentType<any>>().optional(),
-  //component: z.any().optional(),
   action: z.function().optional(),
   parser: z.function().optional(),
   reducers: z.array(z.function()).optional(),
@@ -18,7 +17,7 @@ export const BlockConfigSchema = z.object({
     z.object({ fieldToEventMap: ReduxFieldDict }).catchall(z.any())
   ]).optional(),
   getValue: z.function().optional(),
-  extraDebug: z.function().optional(),
+  extraDebug: z.custom<React.ComponentType<any>>().optional(),
   description: z.string().optional(),
 }).strict();
 

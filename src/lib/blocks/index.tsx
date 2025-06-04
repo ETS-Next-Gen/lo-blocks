@@ -2,6 +2,7 @@ export * from './factory';
 export * from './namespaces';
 export * from './redux';
 export * from './selectors';
-export * from './DummyBlock';
+export * from './NoopBlock';
 export * from './olxdom';
 export * from './idResolver';
+export * from './actions';

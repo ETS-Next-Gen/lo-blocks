@@ -141,8 +141,8 @@ export function inferRelatedNodes(props, {
   infer,
   targets,
 } = {}) {
-  const { node } = props;
-  if (!node) throw new Error("inferRelatedNodes: props.node is required");
+  const { nodeInfo } = props;
+  if (!nodeInfo) throw new Error("inferRelatedNodes: props.nodeInfo is required");
   if (!selector) throw new Error("inferRelatedNodes: selector is required");
 
   // See above for logic and docstring
@@ -152,14 +152,28 @@ export function inferRelatedNodes(props, {
     (targets ? [] : ['parents', 'children']) // default: infer if no targets, else don't
   );
 
+  // Extract each group separately
+  const explicitTargets = targetIds ? targetIds : [];
+
+  const parents = inferModes.includes('parents')
+        ? getParents(nodeInfo, { selector, includeRoot: false }).map(n => n.node.id)
+        : [];
+
+  const children = inferModes.includes('children')
+        ? getChildrenBFS(nodeInfo, { selector, includeRoot: false }).map(n => n.node.id)
+        : [];
+
+  // Combine all IDs and deduplicate using Set
+  return [...new Set([...explicitTargets, ...parents, ...children])];
+
   // Use an object for de-duplication by id
   return [... new Set([
     ...targetIds
       ? targetIds : [],
     ...inferModes.includes('parents')
-      ? getParents(node, { selector, includeRoot: false }).map(n=>n.node.id) : [],
+      ? getParents(nodeInfo, { selector, includeRoot: false }).map(n=>n.node.id) : [],
     ...inferModes.includes('children')
-      ? getChildrenBFS(node, { selector, includeRoot: false }).map(n=>n.node.id) : []
+      ? getChildrenBFS(nodeInfo, { selector, includeRoot: false }).map(n=>n.node.id) : []
   ])];
 }
 

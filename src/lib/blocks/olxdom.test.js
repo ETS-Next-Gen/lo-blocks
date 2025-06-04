@@ -108,7 +108,7 @@ describe('inferRelatedNodes', () => {
 
   it("returns all parents and children (default infer=true)", () => {
     const result = inferRelatedNodes(
-      { node: tree },
+      { nodeInfo: tree },
       { selector: n => true, infer: true }
     );
     // Expect parents: none (root), children: B, C, D (all descendants)
@@ -117,7 +117,7 @@ describe('inferRelatedNodes', () => {
 
   it("returns only children when infer='children'", () => {
     const result = inferRelatedNodes(
-      { node: tree },
+      { nodeInfo: tree },
       { selector: n => true, infer: 'children' }
     );
     expect(result.sort()).toEqual(['B', 'C', 'D']);
@@ -125,7 +125,7 @@ describe('inferRelatedNodes', () => {
 
   it("returns only parents when infer='parents'", () => {
     const result = inferRelatedNodes(
-      { node: tree.renderedChildren.B.renderedChildren.D },
+      { nodeInfo: tree.renderedChildren.B.renderedChildren.D },
       { selector: n => true, infer: 'parents' }
     );
     // D's parents: B, A
@@ -134,7 +134,7 @@ describe('inferRelatedNodes', () => {
 
   it("returns empty array when infer is false", () => {
     const result = inferRelatedNodes(
-      { node: tree },
+      { nodeInfo: tree },
       { selector: n => true, infer: false }
     );
     expect(result).toEqual([]);
@@ -143,7 +143,7 @@ describe('inferRelatedNodes', () => {
   it("filters by selector", () => {
     // Only nodes with isAction: true
     const result = inferRelatedNodes(
-      { node: tree },
+      { nodeInfo: tree },
       { selector: n => n.node.spec && n.node.spec.isAction, infer: true }
     );
     expect(result.sort()).toEqual(['C', 'D']);
@@ -152,7 +152,7 @@ describe('inferRelatedNodes', () => {
   it("supports targets as comma-string", () => {
     // When targets is set, inferModes defaults to []
     const result = inferRelatedNodes(
-      { node: tree },
+      { nodeInfo: tree },
       { selector: n => true, targets: "B, C" }
     );
     expect(result.sort()).toEqual(['B', 'C']);
@@ -160,6 +160,6 @@ describe('inferRelatedNodes', () => {
 
   it("throws if no node or selector", () => {
     expect(() => inferRelatedNodes({}, { selector: n => true })).toThrow();
-    expect(() => inferRelatedNodes({ node: tree }, {})).toThrow();
+    expect(() => inferRelatedNodes({ nodeInfo: tree }, {})).toThrow();
   });
 });

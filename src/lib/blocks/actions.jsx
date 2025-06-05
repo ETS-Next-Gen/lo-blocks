@@ -1,6 +1,7 @@
 import { inferRelatedNodes } from './olxdom';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
+import * as lo_event from 'lo_event';
 
 export function action({ action }) {
   return { action };
@@ -11,7 +12,7 @@ export function input({ getValue }) {
 }
 
 export function response({ grader, infer = true, targets } = {}) {
-  const action = ({ targetInstance, props }) => {
+  const action = ({ targetId, targetInstance, props }) => {
     const ids = inferRelatedNodes(
       { ...props, nodeInfo: targetInstance.nodeInfo },
       {
@@ -28,7 +29,12 @@ export function response({ grader, infer = true, targets } = {}) {
       return spec.getValue ? spec.getValue(state, id) : undefined;
     });
 
-    return grader(props, values.length === 1 ? values[0] : values);
+    const result = grader(props, values.length === 1 ? values[0] : values);
+    lo_event.logEvent('UPDATE_CORRECTNESS', {
+      id: targetId,
+      correctness: result,
+    });
+    return result;
   };
 
   return { action };

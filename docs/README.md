@@ -25,12 +25,17 @@ grader function.
 ```javascript
 const SimpleCheck = blocks.test({
   ...blocks.response({
-    grader: (props, input) => input === props.answer ? 'correct' : 'incorrect'
+    grader: (props, input) =>
+      input === props.answer ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT
   }),
   name: 'SimpleCheck',
   component: blocks.NoopBlock
 });
 ```
+
+The result of a response is logged via the `UPDATE_CORRECTNESS` event and stored
+in Redux under the `correctness` field. Possible values are defined in
+`blocks.CORRECTNESS`.
 
 Validation, TypeScript, and zod
 -------------------------------

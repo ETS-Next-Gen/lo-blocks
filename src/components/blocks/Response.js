@@ -1,13 +1,20 @@
 import * as parsers from '@/lib/olx/parsers';
 import * as blocks from '@/lib/blocks';
+import { CORRECTNESS } from '@/lib/blocks';
+
+export const fields = blocks.fields(['correctness']);
 
 const Response = blocks.test({
-  ...parsers.ignore,
+  ...parsers.xblocks,
   ...blocks.response({
-    grader: (props, input) => input === parseFloat(props.answer) ? 'correct' : 'incorrect'
+    grader: (props, input) =>
+      input === parseFloat(props.answer)
+        ? CORRECTNESS.CORRECT
+        : CORRECTNESS.INCORRECT
   }),
   name: 'Response',
-  component: blocks.NoopBlock
+  component: blocks.NoopBlock,
+  fields,
 });
 
 export default Response;

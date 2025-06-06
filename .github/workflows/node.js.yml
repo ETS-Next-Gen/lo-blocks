@@ -28,4 +28,4 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build-automation
-    - run: npm test-automation
+    - run: npm run test-automation

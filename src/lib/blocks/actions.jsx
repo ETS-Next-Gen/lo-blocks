@@ -3,12 +3,22 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import * as lo_event from 'lo_event';
 
+// Mix-in to make a block an action
 export function action({ action }) {
   return { action };
 }
 
+export function isAction(spec) {
+  return typeof spec?.action === "function";
+}
+
+// Mix-in to make a block spec an input
 export function input({ getValue }) {
   return { getValue };
+}
+
+export function isInput(spec) {
+  return typeof spec?.getValue === "function";
 }
 
 // This does a full tree search, which is not performant. Probably doesn't matter
@@ -41,7 +51,7 @@ export function response({ grader, infer = true } = {}) {
     const inputIds = inferRelatedNodes(
       { ...props, nodeInfo: targetNodeInfo },
       {
-        selector: n => n.spec && n.spec.isInput,
+        selector: n => n.spec && isInput(n.spec),
         infer,
         targets: targetAttributes?.targets,
       }
@@ -51,7 +61,7 @@ export function response({ grader, infer = true } = {}) {
     const values = inputIds.map(id => {
       const inst = props.idMap[id];
       const spec = COMPONENT_MAP[inst.tag];
-      return spec.getValue ? spec.getValue(state, id) : undefined;
+      return spec.getValue(state, id);
     });
 
     /*
@@ -66,16 +76,26 @@ export function response({ grader, infer = true } = {}) {
       for multiple, we'll want a dictionary.
 
       Another question is how to keep the most common case (one input)
-      simple, while allowing multiple.
+      simple, while allowing multiple. A basic value=answer is much
+      nicer. values[0] is especially imperfect, since it suggests
+      asserting the length is one.
+
+      And we don't like values[0], values[1] as much as e.g. x, y.
+
+      But if the grader expects a list, a list of length 1 should be okay.
     */
 
     const result = grader(
       {...props, ...targetAttributes },
       values.length === 1 ? values[0] : values
     );
+    // TODO: Add number of attempts
+    // TODO Should we copy:
+    // https://edx.readthedocs.io/projects/devdata/en/stable/internal_data_formats/tracking_logs/student_event_types.html#problem-check
     lo_event.logEvent('UPDATE_CORRECTNESS', {
       id: targetId,
-      correctness: result,
+      correct: result,
+      answers: values  // Key-value pair?
     });
     return result;
   };
@@ -85,7 +105,7 @@ export function response({ grader, infer = true } = {}) {
 
 export function executeNodeActions(props) {
   const ids = inferRelatedNodes( props, {
-    selector: n => typeof n.spec?.action === 'function',
+    selector: n => isAction(n.spec),
     infer: props.infer,
     targets: props.targets
   });

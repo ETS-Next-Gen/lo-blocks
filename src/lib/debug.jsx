@@ -30,11 +30,23 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
   const tag = props?.nodeInfo?.node?.tag || 'N/A';
   const id = props?.nodeInfo?.node?.id || props.id || 'n/a';
   const provenance = props?.nodeInfo?.node?.provenance;
-  const fileSrc = Array.isArray(provenance)
-    ? provenance.find(p => p.type === 'file')?.uri
-    : null;
   const prefix = process.env.NEXT_PUBLIC_DEBUG_LINK_PREFIX || '';
-  const link = fileSrc ? `${prefix}${fileSrc}` : null;
+  const links = Array.isArray(provenance)
+    ? provenance.map((p, idx) => {
+        if (p.type === 'file') {
+          return (
+            <a key={idx} href={`${prefix}${p.uri}`} style={{ marginLeft: 4 }}>
+              src{provenance.length > 1 ? idx + 1 : ''}
+            </a>
+          );
+        }
+        return (
+          <span key={idx} style={{ marginLeft: 4 }}>
+            {p.type}
+          </span>
+        );
+      })
+    : null;
 
   const handleLog = () => console.log('[props]', props);
 
@@ -43,8 +55,8 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
   return (
     <div style={{ border: '1px dashed #999', padding: 4, margin: 2 }}>
       <div style={{ fontSize: '0.75rem', marginBottom: 4 }}>
-        [{tag} / {id}] {link && <a href={link}>src</a>}
-        <button onClick={handleLog} style={{ marginLeft: 4 }}>log</button>
+        [{tag} / {id}] {links}
+        <span onClick={handleLog} style={{ marginLeft: 4, cursor: 'pointer', textDecoration: 'underline' }}>log</span>
       </div>
       {DebugComponent && <DebugComponent {...props} />}
       {children}

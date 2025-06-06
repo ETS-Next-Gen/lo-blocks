@@ -6,12 +6,17 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import { transformTagName } from '@/lib/olx/xmlTransforms';
 
 import * as parsers from '@/lib/olx/parsers';
-import { fileSource } from '@/lib/provenance';
+import { fileSource, Provenance } from '@/lib/types';
 
 const defaultParser = parsers.xblocks.parser;
 
-const contentStore = {
-  byFile: {},
+interface ContentStore {
+  byProvenance: Record<string, any>;
+  byId: Record<string, any>;
+}
+
+const contentStore: ContentStore = {
+  byProvenance: {},
   byId: {}
 };
 
@@ -26,39 +31,39 @@ const xmlParser = new XMLParser({
 });
 
 
-export async function loadContentTree(contentDir = './content') {
-  const { added, changed, unchanged, deleted } = await loadXmlFilesWithStats(contentDir, contentStore.byFile);
+export async function loadContentTree(contentDir: string = './content') {
+  const { added, changed, unchanged, deleted } = await loadXmlFilesWithStats(contentDir, contentStore.byProvenance);
 
   deleteNodesByProvenance([...Object.keys(deleted), ...Object.keys(changed)]);
 
   for (const [id, fileInfo] of Object.entries({ ...added, ...changed })) {
     const indexedIds = indexXml(fileInfo.content, id);
-    contentStore.byFile[id] = {
+    contentStore.byProvenance[id] = {
       nodes: indexedIds,
       ...fileInfo
     };
   }
 
   return {
-    parsed: contentStore.byFile,
+    parsed: contentStore.byProvenance,
     idMap: contentStore.byId
   };
 }
 
 // Helper: remove all nodes for deleted/changed files
-function deleteNodesByProvenance(relativePaths) {
-  for (const relPath of relativePaths) {
-    const prev = contentStore.byFile[relPath];
+function deleteNodesByProvenance(provenanceIds: string[]): void {
+  for (const relPath of provenanceIds) {
+    const prev = contentStore.byProvenance[relPath];
     if (prev?.nodes) {
       for (const id of prev.nodes) {
         delete contentStore.byId[id];
       }
     }
-    delete contentStore.byFile[relPath];
+    delete contentStore.byProvenance[relPath];
   }
 }
 
-function indexXml(xml, sourceId) {
+function indexXml(xml: string, sourceId: string): string[] {
   const parsedTree = xmlParser.parse(xml);
   const indexed = [];
 
@@ -143,7 +148,7 @@ function indexXml(xml, sourceId) {
 //
 // Helper to make the ID for a node. Check if it has a url_name or an
 // id, and if not, make a sha hash.
-function createId(node) {
+function createId(node: Record<string, any>): string {
   const attributes = node[':@'] || {};
   const id = attributes.url_name || attributes.id;
   if (id) return id;
@@ -153,7 +158,7 @@ function createId(node) {
 }
 
 // Helper: walk directory, collect .xml/.olx files with stat info and detect changes
-export async function loadXmlFilesWithStats(dir, previous = {}) {
+export async function loadXmlFilesWithStats(dir: string, previous: Record<string, any> = {}) {
   function olxFile(entry, fullPath) {
     const fileName = entry.name || fullPath.split('/').pop();
     return (

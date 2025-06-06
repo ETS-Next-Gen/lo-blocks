@@ -69,8 +69,6 @@ function createBlock(config: BlockConfig): React.ComponentType<any> {
     description: parsed.description,
     namespace: parsed.namespace,
 
-    isAction: typeof parsed.action === 'function',
-
     spec: config
   }
 

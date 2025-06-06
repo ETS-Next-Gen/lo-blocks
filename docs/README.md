@@ -14,6 +14,40 @@ Learning Observer blocks are similar to Open edX XBlocks and React
 components: each block will typically define an XML tag, which can
 then be used in courseware.
 
+### Inputs and responses
+
+Blocks can advertise themselves as **inputs** by supplying a `getValue`
+function. Other blocks can then query their values directly from the
+Redux store. A **response** is an action block that collects values
+from related inputs (via `targets` or inference) and passes them to a
+grader function.
+
+```javascript
+const SimpleCheck = blocks.test({
+  ...blocks.response({
+    grader: (props, input) =>
+      input === props.answer ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT
+  }),
+  name: 'SimpleCheck',
+  component: blocks.NoopBlock
+});
+```
+
+The result of a response is logged via the `UPDATE_CORRECTNESS` event and stored
+in Redux under the `correctness` field. Possible values are defined in
+`blocks.CORRECTNESS`.
+
+Block Registry
+--------------
+
+We put our blocks in the `/src/components/blocks` directory. The
+command `npm run-script build:gen-block-registry` then creates a file
+`src/components/blockRegistry.js` which has all the blocks re-exported
+(e.g. `export { default as HelloAction } from './blocks/HelloAction';`
+
+Once we're more dynamic, we will want to do this dynamically. That may
+necessitate a move away from next.js.
+
 Validation, TypeScript, and zod
 -------------------------------
 
@@ -65,6 +99,13 @@ What we are very careful to do, however, is to architect for
 testability of modules. We rely on things like modular reducers,
 well-defined data formats, and a declarative, functional programming
 style.
+
+If you're an agent reading this, tests probably won't work in your
+sandbox right now. That's a rabbit hole you don't want to go down
+(unless explicitly asked to). In particular, lo_event needs to be
+updated and uploaded to `npm` before you have a working system for
+testing, and `vitest` is less than supported in many of your
+sandboxes. That's worth fixing, but not in an unrelated task.
 
 Tools
 -----

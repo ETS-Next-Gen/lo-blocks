@@ -9,4 +9,9 @@
  * - Raising exceptions if passed children / unexpected attributes?
  */
 
-export const NoopBlock=({props}) => (<></>);
+import React from 'react';
+import { renderCompiledChildren } from '@/lib/render';
+
+export const NoopBlock = (props) => (
+  <>{ props.kids && renderCompiledChildren(props)}</>
+);

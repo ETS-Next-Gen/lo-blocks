@@ -6,3 +6,4 @@ export * from './NoopBlock';
 export * from './olxdom';
 export * from './idResolver';
 export * from './actions';
+export * from './correctness';

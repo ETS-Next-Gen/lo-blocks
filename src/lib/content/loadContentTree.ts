@@ -10,7 +10,7 @@ import * as parsers from '@/lib/olx/parsers';
 const defaultParser = parsers.xblocks.parser;
 
 const contentStore = {
-  byFile: {},
+  byProvenance: {},
   byId: {}
 };
 
@@ -26,20 +26,20 @@ const xmlParser = new XMLParser({
 
 
 export async function loadContentTree(contentDir = './content') {
-  const { added, changed, unchanged, deleted } = await loadXmlFilesWithStats(contentDir, contentStore.byFile);
+  const { added, changed, unchanged, deleted } = await loadXmlFilesWithStats(contentDir, contentStore.byProvenance);
 
   deleteNodesByProvenance([...Object.keys(deleted), ...Object.keys(changed)]);
 
   for (const [id, fileInfo] of Object.entries({ ...added, ...changed })) {
     const indexedIds = indexXml(fileInfo.content, id);
-    contentStore.byFile[id] = {
+    contentStore.byProvenance[id] = {
       nodes: indexedIds,
       ...fileInfo
     };
   }
 
   return {
-    parsed: contentStore.byFile,
+    parsed: contentStore.byProvenance,
     idMap: contentStore.byId
   };
 }
@@ -47,13 +47,13 @@ export async function loadContentTree(contentDir = './content') {
 // Helper: remove all nodes for deleted/changed files
 function deleteNodesByProvenance(relativePaths) {
   for (const relPath of relativePaths) {
-    const prev = contentStore.byFile[relPath];
+    const prev = contentStore.byProvenance[relPath];
     if (prev?.nodes) {
       for (const id of prev.nodes) {
         delete contentStore.byId[id];
       }
     }
-    delete contentStore.byFile[relPath];
+    delete contentStore.byProvenance[relPath];
   }
 }
 
@@ -67,7 +67,7 @@ function indexXml(xml, sourceId) {
 
     const attributes = node[':@'] || {};
 
-    if(attributes.ref) {
+    if (attributes.ref) {
       if (tag !== 'Use') {
         throw new Error(
           `Invalid 'ref' attribute on <${tag}> in ${sourceId}. Only <use> elements may have 'ref'.`
@@ -91,10 +91,10 @@ function indexXml(xml, sourceId) {
       if (extraAttrs.length > 0) {
         throw new Error(
           `<Use ref="..."> in ${sourceId} must not have additional attributes (${extraAttrs.join(', ')}). ` +
-            `In the future, these will go into an 'overrides' dictionary.`
+          `In the future, these will go into an 'overrides' dictionary.`
         );
       }
-      return {type: 'xblock', id: attributes.ref};
+      return { type: 'xblock', id: attributes.ref };
     }
 
     const id = attributes.id || attributes.url_name || createId(node);
@@ -125,7 +125,7 @@ function indexXml(xml, sourceId) {
     });
 
     indexed.push(id);
-    return {type: 'xblock', id};
+    return { type: 'xblock', id };
   }
 
   if (Array.isArray(parsedTree)) {

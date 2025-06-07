@@ -1,4 +1,5 @@
 import React from 'react';
+import { parseProvenance, formatProvenance } from '@/lib/types';
 
 export const Trace = ({
   children,
@@ -29,9 +30,23 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
 
   const tag = props?.nodeInfo?.node?.tag || 'N/A';
   const id = props?.nodeInfo?.node?.id || props.id || 'n/a';
-  const src = props?.nodeInfo?.node?.sourceFile;
+  const provenance = props?.nodeInfo?.node?.provenance || [];
   const prefix = process.env.NEXT_PUBLIC_DEBUG_LINK_PREFIX || '';
-  const link = src ? `${prefix}${src}` : null;
+
+  const parsed = provenance.map(p => parseProvenance(p));
+
+  const linkRenderers = {
+    file: (prov, label, key) => (
+      <a key={key} href={`${prefix}${prov.path}`}>{label}</a>
+    )
+  };
+
+  const links = parsed.map((prov, idx) => {
+    const label = parsed.length > 1 ? `src${idx + 1}` : 'src';
+    const renderer = linkRenderers[prov.type];
+    if (renderer) return renderer(prov, label, idx);
+    return <a key={idx} href={`${prefix}${formatProvenance(prov)}`}>{label}</a>;
+  });
 
   const handleLog = () => console.log('[props]', props);
 
@@ -40,7 +55,7 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
   return (
     <div style={{ border: '1px dashed #999', padding: 4, margin: 2 }}>
       <div style={{ fontSize: '0.75rem', marginBottom: 4 }}>
-        [{tag} / {id}] {link && <a href={link}>src</a>}
+        [{tag} / {id}] {links.map((l, i) => <React.Fragment key={i}>{l}{' '}</React.Fragment>)}
         <button onClick={handleLog} style={{ marginLeft: 4 }}>log</button>
       </div>
       {DebugComponent && <DebugComponent {...props} />}

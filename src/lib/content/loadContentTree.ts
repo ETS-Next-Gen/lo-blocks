@@ -6,6 +6,7 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import { transformTagName } from '@/lib/olx/xmlTransforms';
 
 import * as parsers from '@/lib/olx/parsers';
+import { Provenance, formatProvenance } from '@/lib/types';
 
 const defaultParser = parsers.xblocks.parser;
 
@@ -30,9 +31,9 @@ export async function loadContentTree(contentDir = './content') {
 
   deleteNodesByProvenance([...Object.keys(deleted), ...Object.keys(changed)]);
 
-  for (const [id, fileInfo] of Object.entries({ ...added, ...changed })) {
-    const indexedIds = indexXml(fileInfo.content, id);
-    contentStore.byProvenance[id] = {
+  for (const [srcId, fileInfo] of Object.entries({ ...added, ...changed })) {
+    const indexedIds = indexXml(fileInfo.content, [srcId]);
+    contentStore.byProvenance[srcId] = {
       nodes: indexedIds,
       ...fileInfo
     };
@@ -57,7 +58,8 @@ function deleteNodesByProvenance(relativePaths) {
   }
 }
 
-function indexXml(xml, sourceId) {
+
+function indexXml(xml: string, provenance: Provenance) {
   const parsedTree = xmlParser.parse(xml);
   const indexed = [];
 
@@ -70,7 +72,7 @@ function indexXml(xml, sourceId) {
     if (attributes.ref) {
       if (tag !== 'Use') {
         throw new Error(
-          `Invalid 'ref' attribute on <${tag}> in ${sourceId}. Only <use> elements may have 'ref'.`
+          `Invalid 'ref' attribute on <${tag}> in ${formatProvenance(provenance)}. Only <use> elements may have 'ref'.`
         );
       }
 
@@ -81,7 +83,7 @@ function indexXml(xml, sourceId) {
       );
       if (childKeys.length > 0) {
         throw new Error(
-          `<Use ref="..."> in ${sourceId} must not have child elements. Found children: ${childKeys.join(', ')}`
+          `<Use ref="..."> in ${formatProvenance(provenance)} must not have child elements. Found children: ${childKeys.join(', ')}`
         );
       }
 
@@ -90,7 +92,7 @@ function indexXml(xml, sourceId) {
       const extraAttrs = Object.keys(attributes).filter(attr => !allowedAttrs.includes(attr));
       if (extraAttrs.length > 0) {
         throw new Error(
-          `<Use ref="..."> in ${sourceId} must not have additional attributes (${extraAttrs.join(', ')}). ` +
+          `<Use ref="..."> in ${formatProvenance(provenance)} must not have additional attributes (${extraAttrs.join(', ')}). ` +
           `In the future, these will go into an 'overrides' dictionary.`
         );
       }
@@ -111,13 +113,13 @@ function indexXml(xml, sourceId) {
       rawParsed: node,
       tag,
       attributes,
-      sourceFile: sourceId, // TODO
+      provenance,
       // Actions
       parseNode,
       storeEntry: (id, entry) => {
         if (contentStore.byId[id]) {
           throw new Error(
-            `Duplicate ID "${id}" found in ${sourceId}. Each element must have a unique id.`
+            `Duplicate ID "${id}" found in ${formatProvenance(provenance)}. Each element must have a unique id.`
           );
         }
         contentStore.byId[id] = entry;

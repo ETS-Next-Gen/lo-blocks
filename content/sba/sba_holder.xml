@@ -1,0 +1,10 @@
+<Lesson id="sba_lesson" launchable="true" title="SBA Example Lesson">
+  <SideBarPanel>
+    <MainPane>
+      <Use ref="peg_sba" />
+    </MainPane>
+    <Sidebar>
+      <UseDynamic id="peg_sga_sidebar" target="eigen_q1"/>
+    </Sidebar>
+  </SideBarPanel>
+</Lesson>

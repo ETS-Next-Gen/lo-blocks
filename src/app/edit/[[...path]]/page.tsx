@@ -6,6 +6,7 @@ import { xml } from '@codemirror/lang-xml';
 import { useParams } from 'next/navigation';
 
 import Split from "react-split";
+import { ChatComponent, InputFooter } from '@/components/common/ChatComponent';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).
@@ -130,5 +131,18 @@ function FourPaneLayout({
 
 
 export default function EditPage() {
-  return (<FourPaneLayout Editor={<EditControl />} />)
+  const dummyMessages = [
+    { type: 'Line', speaker: 'Alice', text: 'Hello there!' },
+    { type: 'Line', speaker: 'Bob', text: 'Hi Alice!' },
+    { type: 'SystemMessage', text: 'End of chat.' },
+  ];
+
+  const chatFooter = <InputFooter id="dummy_footer" disabled />;
+
+  return (
+    <FourPaneLayout
+      Editor={<EditControl />}
+      Chat={<ChatComponent id="dummy_chat" messages={dummyMessages} footer={chatFooter} />}
+    />
+  );
 }

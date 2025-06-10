@@ -45,7 +45,13 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
       const rel = prov.path.split('/content/')[1] || prov.path;
       const href = `/edit/${encodeURI(rel)}`;
       return <Link key={key} href={href}>{label}</Link>;
-    }
+    },
+    git: (prov, label, key) => (
+      <a key={key} href={`${prefix}${formatProvenance(prov)}`}>{label}</a>
+    ),
+    postgres: (prov, label, key) => (
+      <a key={key} href={`${prefix}${formatProvenance(prov)}`}>{label}</a>
+    )
   };
 
   const links = parsed.map((prov, idx) => {

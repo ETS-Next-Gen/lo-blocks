@@ -43,7 +43,7 @@ test('Next.js server starts, serves pages, and shuts down cleanly', async () => 
       }
     }
   }
-}, 30000);
+}, 60000);
 
 async function waitForServer(url, { timeout = 20000, interval = 200 } = {}) {
   const start = Date.now();

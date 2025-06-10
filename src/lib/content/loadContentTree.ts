@@ -1,9 +1,9 @@
-import fs from 'fs/promises';
-import path from 'path';
 import crypto from 'crypto';
 import { XMLParser } from 'fast-xml-parser';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import { transformTagName } from '@/lib/olx/xmlTransforms';
+
+import { StorageProvider, FileStorageProvider } from '@/lib/storage';
 
 import * as parsers from '@/lib/olx/parsers';
 import { Provenance, formatProvenance } from '@/lib/types';
@@ -26,8 +26,8 @@ const xmlParser = new XMLParser({
 });
 
 
-export async function loadContentTree(contentDir = './content') {
-  const { added, changed, unchanged, deleted } = await loadXmlFilesWithStats(contentDir, contentStore.byProvenance);
+export async function loadContentTree(provider: StorageProvider = new FileStorageProvider('./content')) {
+  const { added, changed, unchanged, deleted } = await provider.loadXmlFilesWithStats(contentStore.byProvenance);
 
   deleteNodesByProvenance([...Object.keys(deleted), ...Object.keys(changed)]);
 
@@ -154,71 +154,3 @@ function createId(node) {
 }
 
 // Helper: walk directory, collect .xml/.olx files with stat info and detect changes
-export async function loadXmlFilesWithStats(dir, previous = {}) {
-  function olxFile(entry, fullPath) {
-    const fileName = entry.name || fullPath.split('/').pop();
-    return (
-      entry.isFile() &&
-      (fullPath.endsWith('.xml') || fullPath.endsWith('.olx')) &&
-      !fileName.includes('~') &&
-      !fileName.includes('#') &&
-      !fileName.startsWith('.')
-    );
-  }
-
-  function fileChanged(statA, statB) {
-    if (!statA || !statB) return true;
-    return (
-      statA.size !== statB.size ||
-      statA.mtimeMs !== statB.mtimeMs ||
-      statA.ctimeMs !== statB.ctimeMs
-    );
-  }
-
-  const found = {};
-  const added = {};
-  const changed = {};
-  const unchanged = {};
-
-  async function walk(currentDir) {
-    const entries = await fs.readdir(currentDir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(currentDir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else if (olxFile(entry, fullPath)) {
-        const id = `file://${fullPath}`;
-        const stat = await fs.stat(fullPath);
-        found[id] = true;
-        const prev = previous[id];
-        if (prev) {
-          if (fileChanged(prev.stat, stat)) {
-            const content = await fs.readFile(fullPath, 'utf-8');
-            changed[id] = { id, stat, content };
-          } else {
-            unchanged[id] = prev;
-          }
-        } else {
-          const content = await fs.readFile(fullPath, 'utf-8');
-          added[id] = { id, stat, content };
-        }
-      }
-    }
-  }
-
-  await walk(dir);
-
-  // Files in previous, but not found now = deleted
-  const deleted = Object.keys(previous)
-    .filter(id => !(id in found))
-    .reduce((out, id) => {
-      out[id] = previous[id];
-      return out;
-    }, {});
-
-  return { added, changed, unchanged, deleted };
-}
-
-export const __testables = {
-  loadXmlFilesWithStats
-};

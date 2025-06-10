@@ -2,6 +2,7 @@
 import stringify from 'json-stable-stringify';
 
 import { loadContentTree } from '../lib/content/loadContentTree';
+import { FileStorageProvider } from '../lib/storage';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,10 +11,11 @@ const contentDir = path.resolve('./content');
 
 async function main() {
   try {
-    const { tree, idMap } = await loadContentTree(contentDir);
+    const provider = new FileStorageProvider(contentDir);
+    const { parsed, idMap } = await loadContentTree(provider);
 
     const output = {
-      tree,
+      tree: parsed,
       idMap
     };
 

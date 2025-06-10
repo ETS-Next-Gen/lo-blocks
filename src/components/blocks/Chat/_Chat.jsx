@@ -166,22 +166,13 @@ const AdvanceFooter = ({ onAdvance, currentMessageIndex, totalMessages }) => {
 //
 // This will be pure React, with no state management, and reusable in other contexts.
 function ChatComponent({
-  kids,
   id,
+  messages,
   initialScrollPosition = 'bottom',
-  footer='input',
-  onSendMessage = () => {},
-  onAdvance = () => {},
+  footer,
   height = 'h-96',
-  currentMessageIndex = 0,
-  totalMessages = 0
 }) {
-  const conversation = kids.parsed.body;
   const chatContainerRef = useRef(null);
-  const [visibleRange, setVisibleRange] = useState({
-    start: 0,
-    end: conversation.length
-  });
 
   // Scroll to position on initial load
   useEffect(() => {
@@ -203,9 +194,9 @@ function ChatComponent({
   // Render the appropriate component based on message type
   const renderMessage = (message, index) => {
     // Check if this message is sequential (same speaker as previous)
-    const isSequential = index > 0 && 
-      conversation[index - 1].type === "Line" && 
-      conversation[index - 1].speaker === message.speaker;
+    const isSequential = index > 0 &&
+      messages[index - 1].type === "Line" &&
+      messages[index - 1].speaker === message.speaker;
 
     switch (message.type) {
       case "Line":
@@ -237,7 +228,7 @@ function ChatComponent({
       <div className="bg-white p-3 border-b border-gray-200">
         <div className="flex items-center">
           <span className="font-semibold">Chat</span>
-          <span className="ml-2 text-gray-500 text-sm">{conversation.length} messages</span>
+          <span className="ml-2 text-gray-500 text-sm">{messages.length} messages</span>
         </div>
       </div>
       
@@ -246,35 +237,45 @@ function ChatComponent({
         ref={chatContainerRef}
         className={`${height} overflow-y-auto p-4 bg-white`}
       >
-        {conversation.slice(visibleRange.start, visibleRange.end).map(renderMessage)}
+        {messages.map(renderMessage)}
       </div>
-      
-      {/* FooterInput area (for visual completeness) */}
-            {/* Customizable Footer */}
-      {footer === 'input' ? (
-        <InputFooter
-          id={`${id}Input`}
-          onSendMessage={onSendMessage} />
-      ) : footer === 'advance' ? (
-        <AdvanceFooter
-          id={`${id}Advance`}
-          onAdvance={onAdvance} 
-          currentMessageIndex={currentMessageIndex} 
-          totalMessages={totalMessages} 
-        />
-      ) : footer === 'disabled' ? (
-        <InputFooter
-          id={`${id}_Footer`}
-          disabled />
-      ) : (
-        // Custom footer component
-        footer
-      )}
+      { footer }
     </div>
   );
 }
 
 // This will be the redux state wrapper for ChatComponet
-export function _Chat({ id, fields, ...props }) {
-  return <ChatComponent id={ `${id}_component` } {...props} />;
+export function _Chat({ id, fields, kids, ...props }) {
+  const allMessages = kids.parsed.body;
+  const [visibleCount, setVisibleCount] = useState(1);
+  const messages = allMessages.slice(0, visibleCount);
+  const handleAdvance = () => setVisibleCount(c => Math.min(c + 1, allMessages.length));
+
+  let footer;
+
+  if(visibleCount === allMessages.length) {
+    footer = (<InputFooter id={`${id}_footer`} disabled />);
+  } else {
+    footer = (
+      <AdvanceFooter
+        id={`${id}_footer`}
+        onAdvance={handleAdvance}
+        currentMessageIndex={ visibleCount }
+        totalMessages={ allMessages.length }
+      />
+    );
+  }
+  /* Or:
+    <InputFooter
+    id={`${id}Input`}
+    onSendMessage={onSendMessage} />
+  */
+
+  return (
+    <ChatComponent
+      id={ `${id}_component` }
+      messages={ messages }
+      footer={ footer }
+      onAdvance = { handleAdvance } {...props} />
+  );
 }

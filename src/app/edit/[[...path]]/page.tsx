@@ -6,7 +6,7 @@ import { xml } from '@codemirror/lang-xml';
 import { useParams } from 'next/navigation';
 
 import Split from "react-split";
-import { ChatComponent, InputFooter } from '@/components/ChatComponent';
+import { ChatComponent, InputFooter } from '@/components/common/ChatComponent';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).

@@ -22,7 +22,7 @@ const getAvatarColor = (name) => {
 };
 
 // Avatar component
-export const Avatar = ({ name }) => {
+const Avatar = ({ name }) => {
   const initials = name
     .split(' ')
     .map(word => word[0])
@@ -40,7 +40,7 @@ export const Avatar = ({ name }) => {
 };
 
 // Message component for chat lines
-export const ChatMessage = ({ message, isSequential }) => {
+const ChatMessage = ({ message, isSequential }) => {
   return (
     <div className={`flex ${isSequential ? 'mt-1' : 'mt-4'}`}> 
       {!isSequential ? (
@@ -63,7 +63,7 @@ export const ChatMessage = ({ message, isSequential }) => {
 };
 
 // System message component
-export const SystemMessage = ({ message }) => {
+const SystemMessage = ({ message }) => {
   return (
     <div className="flex justify-center my-2">
       <span className="text-xs text-gray-500 bg-gray-100 py-1 px-3 rounded-full">
@@ -74,7 +74,7 @@ export const SystemMessage = ({ message }) => {
 };
 
 // Date separator component
-export const DateSeparator = ({ message }) => {
+const DateSeparator = ({ message }) => {
   return (
     <div className="flex justify-center my-4">
       <span className="text-xs text-gray-500 bg-gray-100 py-1 px-3 rounded-full">
@@ -230,5 +230,3 @@ export function ChatComponent({
     </div>
   );
 }
-
-export default ChatComponent;

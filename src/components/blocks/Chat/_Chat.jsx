@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { useState } from 'react';
-import { ChatComponent, InputFooter, AdvanceFooter } from '@/components/ChatComponent';
+import { ChatComponent, InputFooter, AdvanceFooter } from '@/components/common/ChatComponent';
 
 // Display components moved to ChatComponent.jsx
 

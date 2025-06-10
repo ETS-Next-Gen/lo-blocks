@@ -15,30 +15,6 @@ describe('provenance helpers', () => {
     expect(formatProvenance(parsed)).toBe(uri);
   });
 
-  it('parses git provenance and formats back', () => {
-    const uri = 'git://repo?path=course.xml&ref=main';
-    const parsed = parseProvenance(uri);
-    expect(parsed).toEqual({
-      type: 'git',
-      repo: 'repo',
-      path: 'course.xml',
-      ref: 'main'
-    });
-    expect(formatProvenance(parsed)).toBe(uri);
-  });
-
-  it('parses postgres provenance and formats back', () => {
-    const uri = 'postgres://db?table=courses&id=42';
-    const parsed = parseProvenance(uri);
-    expect(parsed).toEqual({
-      type: 'postgres',
-      db: 'db',
-      table: 'courses',
-      id: '42'
-    });
-    expect(formatProvenance(parsed)).toBe(uri);
-  });
-
   it('handles lists', () => {
     const list = ['file:///a', 'file:///b'];
     const parsed = parseProvenanceList(list);

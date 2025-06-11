@@ -15,7 +15,7 @@ This file defines the translation layer in Open edX. It's a mess of regular expr
 - Blank lines separate paragraphs.
 - Each problem component is separated by a line containing `---` (three dashes).
 - All XML output is ultimately wrapped in a single `<problem>...</problem>` block.
-- Each problem block becomes a major "grader type" (e.g., multiple choice, option grader, string grader, etc).
+- Each problem block becomes a major "grader type" (e.g., multiple choice, option grader, string grader, etc). In Open edX and LON-CAPA, this was called a "response type."
 
 ---
 

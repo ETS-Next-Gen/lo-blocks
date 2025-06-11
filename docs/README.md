@@ -33,9 +33,16 @@ const SimpleCheck = blocks.test({
 });
 ```
 
-The result of a grader is logged via the `UPDATE_CORRECTNESS` event and stored
-in Redux under the `correctness` field. Possible values are defined in
+The result of a grader is logged via the `UPDATE_CORRECT` event and stored
+in Redux under the `correct` field. Possible values are defined in
 `blocks.CORRECTNESS`.
+
+This terminology may change slightly by the time you read this for
+better alignment with existing systems, as well as for being more
+human-friendly.
+
+We did this slightly already; graders, in LON-CAPA and then edX, were
+called response types.
 
 Block Registry
 --------------

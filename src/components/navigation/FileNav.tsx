@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface TreeNode {
   name: string;
@@ -11,6 +12,7 @@ interface TreeNode {
 
 export default function FileNav() {
   const [tree, setTree] = useState<TreeNode | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     fetch('/api/files')
@@ -21,7 +23,10 @@ export default function FileNav() {
 
   function renderNode(node: TreeNode) {
     if (node.type === 'file') {
-      const href = '/edit/' + node.path.split('/').map(encodeURIComponent).join('/');
+      const nav = searchParams.get('nav');
+      const query = nav ? `?nav=${encodeURIComponent(nav)}` : '';
+      const href =
+        '/edit/' + node.path.split('/').map(encodeURIComponent).join('/') + query;
       return (
         <li key={node.path} className="ml-4 list-disc">
           <Link href={href} className="text-blue-600 hover:underline">

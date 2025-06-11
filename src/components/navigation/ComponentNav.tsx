@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface Entry {
   id: string;
@@ -17,6 +18,7 @@ function relPath(prov?: string[]): string | null {
 
 export default function ComponentNav() {
   const [entries, setEntries] = useState<Entry[] | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     fetch('/api/content/root')
@@ -34,7 +36,9 @@ export default function ComponentNav() {
     <ul className="space-y-1">
       {entries.map(e => {
         const rp = relPath(e.provenance);
-        const href = rp ? '/edit/' + rp.split('/').map(encodeURIComponent).join('/') : '#';
+        const nav = searchParams.get('nav');
+        const query = nav ? `?nav=${encodeURIComponent(nav)}` : '';
+        const href = rp ? '/edit/' + rp.split('/').map(encodeURIComponent).join('/') + query : '#';
         return (
           <li key={e.id}>
             <Link href={href} className="text-blue-600 hover:underline">

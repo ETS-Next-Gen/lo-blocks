@@ -111,6 +111,8 @@ export function childParser(fn, nameOverride) {
     value: `childParser(${nameOverride || fn.name || 'anonymous_child_parser'})`
   });
 
+  // This is a bit of a hack. I hate having kidParsers with fn.staticKids.
+  // They probably should return { parser, staticKids }.
   const mixin = { parser: wrapped };
   if (typeof fn.staticKids === 'function') {
     mixin.staticKids = fn.staticKids;

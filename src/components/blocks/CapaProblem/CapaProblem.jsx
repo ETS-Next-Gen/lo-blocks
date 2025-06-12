@@ -6,7 +6,7 @@ import _CapaProblem from './_CapaProblem';
 // TODO: Make this parser generic to CapaProblem, HTML, and others
 //
 // This is a minimal working version. This code should not be treated as clean or canonical.
-const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry, provenance, id }) {
+const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry, provenance, id, attributes }) {
   let inputIndex = 0;
   let graderIndex = 0;
   let nodeIndex = 0;
@@ -77,32 +77,16 @@ const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry,
     }
   });
 
-  // TODO:
-  // * Add <Status>
-  // * Move the standard fields (ActionButton, etc.) into _CapaProblem
+  // Expose grader targets on the problem itself so the React component
+  // can render controls like <ActionButton> and <Correctness> without
+  // inserting them into the static OLX tree.
   const graderIds = graders.map(g => g.id);
   if (graderIds.length > 0) {
-    const buttonId = `${id}_button`;
-    storeEntry(buttonId, {
-      id: buttonId,
-      tag: 'ActionButton',
-      attributes: { label: 'Check', targets: graderIds.join(',') },
-      provenance,
-      rawParsed: {},
-      kids: []
-    });
-    kidsParsed.push({ type: 'block', id: buttonId });
-
-    const correctnessId = `${id}_correctness`;
-    storeEntry(correctnessId, {
-      id: correctnessId,
-      tag: 'Correctness',
-      attributes: { targets: graderIds.join(',') },
-      provenance,
-      rawParsed: {},
-      kids: []
-    });
-    kidsParsed.push({ type: 'block', id: correctnessId });
+    // Mutate the attributes object that will be stored on the entry
+    // created by childParser. This avoids adding extra children while
+    // still communicating the target ids to the React component.
+    // eslint-disable-next-line no-param-reassign
+    attributes.targets = graderIds.join(',');
   }
 
   return kidsParsed;

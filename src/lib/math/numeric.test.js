@@ -17,9 +17,9 @@ it('handles ranges', () => {
 });
 
 it('grades numerical answers with tolerance', () => {
-  expect(gradeNumerical({answer:'5'}, '5').status).toBe(CORRECTNESS.CORRECT);
-  expect(gradeNumerical({answer:'5', tolerance:'1'}, '5.5').status).toBe(CORRECTNESS.CORRECT);
-  expect(gradeNumerical({answer:'[5,7)'} , '6').status).toBe(CORRECTNESS.CORRECT);
-  expect(gradeNumerical({answer:'[5,7)'}, '7').status).toBe(CORRECTNESS.INCORRECT);
-  expect(gradeNumerical({answer:'5'}, 'Hello').status).toBe(CORRECTNESS.INVALID);
+  expect(gradeNumerical({answer:'5'}, '5').correct).toBe(CORRECTNESS.CORRECT);
+  expect(gradeNumerical({answer:'5', tolerance:'1'}, '5.5').correct).toBe(CORRECTNESS.CORRECT);
+  expect(gradeNumerical({answer:'[5,7)'} , '6').correct).toBe(CORRECTNESS.CORRECT);
+  expect(gradeNumerical({answer:'[5,7)'}, '7').correct).toBe(CORRECTNESS.INCORRECT);
+  expect(gradeNumerical({answer:'5'}, 'Hello').correct).toBe(CORRECTNESS.INVALID);
 });

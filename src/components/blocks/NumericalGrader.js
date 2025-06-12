@@ -5,7 +5,7 @@ import * as lo_event from 'lo_event';
 import { gradeNumerical } from '@/lib/math/numeric.js';
 
 // TODO: Why is this correctness and not correct?
-export const fields = blocks.fields(['correct', 'status']);
+export const fields = blocks.fields(['correct', 'message']);
 
 // Block implementing a very simple numerical grader used for testing.
 const NumericalGrader = blocks.test({

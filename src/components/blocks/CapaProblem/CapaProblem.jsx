@@ -1,6 +1,6 @@
-import crypto from 'crypto';
-import { dev } from '@/lib/blocks';
+import { dev, reduxId } from '@/lib/blocks';
 import { childParser } from '@/lib/olx/parsers';
+import { COMPONENT_MAP } from '@/components/componentMap';
 import _CapaProblem from './_CapaProblem';
 
 function isXBlockTag(tag) {
@@ -9,15 +9,13 @@ function isXBlockTag(tag) {
   return first === first.toUpperCase();
 }
 
-const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry, provenance }) {
-  function createId(node) {
-    const attrs = node[':@'] || {};
-    if (attrs.id || attrs.url_name) return attrs.id || attrs.url_name;
-    const canonical = JSON.stringify(node);
-    return crypto.createHash('sha1').update(canonical).digest('hex');
-  }
+const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry, provenance, id }) {
+  let inputIndex = 0;
+  let graderIndex = 0;
+  let nodeIndex = 0;
+  const graders = [];
 
-  function parseChild(node) {
+  function parseChild(node, currentGrader = null) {
     if (node['#text'] !== undefined) {
       const text = node['#text'];
       if (text.trim() === '') return null;
@@ -27,17 +25,83 @@ const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry,
     if (!tag) return null;
     const attributes = node[':@'] || {};
     const kids = node[tag];
-    const childKids = Array.isArray(kids) ? kids.map(parseChild).filter(Boolean) : [];
 
-    if (isXBlockTag(tag)) {
-      const id = createId(node);
-      storeEntry(id, { id, tag, attributes, provenance, rawParsed: node, kids: childKids });
-      return { type: 'xblock', id };
+    if (tag === 'Label') {
+      const childKids = Array.isArray(kids) ? kids.map(n => parseChild(n, currentGrader)).filter(Boolean) : [];
+      return { type: 'html', tag: 'h1', attributes, kids: childKids };
+    }
+    if (tag === 'Description') {
+      const childKids = Array.isArray(kids) ? kids.map(n => parseChild(n, currentGrader)).filter(Boolean) : [];
+      return { type: 'html', tag: 'h3', attributes, kids: childKids };
     }
 
+    if (isXBlockTag(tag)) {
+      const spec = COMPONENT_MAP[tag]?.spec;
+      let defaultId;
+      if (spec?.isGrader) {
+        defaultId = `${id}_grader_${graderIndex++}`;
+      } else if (spec?.getValue) {
+        defaultId = `${id}_input_${inputIndex++}`;
+      } else {
+        defaultId = `${id}_${tag.toLowerCase()}_${nodeIndex++}`;
+      }
+      const xblockId = reduxId(attributes, defaultId);
+
+      const entry = { id: xblockId, tag, attributes: { ...attributes, id: xblockId }, provenance, rawParsed: node };
+      // Parse children with new grader context if needed
+      let mapping = currentGrader;
+      if (spec?.isGrader) {
+        mapping = { id: xblockId, entry, inputs: [] };
+        graders.push(mapping);
+      }
+      entry.kids = Array.isArray(kids)
+        ? kids.map(n => parseChild(n, mapping)).filter(Boolean)
+        : [];
+      if (spec?.getValue && currentGrader) {
+        currentGrader.inputs.push(xblockId);
+      }
+
+      storeEntry(xblockId, entry);
+      return { type: 'xblock', id: xblockId };
+    }
+
+    const childKids = Array.isArray(kids) ? kids.map(n => parseChild(n, currentGrader)).filter(Boolean) : [];
     return { type: 'html', tag, attributes, id: attributes.id, kids: childKids };
   }
-  return rawKids.map(parseChild).filter(Boolean);
+  const kidsParsed = rawKids.map(n => parseChild(n, null)).filter(Boolean);
+
+  graders.forEach(g => {
+    if (g.inputs.length > 0) {
+      g.entry.attributes.targets = g.inputs.join(',');
+    }
+  });
+
+  const graderIds = graders.map(g => g.id);
+  if (graderIds.length > 0) {
+    const buttonId = `${id}_button`;
+    storeEntry(buttonId, {
+      id: buttonId,
+      tag: 'ActionButton',
+      attributes: { label: 'Check', targets: graderIds.join(',') },
+      provenance,
+      rawParsed: {},
+      kids: []
+    });
+    kidsParsed.push({ type: 'xblock', id: buttonId });
+
+    const correctnessId = `${id}_correctness`;
+    storeEntry(correctnessId, {
+      id: correctnessId,
+      tag: 'Correctness',
+      attributes: { targets: graderIds.join(',') },
+      provenance,
+      rawParsed: {},
+      kids: []
+    });
+    kidsParsed.push({ type: 'xblock', id: correctnessId });
+  }
+
+  return kidsParsed;
 });
 
 function collectIds(nodes) {

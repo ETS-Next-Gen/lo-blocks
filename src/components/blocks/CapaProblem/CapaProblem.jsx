@@ -77,6 +77,9 @@ const capaParser = childParser(function capaProblemParser({ rawKids, storeEntry,
     }
   });
 
+  // TODO:
+  // * Add <Status>
+  // * Move the standard fields (ActionButton, etc.) into _CapaProblem
   const graderIds = graders.map(g => g.id);
   if (graderIds.length > 0) {
     const buttonId = `${id}_button`;

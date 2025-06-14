@@ -1,6 +1,5 @@
-// src/lib/blocks/selectors.ts
+// src/lib/state/selectors.ts
 'use client';
-// /src/lib/blocks/selectors.ts
 //
 // This file supercedes and obsoletes selectors.ts in lo_assess, which should eventually be removed.
 

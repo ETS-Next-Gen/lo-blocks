@@ -8,6 +8,7 @@ import { useRef, useEffect, useCallback } from 'react';
 
 import * as lo_event from 'lo_event';
 import { FieldSpec } from './fields';
+import { scopes } from './scopes';
 
 const UPDATE_INPUT = 'UPDATE_INPUT'; // TODO: Import
 const INVALIDATED_INPUT = 'INVALIDATED_INPUT'; // informational
@@ -55,6 +56,27 @@ export function useComponentSelector<T = any>(
   );
 }
 
+export function useComponentSettingSelector<T = any>(
+  tag: string,
+  selector: (state: any) => T = s => s,
+  options?: SelectorExtraParam<T>
+): T {
+  return useApplicationSelector(
+    s => selector(s?.componentSetting_state?.[tag]),
+    options
+  );
+}
+
+export function useSettingsSelector<T = any>(
+  selector: (state: any) => T = s => s,
+  options?: SelectorExtraParam<T>
+): T {
+  return useApplicationSelector(
+    s => selector(s?.settings_state),
+    options
+  );
+}
+
 // TODO: We should figure out where this goes.
 //
 // This should use redux.assertValidField, but we want to be mindful
@@ -66,42 +88,74 @@ export function useReduxInput(
   fallback = '',
   { updateValidator } = {}
 ) {
-  const id = props?.id;
+  const scope = field.scope ?? scopes.component;
   const fieldName = field.name;
-  const value = useComponentSelector(id, state =>
-    state && state[fieldName] !== undefined ? state[fieldName] : fallback
-  );
 
-  const selection = useComponentSelector(
-    id,
-    state => ({
-      selectionStart: state?.[`${fieldName}.selectionStart`] ?? 0,
-      selectionEnd: state?.[`${fieldName}.selectionEnd`] ?? 0
-    }),
-    shallowEqual
-  );
+  let id: string | undefined;
+  if (scope === scopes.component) id = props?.id;
+  const tag = props?.spec?.OLXName;
+
+  const selectorFn = (state: any) =>
+    state && state[fieldName] !== undefined ? state[fieldName] : fallback;
+
+  let value: any;
+  let selection: any;
+
+  switch (scope) {
+    case scopes.componentSetting:
+      value = useComponentSettingSelector(tag, selectorFn);
+      selection = useComponentSettingSelector(
+        tag,
+        s => ({
+          selectionStart: s?.[`${fieldName}.selectionStart`] ?? 0,
+          selectionEnd: s?.[`${fieldName}.selectionEnd`] ?? 0
+        }),
+        shallowEqual
+      );
+      break;
+    case scopes.system:
+      value = useSettingsSelector(selectorFn);
+      selection = useSettingsSelector(
+        s => ({
+          selectionStart: s?.[`${fieldName}.selectionStart`] ?? 0,
+          selectionEnd: s?.[`${fieldName}.selectionEnd`] ?? 0
+        }),
+        shallowEqual
+      );
+      break;
+    case scopes.component:
+    default:
+      value = useComponentSelector(id, selectorFn);
+      selection = useComponentSelector(
+        id,
+        s => ({
+          selectionStart: s?.[`${fieldName}.selectionStart`] ?? 0,
+          selectionEnd: s?.[`${fieldName}.selectionEnd`] ?? 0
+        }),
+        shallowEqual
+      );
+  }
 
   const onChange = useCallback((event) => {
     const val = event.target.value;
     const selStart = event.target.selectionStart;
     const selEnd = event.target.selectionEnd;
-    if (updateValidator && !updateValidator(val)) {
-      lo_event.logEvent(INVALIDATED_INPUT, {
-        id,
-        [fieldName]: val,
-        [`${fieldName}.selectionStart`]: selStart,
-        [`${fieldName}.selectionEnd`]: selEnd
-      });
-      return;
-    }
-
-    lo_event.logEvent(UPDATE_INPUT, {
-      id,
+    const payload: any = {
+      scope,
       [fieldName]: val,
       [`${fieldName}.selectionStart`]: selStart,
       [`${fieldName}.selectionEnd`]: selEnd
-    });
-  }, [id, fieldName, updateValidator]);
+    };
+    if (scope === scopes.component) payload.id = id;
+    if (scope === scopes.componentSetting) payload.tag = tag;
+
+    if (updateValidator && !updateValidator(val)) {
+      lo_event.logEvent(INVALIDATED_INPUT, payload);
+      return;
+    }
+
+    lo_event.logEvent(UPDATE_INPUT, payload);
+  }, [id, tag, fieldName, updateValidator, scope]);
 
   const ref = useRef();
 

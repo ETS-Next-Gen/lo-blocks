@@ -19,57 +19,73 @@ export type ProvenanceStruct = FileProvenance | GenericProvenance;
 
 export type ProvenanceItem = string | ProvenanceStruct;
 
-export function parseProvenance(uri: string): ProvenanceStruct {
-  const [type, suffix] = uri.split('://');
-  if (!type || suffix === undefined) {
-    throw new Error(`Invalid provenance URI: ${uri}`);
-  }
-
-  const converters: Record<string, (suf: string) => Record<string, any>> = {
-    file: suf => {
-      const [pathPart, queryPart] = suf.split('?');
-      const result: Record<string, any> = {
-        path: pathPart.startsWith('/') ? pathPart : `/${pathPart}`
-      };
-      if (queryPart) {
-        const params = new URLSearchParams(queryPart);
-        if (params.has('path')) {
-          throw new Error(`Malformed file provenance: path duplicated in query`);
-        }
-        params.forEach((v, k) => {
-          result[k] = v;
-        });
-      }
-      return result;
-    }
-  };
-
-  if (!(type in converters)) {
-    throw new Error(`Unknown provenance type: ${type}`);
-  }
-
-  return { type, ...converters[type](suffix) } as ProvenanceStruct;
+export interface FieldInfo {
+  type: 'field';
+  name: string;
+  event: string;
+  scope: import('./state/scopes').Scope;
 }
 
-export function parseProvenanceList(list: string[]): ProvenanceStruct[] {
-  return list.map(parseProvenance);
+export interface FieldInfoByField { [name: string]: FieldInfo; }
+export interface FieldInfoByEvent { [event: string]: FieldInfo; }
+
+export interface Fields {
+  fieldInfoByField: FieldInfoByField;
+  fieldInfoByEvent: FieldInfoByEvent;
 }
 
-export function formatProvenance(item: ProvenanceStruct | string): string {
-  if (typeof item === 'string') return item;
-  const converters: Record<string, (obj: any) => string> = {
-    file: (obj: FileProvenance) => {
-      const { path, type, ...rest } = obj;
-      const query = new URLSearchParams(rest).toString();
-      return `file://${path}${query ? `?${query}` : ''}`;
-    }
-  };
-
-  const conv = converters[item.type];
-  if (!conv) throw new Error(`Unknown provenance type: ${item.type}`);
-  return conv(item);
+export interface BlockBlueprint {
+  name?: string;
+  namespace: string;
+  component?: React.ComponentType<any>;
+  action?: Function;
+  isGrader?: boolean;
+  parser?: Function;
+  staticKids?: Function;
+  reducers?: Function[];
+  fields?: Fields;
+  getValue?: Function;
+  extraDebug?: React.ComponentType<any>;
+  description?: string;
 }
 
-export function formatProvenanceList(list: (ProvenanceStruct | string)[]): string[] {
-  return list.map(formatProvenance);
+export interface Block {
+  component: React.ComponentType<any>;
+  _isBlock: true;
+  action?: Function;
+  parser?: Function;
+  staticKids?: Function;
+  reducers: Function[];
+  getValue?: Function;
+  fields: FieldInfoByField;
+  OLXName: string;
+  description?: string;
+  namespace: string;
+  blueprint: BlockBlueprint;
+}
+
+export type BlueprintKidEntry =
+  | { type: 'block'; id: string }
+  | { type: 'text'; text: string }
+  | { type: 'xml'; xml: string }
+  | { type: 'cdata'; value: string }
+  | { type: 'html'; tag: string; attributes: any; kids: BlueprintKidEntry[] }
+  | { type: 'node'; rawParsed: any };
+
+export interface NodeInfo {
+  node: any;
+  renderedKids: Record<string, NodeInfo>;
+  parent?: NodeInfo;
+  blueprint: BlockBlueprint;
+}
+
+export interface PropType {
+  id: string;
+  kids?: BlueprintKidEntry[];
+  idMap: Record<string, any>;
+  blueprint: BlockBlueprint;
+  fields?: FieldInfoByField;
+  nodeInfo: NodeInfo;
+  debug?: boolean;
+  [key: string]: any;
 }

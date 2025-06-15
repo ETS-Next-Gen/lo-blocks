@@ -5,13 +5,13 @@ const { normalizeTargetIds, normalizeInfer} = __testables;
 
 // Minimal mock node tree
 const tree = {
-  node: { id: 'A', spec: {isAction: true} },
+  node: { id: 'A', blueprint: {isAction: true} },
   renderedKids: {
     B: {
       node: { id: 'B' },
       renderedKids: {
         D: {
-          node: { id: 'D', spec: {isAction: true} },
+          node: { id: 'D', blueprint: {isAction: true} },
           renderedKids: {},
           // parent assigned below
         },
@@ -19,7 +19,7 @@ const tree = {
       // parent assigned below
     },
     C: {
-      node: { id: 'C', spec: {isAction: true} },
+      node: { id: 'C', blueprint: {isAction: true} },
       renderedKids: {},
       // parent assigned below
     },
@@ -145,7 +145,7 @@ describe('inferRelatedNodes', () => {
     // Only nodes with isAction: true
     const result = inferRelatedNodes(
       { nodeInfo: tree },
-      { selector: n => n.node.spec && n.node.spec.isAction, infer: true }
+      { selector: n => n.node.blueprint && n.node.blueprint.isAction, infer: true }
     );
     expect(result.sort()).toEqual(['C', 'D']);
   });

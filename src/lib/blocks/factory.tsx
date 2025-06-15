@@ -15,7 +15,7 @@ const ReduxFieldsReturn = z.object({
 }).strict();
 
 // === Schema ===
-export const BlockConfigSchema = z.object({
+export const BlockBlueprintSchema = z.object({
   name: z.string().optional(),
   namespace: z.string().nonempty(),
   component: z.custom<React.ComponentType<any>>().optional(),
@@ -30,7 +30,7 @@ export const BlockConfigSchema = z.object({
   description: z.string().optional(),
 }).strict();
 
-export type BlockConfig = z.infer<typeof BlockConfigSchema>;
+export type BlockBlueprint = z.infer<typeof BlockBlueprintSchema>;
 
 function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
   if (field !== undefined && field !== null) {
@@ -39,8 +39,8 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 }
 
 // === Main factory ===
-function createBlock(config: BlockConfig): React.ComponentType<any> {
-  const parsed = BlockConfigSchema.parse(config);
+function createBlock(config: BlockBlueprint): React.ComponentType<any> {
+  const parsed = BlockBlueprintSchema.parse(config);
   const Component = config.component ?? (() => null);
 
   // === Strict name resolution ===
@@ -76,7 +76,7 @@ function createBlock(config: BlockConfig): React.ComponentType<any> {
     description: parsed.description,
     namespace: parsed.namespace,
 
-    spec: config
+    blueprint: config
   }
 
 
@@ -86,5 +86,5 @@ function createBlock(config: BlockConfig): React.ComponentType<any> {
 }
 
 export const blocks = (namespace: string) =>
-  (config: Omit<BlockConfig, 'namespace'>) =>
+  (config: Omit<BlockBlueprint, 'namespace'>) =>
     createBlock({ ...config, namespace });

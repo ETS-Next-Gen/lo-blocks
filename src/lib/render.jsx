@@ -85,7 +85,7 @@ export function render({ node, idMap, key, nodeInfo, debug }) {
   // TODO: Check if this causes extra renders, and if we need to memoize anything
   let childNodeInfo = nodeInfo.renderedKids[node.id];
   if (!childNodeInfo) {
-    childNodeInfo = { node, renderedKids: {}, parent: nodeInfo, spec: COMPONENT_MAP[tag].spec };
+    childNodeInfo = { node, renderedKids: {}, parent: nodeInfo, blueprint: COMPONENT_MAP[tag].blueprint };
     nodeInfo.renderedKids[node.id] = childNodeInfo;
   }
 
@@ -97,13 +97,13 @@ export function render({ node, idMap, key, nodeInfo, debug }) {
   };
 
   return (
-    <DebugWrapper props={wrapperProps} spec={COMPONENT_MAP[tag].spec}>
+    <DebugWrapper props={wrapperProps} blueprint={COMPONENT_MAP[tag].blueprint}>
       <Component
         { ...attributes }
         kids={ kids }
         idMap={ idMap }
-        spec={ COMPONENT_MAP[tag].spec }
-        fields={ COMPONENT_MAP[tag].spec?.fields?.fieldInfoByField }
+        blueprint={ COMPONENT_MAP[tag].blueprint }
+        fields={ COMPONENT_MAP[tag].blueprint?.fields?.fieldInfoByField }
         nodeInfo={ childNodeInfo }
         debug={ debug }
       />

@@ -207,3 +207,4 @@ export class PostgresStorageProvider implements StorageProvider {
   }
 }
 
+export * from './provenance';

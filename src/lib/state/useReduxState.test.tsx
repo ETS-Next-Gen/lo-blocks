@@ -12,7 +12,7 @@ const systemFields = fields([{ name: 'lang', event: 'SET_LANG', scope: scopes.sy
 
 // Baseline props with enough context for tests not to fail
 const props = {
-  id: 'sentinelId', spec: { OLXName: 'sentinelTag' }
+  id: 'sentinelId', blueprint: { OLXName: 'sentinelTag' }
 };
 
 // TODO: These should probably be streamlined into one `it` statement which
@@ -51,7 +51,7 @@ describe('useReduxState integration', () => {
     const { result } = renderHook(
       () =>
         useReduxState(
-          { id: 'vid1', spec: { OLXName: 'video' } },
+          { id: 'vid1', blueprint: { OLXName: 'video' } },
           settingFields.fieldInfoByField.speed,
           1
         ),

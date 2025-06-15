@@ -7,7 +7,7 @@ import { ignore } from "@/lib/content/parsers";
 function _Correctness(props) {
   const { targets, infer } = props;
   const ids = inferRelatedNodes(props, {
-    selector: n => n.node.spec?.isGrader,
+    selector: n => n.node.blueprint?.isGrader,
     infer,
     targets
   });

@@ -7,7 +7,8 @@ import { transformTagName } from '@/lib/content/xmlTransforms';
 import { StorageProvider, FileStorageProvider } from '@/lib/storage';
 
 import * as parsers from '@/lib/content/parsers';
-import { Provenance, formatProvenance } from '@/lib/types';
+import { Provenance } from '@/lib/types';
+import { formatProvenance } from '@/lib/storage/provenance';
 
 const defaultParser = parsers.blocks.parser;
 

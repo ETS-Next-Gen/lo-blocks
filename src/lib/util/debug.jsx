@@ -12,7 +12,7 @@ export const Trace = ({
   props = {},
   header
 }) => {
-  const [debug] = useReduxState({ id: 'settings' }, settingsFields.fieldInfoByField.debug, false);
+  const [debug] = useReduxState(props, settingsFields.fieldInfoByField.debug, false);
   if (!debug) return null;
 
   let headerContent = header;
@@ -33,7 +33,7 @@ export const Trace = ({
 };
 
 export const DebugWrapper = ({ props = {}, blueprint, children }) => {
-  const [debug] = useReduxState({ id: 'settings' }, settingsFields.fieldInfoByField.debug, false);
+  const [debug] = useReduxState(props, settingsFields.fieldInfoByField.debug, false);
   if (!debug) return <>{children}</>;
 
   const tag = props?.nodeInfo?.node?.tag || 'N/A';
@@ -95,7 +95,7 @@ export function DisplayError({ props={}, name = 'Error', message, technical = nu
     }
   };
 
-  const [debug] = useReduxState({ id: 'settings' }, settingsFields.fieldInfoByField.debug, false);
+  const [debug] = useReduxState(props, settingsFields.fieldInfoByField.debug, false);
 
   // In debug mode, crash hard
   if (debug) {

@@ -112,7 +112,8 @@ export function assertValidField(field) {
 export function useReduxState(
   props,
   field: FieldInfo,
-  fallback
+  fallback,
+  { id, tag }: { id?: string; tag?: string } = {}
 ) {
   const scope = field.scope ?? scopes.component;
   const fieldName = field.name;
@@ -124,16 +125,16 @@ export function useReduxState(
 
   const value = useFieldSelector(props, field, selectorFn, { fallback });
 
-  const id = scope === scopes.component ? idResolver.reduxId(props?.id) : undefined;
-  const tag = props?.blueprint?.OLXName;
+  const resolvedId = id ?? (scope === scopes.component ? idResolver.reduxId(props) : undefined);
+  const resolvedTag = tag ?? props?.blueprint?.OLXName;
 
   const setValue = (newValue) => {
     const eventType = field.event;
     lo_event.logEvent(eventType, {
       scope,
       [fieldName]: newValue,
-      ...(scope === scopes.component ? { id } : {}),
-      ...(scope === scopes.componentSetting ? { tag } : {})
+      ...(scope === scopes.component ? { id: resolvedId } : {}),
+      ...(scope === scopes.componentSetting ? { tag: resolvedTag } : {})
     });
   };
 

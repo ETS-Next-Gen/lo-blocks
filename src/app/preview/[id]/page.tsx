@@ -11,7 +11,7 @@ import { settingsFields } from '@/lib/state/settings';
 export default function PreviewPage() {
   const params = useParams();
   const id = params?.id as string;
-  const [debug] = useReduxState({ id: 'settings' }, settingsFields.fieldInfoByField.debug, false);
+  const [debug] = useReduxState({}, settingsFields.fieldInfoByField.debug, false);
 
   const [idMap, setIdMap] = useState(null);
   const [parsed, setParsed] = useState(null);

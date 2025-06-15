@@ -8,7 +8,7 @@ import { store } from '@/lib/state/store';
 import { settingsFields } from '@/lib/state/settings';
 
 const reduxStore = store.init({
-  extraFields: Object.values(settingsFields.fieldInfoByField)
+  extraFields: settingsFields
 });
 
 const StoreWrapper = ({ children }) => (

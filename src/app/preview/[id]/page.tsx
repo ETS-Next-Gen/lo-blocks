@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { render, makeRootNode } from '@/lib/render';
+import { COMPONENT_MAP } from '@/components/componentMap';
 import AppHeader from '@/components/common/AppHeader';
 import { useReduxState } from '@/lib/blocks';
 import { settingsFields } from '@/lib/state/settings';
@@ -45,7 +46,7 @@ export default function PreviewPage() {
       <div className="p-6 flex-1 overflow-auto">
         <h1 className="text-xl font-bold mb-4">Preview: {id}</h1>
         <div className="space-y-4">
-          {render({ node: id, idMap, nodeInfo: makeRootNode() })}
+          {render({ node: id, idMap, nodeInfo: makeRootNode(), componentMap: COMPONENT_MAP })}
         </div>
 
         {debug && (

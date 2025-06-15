@@ -1,16 +1,14 @@
 // src/components/blocks/HelloAction.js
 import * as parsers from '@/lib/content/parsers';
-import { test } from '@/lib/blocks/namespaces';
-import { action as actionMixin } from '@/lib/blocks/actionsBase.jsx';
-import { NoopBlock } from '@/lib/blocks/NoopBlock';
+import * as blocks from '@/lib/blocks';
 
-const HelloAction = test({
+const HelloAction = blocks.test({
   ...parsers.ignore,
-  ...actionMixin({
+  ...blocks.action({
     action: ()=>alert("Hello, World!")
   }),
   name: 'HelloAction',
-  component: NoopBlock
+  component: blocks.NoopBlock
 });
 
 export default HelloAction;

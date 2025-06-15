@@ -9,8 +9,8 @@ export function action({ action }) {
   return { action };
 }
 
-export function isAction(spec) {
-  return typeof spec?.action === "function";
+export function isAction(blueprint) {
+  return typeof blueprint?.action === "function";
 }
 
 // Mix-in to make a block spec an input
@@ -18,8 +18,8 @@ export function input({ getValue }) {
   return { getValue };
 }
 
-export function isInput(spec) {
-  return typeof spec?.getValue === "function";
+export function isInput(blueprint) {
+  return typeof blueprint?.getValue === "function";
 }
 
 // This does a full tree search, which is not performant. Probably doesn't matter
@@ -52,7 +52,7 @@ export function grader({ grader, infer = true } = {}) {
     const inputIds = inferRelatedNodes(
       { ...props, nodeInfo: targetNodeInfo },
       {
-        selector: n => n.spec && isInput(n.spec),
+        selector: n => n.blueprint && isInput(n.blueprint),
         infer,
         targets: targetAttributes?.targets,
       }
@@ -61,8 +61,8 @@ export function grader({ grader, infer = true } = {}) {
     const state = reduxLogger.store.getState().application_state.component_state;
     const values = inputIds.map(id => {
       const inst = props.idMap[id];
-      const spec = COMPONENT_MAP[inst.tag];
-      return spec.getValue(state, id);
+      const blueprint = COMPONENT_MAP[inst.tag];
+      return blueprint.getValue(state, id);
     });
 
     /*
@@ -114,17 +114,17 @@ export function grader({ grader, infer = true } = {}) {
 
 export function executeNodeActions(props) {
   const ids = inferRelatedNodes( props, {
-    selector: n => isAction(n.spec),
+    selector: n => isAction(n.blueprint),
     infer: props.infer,
     targets: props.targets
   });
   ids.forEach(targetId => {
     const targetInstance = props.idMap[targetId];
-    const targetSpec = COMPONENT_MAP[targetInstance.tag];
-    targetSpec.action({
+    const targetBlueprint = COMPONENT_MAP[targetInstance.tag];
+    targetBlueprint.action({
       targetId,
       targetInstance,
-      targetSpec,
+      targetBlueprint,
       props
     });
   });

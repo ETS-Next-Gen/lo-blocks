@@ -1,5 +1,5 @@
 // src/lib/types.test.ts
-import { parseProvenance, formatProvenance, parseProvenanceList, formatProvenanceList } from './types';
+import { parseProvenance, formatProvenance, parseProvenanceList, formatProvenanceList } from './storage/provenance';
 
 describe('provenance helpers', () => {
   it('parses file URIs with and without query', () => {

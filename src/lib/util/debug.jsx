@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { parseProvenance, formatProvenance } from '@/lib/types';
+import { parseProvenance, formatProvenance } from '@/lib/storage/provenance';
 
 export const Trace = ({
   children,
@@ -29,7 +29,7 @@ export const Trace = ({
   );
 };
 
-export const DebugWrapper = ({ props = {}, spec, children }) => {
+export const DebugWrapper = ({ props = {}, blueprint, children }) => {
   if (!props?.debug) return <>{children}</>;
 
   const tag = props?.nodeInfo?.node?.tag || 'N/A';
@@ -58,7 +58,7 @@ export const DebugWrapper = ({ props = {}, spec, children }) => {
 
   const handleLog = () => console.log('[props]', props);
 
-  const DebugComponent = spec?.extraDebug;
+  const DebugComponent = blueprint?.extraDebug;
 
   return (
     <div style={{ border: '1px dashed #999', padding: 4, margin: 2 }}>

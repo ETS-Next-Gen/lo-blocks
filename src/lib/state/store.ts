@@ -6,7 +6,7 @@ import * as lo_event from 'lo_event';
 import * as debug from 'lo_event/lo_event/debugLog.js';
 import { consoleLogger } from 'lo_event/lo_event/consoleLogger.js';
 import { scopes, Scope } from './scopes';
-import type { FieldSpec } from './fields';
+import type { FieldInfo } from '../types';
 
 const initialState = {
   component_state: {},
@@ -45,7 +45,7 @@ export const updateResponseReducer = (state = initialState, action) => {
   }
 };
 
-function collectEventTypes(extraFields: (FieldSpec | string)[] = []) {
+function collectEventTypes(extraFields: (FieldInfo | string)[] = []) {
   const componentEventTypes = Object.values(COMPONENT_MAP)
     .flatMap(entry =>
       entry.fields ? Object.values(entry.fields).map(info => info.event) : []
@@ -65,7 +65,7 @@ function collectEventTypes(extraFields: (FieldSpec | string)[] = []) {
   ]));
 }
 
-function configureStore({ extraFields = [] }: { extraFields?: (FieldSpec | string)[] } = {}) {
+function configureStore({ extraFields = [] }: { extraFields?: (FieldInfo | string)[] } = {}) {
   const allEventTypes = collectEventTypes(extraFields);
   reduxLogger.registerReducer(
     allEventTypes,

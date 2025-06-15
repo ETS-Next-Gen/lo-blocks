@@ -4,10 +4,10 @@ import * as idResolver from '../blocks/idResolver';
 
 import { useComponentSelector, useFieldSelector } from './selectors.ts';
 import { Scope, scopes } from '../state/scopes';
-import { FieldSpec } from './fields';
+import { FieldInfo, FieldInfoByEvent, FieldInfoByField } from '../types';
 
-const _fieldInfoByField: Record<string, FieldSpec> = {};
-const _fieldInfoByEvent: Record<string, FieldSpec> = {};
+const _fieldInfoByField: FieldInfoByField = {};
+const _fieldInfoByEvent: FieldInfoByEvent = {};
 
 /**
  * Converts a camelCase or PascalCase field name into a default event name string.
@@ -37,7 +37,7 @@ function fieldNameToDefaultEventName(name) {
  * @param {Object} newMap - The new mapping to check.
  * @param {string} type - A string label for error clarity ("field" or "event").
  */
-function checkConflicts(globalMap: Record<string, FieldSpec>, newMap: Record<string, FieldSpec>, type = "field") {
+function checkConflicts(globalMap: FieldInfoByField | FieldInfoByEvent, newMap: FieldInfoByField | FieldInfoByEvent, type = "field") {
   for (const [key, value] of Object.entries(newMap)) {
     if (globalMap.hasOwnProperty(key)) {
       const existing = globalMap[key];
@@ -55,7 +55,7 @@ function checkConflicts(globalMap: Record<string, FieldSpec>, newMap: Record<str
 }
 
 export function fields(fieldList: (string | { name: string; event?: string; scope?: Scope })[]) {
-  const infos: FieldSpec[] = fieldList.map(item => {
+  const infos: FieldInfo[] = fieldList.map(item => {
     if (typeof item === 'string') {
       return { type: 'field', name: item, event: fieldNameToDefaultEventName(item), scope: scopes.component };
     }
@@ -65,8 +65,8 @@ export function fields(fieldList: (string | { name: string; event?: string; scop
     return { type: 'field', name, event, scope };
   });
 
-  const fieldInfoByField: Record<string, FieldSpec> = {};
-  const fieldInfoByEvent: Record<string, FieldSpec> = {};
+  const fieldInfoByField: FieldInfoByField = {};
+  const fieldInfoByEvent: FieldInfoByEvent = {};
 
   for (const info of infos) {
     fieldInfoByField[info.name] = info;
@@ -94,7 +94,7 @@ export function assertValidField(field) {
 
 export function useReduxState(
   props,
-  field: FieldSpec,
+  field: FieldInfo,
   fallback
 ) {
   const scope = field.scope ?? scopes.component;
@@ -108,7 +108,7 @@ export function useReduxState(
   const value = useFieldSelector(props, field, selectorFn, { fallback });
 
   const id = scope === scopes.component ? idResolver.reduxId(props?.id) : undefined;
-  const tag = props?.spec?.OLXName;
+  const tag = props?.blueprint?.OLXName;
 
   const setValue = (newValue) => {
     const eventType = field.event;

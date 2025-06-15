@@ -32,13 +32,13 @@ function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry }) 
     */
 
     if (isBlockTag(tag)) {
-      const spec = COMPONENT_MAP[tag]?.spec;
+      const blueprint = COMPONENT_MAP[tag]?.blueprint;
       let defaultId;
       // TODO: These should not be special cases, but data
       // As is, we can't reuse this for an HTML component
-      if (spec?.isGrader) {
+      if (blueprint?.isGrader) {
         defaultId = `${id}_grader_${graderIndex++}`;
-      } else if (spec?.getValue) {
+      } else if (blueprint?.getValue) {
         // TODO: Probably we should map input IDs to grader IDs. e.g.:
         // [problem_id]_input_[grader_idx]_[input_idx]
         defaultId = `${id}_input_${inputIndex++}`;
@@ -53,14 +53,14 @@ function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry }) 
       const entry = { id: blockId, tag, attributes: { ...attributes, id: blockId }, provenance, rawParsed: node };
       // Parse children with new grader context if needed
       let mapping = currentGrader;
-      if (spec?.isGrader) {
+      if (blueprint?.isGrader) {
         mapping = { id: blockId, entry, inputs: [] };
         graders.push(mapping);
       }
       entry.kids = Array.isArray(kids)
         ? kids.map(n => parseChild(n, mapping)).filter(Boolean)
         : [];
-      if (spec?.getValue && currentGrader) {
+      if (blueprint?.getValue && currentGrader) {
         currentGrader.inputs.push(blockId);
       }
 

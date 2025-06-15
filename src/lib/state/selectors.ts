@@ -8,7 +8,7 @@ import { useRef, useEffect, useCallback } from 'react';
 import * as idResolver from '../blocks/idResolver';
 
 import * as lo_event from 'lo_event';
-import { FieldSpec } from './fields';
+import { FieldInfo } from '../types';
 import { scopes } from './scopes';
 
 const UPDATE_INPUT = 'UPDATE_INPUT'; // TODO: Import
@@ -65,14 +65,14 @@ export function useComponentSelector<T = any>(
 
 export function useFieldSelector<T = any>(
   props: any,  // TODO: Change to props type
-  field: FieldSpec,
+  field: FieldInfo,
   selector: (state: any) => T = s => s,
   options?: FieldSelectorOptions<T>
 ): T {
   const { id: optId, tag: optTag, ...rest } = normalizeOptions(options);
   const scope = field.scope; // Default of scopes.component is handled in field creation
   const id = optId ?? idResolver.reduxId(props);
-  const tag = optTag ?? props.spec.OLXName;
+  const tag = optTag ?? props.blueprint.OLXName;
 
   switch (scope) {
     case scopes.componentSetting:
@@ -101,7 +101,7 @@ export function useFieldSelector<T = any>(
 
 export function useReduxInput(
   props,
-  field: FieldSpec,
+  field: FieldInfo,
   fallback = '',
   { updateValidator } = {}
 ) {
@@ -124,7 +124,7 @@ export function useReduxInput(
   );
 
   const id = idResolver.reduxId(props);
-  const tag = props?.spec.OLXName;
+  const tag = props?.blueprint.OLXName;
 
   const onChange = useCallback((event) => {
     const val = event.target.value;

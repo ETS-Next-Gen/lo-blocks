@@ -3,6 +3,7 @@ import * as lo_event from 'lo_event';
 import * as idResolver from '../blocks/idResolver';
 
 import { useComponentSelector, useFieldSelector } from './selectors.ts';
+import { useCallback } from 'react';
 import { Scope, scopes } from '../state/scopes';
 import { FieldInfo, FieldInfoByEvent, FieldInfoByField } from '../types';
 
@@ -139,6 +140,17 @@ export function useReduxState(
   };
 
   return [value, setValue];
+}
+
+export function useReduxCheckbox(
+  props,
+  field: FieldInfo,
+  fallback = false,
+  opts: { id?: string; tag?: string } = {}
+) {
+  const [checked, setChecked] = useReduxState(props, field, fallback, opts);
+  const onChange = useCallback((event) => setChecked(event.target.checked), [setChecked]);
+  return [checked, { name: field.name, checked, onChange }];
 }
 
 /** @internal Used only for testing */

@@ -4,8 +4,7 @@ import React from 'react';
 
 import { Provider } from 'react-redux';
 
-import { store } from '@/lib/state/store';
-import { settingsFields } from '@/lib/state/settings';
+import { store, settingsFields } from '@/lib/state';
 
 const reduxStore = store.init({
   extraFields: settingsFields

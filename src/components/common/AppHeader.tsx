@@ -3,8 +3,7 @@
 
 import Link from 'next/link';
 import { Home, UserCircle } from 'lucide-react';
-import { useReduxCheckbox } from '@/lib/blocks';
-import { settingsFields } from '@/lib/state/settings';
+import { useReduxCheckbox, settingsFields } from '@/lib/state';
 
 export default function AppHeader() {
   const [, debugProps] = useReduxCheckbox({}, settingsFields.fieldInfoByField.debug, false,

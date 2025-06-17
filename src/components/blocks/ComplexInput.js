@@ -1,17 +1,18 @@
 // src/components/blocks/ComplexInput.js
 
-import * as blocks from '@/lib/blocks';
+import { core } from '@/lib/blocks';
+import * as state from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _LineInput from './_LineInput';
 
-export const fields = blocks.fields(['value']);
+export const fields = state.fields(['value']);
 
 const validator = (val) => /^[0-9.e+-]*[ij]?$/i.test(val);
 
 const _ComplexInput = (props) =>
   _LineInput({ ...props, updateValidator: validator });
 
-const ComplexInput = blocks.core({
+const ComplexInput = core({
   ...parsers.blocks,
   name: 'ComplexInput',
   component: _ComplexInput,

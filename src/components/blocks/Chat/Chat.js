@@ -1,11 +1,12 @@
 // src/components/blocks/Chat/Chat.js
 import React from 'react';
-import * as blocks from '@/lib/blocks';
+import { dev } from '@/lib/blocks';
+import * as state from '@/lib/state';
 import { peggyParser } from '@/lib/content/parsers';
 import * as cp  from './_chatParser.js';
 import { _Chat } from './_Chat';
 
-export const fields = blocks.fields([
+export const fields = state.fields([
   'index',           // pointer into the full body array
   'start',           // (future) id of first block to show
   'end',             // (future) id of last block to show
@@ -16,7 +17,7 @@ export const fields = blocks.fields([
   'value'            // External. TODO: How should we handle these?
 ]);
 
-const Chat = blocks.dev({
+const Chat = dev({
   ...peggyParser(cp),
   name: 'Chat',
   component: _Chat,

@@ -3,7 +3,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 
-import { useReduxState, updateReduxField } from '@/lib/blocks';
+import { useReduxState, updateReduxField } from '@/lib/state';
 import { ChatComponent, InputFooter, AdvanceFooter } from '@/components/common/ChatComponent';
 
 

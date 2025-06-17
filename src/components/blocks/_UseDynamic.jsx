@@ -6,9 +6,9 @@ import { useReduxInput } from '@/lib/state';
 export function _UseDynamic( params ) {
   const [value, inputProps] = useReduxInput(params, params.fields.value, params.target);
 
-  if (!params.target) {
+  if (!value) {
     return <pre className="text-red-500">[Missing &lt;Use&gt; resolution]</pre>;
   }
 
-  return render({ ...params, node: params.target });
+  return render({ ...params, node: value });
 }

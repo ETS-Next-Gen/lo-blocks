@@ -277,3 +277,11 @@ level of expertise:
 2. Content authors: A few hours training, and some pedagogical expertise
 3. Block developers: Clever highschool student or an undergrad researcher
 4. Core developers: Professional computer scientists / software engineers
+
+Code Style
+----------
+
+Avoid renaming / aliasing variables. If there's a conflict with the name
+`fields`, we don't `import fields as f from @/lib/state`, but we use the
+fully qualified name: `import * as state from @/lib/state` followed
+by `state.fields`

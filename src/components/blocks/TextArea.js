@@ -1,12 +1,11 @@
 // src/components/blocks/TextArea.js
-import * as blocks from '@/lib/blocks';
+import { core } from '@/lib/blocks';
+import * as state from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _TextArea from './_TextArea';
 
-export const fields = blocks.fields(['value']);
-
-
-const TextArea = blocks.core({
+export const fields = state.fields(['value']);
+const TextArea = core({
   ...parsers.blocks,
   name: 'TextArea',
   component: _TextArea,

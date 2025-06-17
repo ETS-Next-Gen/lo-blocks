@@ -4,7 +4,7 @@
 import React from 'react';
 // DebugWrapper handles debug output
 
-import { useReduxState } from '@/lib/blocks';
+import { useReduxState } from '@/lib/state';
 
 export function _DevQuestion( props ) {
   const { prompt, options = [], fields } = props;

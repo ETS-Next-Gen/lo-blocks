@@ -1,11 +1,12 @@
 // src/components/blocks/NumberInput.js
-import * as blocks from '@/lib/blocks';
+import { core } from '@/lib/blocks';
+import * as state from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _NumberInput from './_NumberInput';
 
-export const fields = blocks.fields(['value']);
+export const fields = state.fields(['value']);
 
-const NumberInput = blocks.core({
+const NumberInput = core({
   ...parsers.text,
   name: 'NumberInput',
   component: _NumberInput,

@@ -6,8 +6,7 @@ import { useParams } from 'next/navigation';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import AppHeader from '@/components/common/AppHeader';
-import { useReduxState } from '@/lib/blocks';
-import { settingsFields } from '@/lib/state/settings';
+import { useReduxState, settingsFields } from '@/lib/state';
 
 export default function PreviewPage() {
   const params = useParams();

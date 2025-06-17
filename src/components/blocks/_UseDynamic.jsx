@@ -1,7 +1,7 @@
 // src/components/blocks/_UseDynamic.jsx
 import React from 'react';
 import { render } from '@/lib/render';
-import { useReduxInput } from '@/lib/blocks';
+import { useReduxInput } from '@/lib/state';
 
 export function _UseDynamic( params ) {
   const [value, inputProps] = useReduxInput(params, params.fields.value, params.target);

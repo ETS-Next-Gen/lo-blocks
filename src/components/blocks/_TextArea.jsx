@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useReduxInput } from '@/lib/blocks';
+import { useReduxInput } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 
 function _TextArea( props ) {

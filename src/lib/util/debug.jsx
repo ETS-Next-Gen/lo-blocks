@@ -4,8 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { parseProvenance, formatProvenance } from '@/lib/storage/provenance';
-import { useReduxState } from '@/lib/blocks';
-import { settingsFields } from '@/lib/state/settings';
+import { useReduxState, settingsFields } from '@/lib/state';
 
 export const Trace = ({
   children,

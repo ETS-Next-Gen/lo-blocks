@@ -89,13 +89,12 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
     nodeInfo.renderedKids[node.id] = childNodeInfo;
   }
 
-  const childPrefix = idPrefix ? `${idPrefix}.${node.id}` : node.id;
   const wrapperProps = {
     ...attributes,
     id: node.id,
     nodeInfo: childNodeInfo,
     componentMap,
-    idPrefix: childPrefix,
+    idPrefix
   };
 
   return (

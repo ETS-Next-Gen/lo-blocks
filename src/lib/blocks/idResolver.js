@@ -36,7 +36,16 @@ function resolveIdForContext(context, matrix = ID_RESOLUTION_MATRIX) {
 }
 
 // Exported functions
-export const reduxId = resolveIdForContext("reduxId");
+const _reduxId = resolveIdForContext("reduxId");
+export const reduxId = (input, defaultValue) => {
+  const base = _reduxId(input, defaultValue);
+  const prefix =
+    input && typeof input === 'object' &&
+    typeof input.idPrefix === 'string' && input.idPrefix.length > 0
+      ? input.idPrefix
+      : '';
+  return prefix ? `${prefix}.${base}` : base;
+};
 export const urlName = resolveIdForContext("urlName");
 export const htmlId = resolveIdForContext("htmlId");
 export const reactKey = resolveIdForContext("reactKey");

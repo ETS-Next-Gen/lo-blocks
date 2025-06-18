@@ -61,12 +61,6 @@ export function _Chat(props) {
         continue;
       }
 
-      if (block.type === 'ArrowCommand') {
-        console.log("Unhandled block type");
-        nextIndex += 1; // Skip command entries entirely
-        continue;
-      }
-
       nextIndex += 1;
 
       if (block.type === "Line" || block.type === "PauseCommand") {

@@ -5,7 +5,7 @@ export async function GET(request, { params }) {
   const { id } = await params;
 
   try {
-    const { idMap, parsed } = await loadContentTree();
+    const { idMap } = await loadContentTree();
 
     // TODO: Break out into /api/content/root
     if (id === 'root') {
@@ -34,8 +34,7 @@ export async function GET(request, { params }) {
 
     return Response.json({
       ok: true,
-      idMap,
-      parsed,
+      idMap
     });
   } catch (error) {
     console.error('Error loading content:', error);

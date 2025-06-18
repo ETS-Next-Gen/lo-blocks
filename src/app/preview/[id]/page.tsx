@@ -19,7 +19,6 @@ export default function PreviewPage() {
   );
 
   const [idMap, setIdMap] = useState(null);
-  const [parsed, setParsed] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -32,7 +31,6 @@ export default function PreviewPage() {
           setError(data.error);
         } else {
           setIdMap(data.idMap);
-          setParsed(data.parsed);
         }
       })
       .catch(err => setError(err.message));
@@ -55,7 +53,7 @@ export default function PreviewPage() {
 
         {debug && (
           <pre className="mt-4 bg-gray-100 p-4 text-xs rounded overflow-auto">
-            {JSON.stringify({ idMap, parsed }, null, 2)}
+            {JSON.stringify({ idMap }, null, 2)}
           </pre>
         )}
       </div>

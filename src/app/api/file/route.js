@@ -57,6 +57,6 @@ export async function POST(request) {
     return Response.json({ ok: true });
   } catch (err) {
     console.log(err.message);
-    return Response.json({ ok: false, error: failed }, { status: 500 });
+    return Response.json({ ok: false, error: "Failed" }, { status: 500 });
   }
 }

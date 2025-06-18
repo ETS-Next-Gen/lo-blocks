@@ -16,6 +16,7 @@ describe("ID helpers", () => {
 
     // Default value if missing
     expect(idResolver.reduxId({}, 'fallback')).toBe('fallback');
+    expect(idResolver.reduxId({ id: 'foo', idPrefix: 'bar' })).toBe('bar.foo');
   });
   it("exports a named function for each ID_RESOLUTION_MATRIX key", () => {
     const expectedKeys = Object.keys(idResolver.__testables.ID_RESOLUTION_MATRIX);

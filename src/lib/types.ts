@@ -123,6 +123,7 @@ export interface PropType {
   fields: FieldInfoByField;
   nodeInfo: NodeInfo;
   componentMap: ComponentMap;
+  idPrefix?: string;
   [key: string]: any;
 }
 

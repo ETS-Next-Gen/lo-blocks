@@ -44,6 +44,7 @@ describe('useReduxState integration', () => {
     expect(state.application_state.component_state['test'].input).toBe('bar');
   });
 
+
   it('handles componentSetting scoped fields', async () => {
     const reduxStore = store.init({ extraFields: settingFields });
     const wrapper = ({ children }: any) => (

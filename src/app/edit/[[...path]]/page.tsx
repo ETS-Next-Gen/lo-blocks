@@ -5,6 +5,9 @@ import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';
 import { useParams } from 'next/navigation';
+import { indexXml } from '@/lib/content/loadContentTree';
+import { render, makeRootNode } from '@/lib/render';
+import { COMPONENT_MAP } from '@/components/componentMap';
 
 import Split from "react-split";
 import EditorLLMChat from '@/components/chat/EditorLLMChat';
@@ -24,50 +27,7 @@ const CodeMirror = dynamic(() => import('@uiw/react-codemirror').then(mod => mod
 
 
 // We should probably pull this out into its own component file
-function EditControl() {
-  const path = (useParams().path || []).join('/');
-
-  // These should move to redux
-  const [content, setContent] = useState('');
-  const [status, setStatus] = useState('');
-
-  const onChange = useCallback((val, viewUpdate) => {
-    setContent(val);
-  }, []);
-
-  useEffect(() => {
-    if (!path) return;
-    setStatus('Loading...');
-
-    fetch(`/api/file?path=${encodeURIComponent(path)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok) {
-          setContent(data.content);
-          setStatus('');
-        } else {
-          setStatus(`Error: ${data.error}`);
-        }
-      })
-      .catch(err => setStatus(`Error: ${err.message}`));
-  }, [path]);
-
-  const handleSave = async () => {
-    setStatus('Saving...');
-    try {
-      const res = await fetch('/api/file', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, content })
-      });
-      const json = await res.json();
-      if (json.ok) setStatus('Saved');
-      else setStatus(`Error: ${json.error}`);
-    } catch (err) {
-      setStatus(`Error: ${err.message}`);
-    }
-  };
-
+function EditControl({ path, content, onChange, onSave, status }) {
   if (!path) return <div className="p-4">No path provided</div>;
 
   return (
@@ -78,7 +38,8 @@ function EditControl() {
       </div>
       <div>
         <button
-          onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={onSave}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
           disabled={status === 'Saving...'}
         >Save</button>
         {status && <div className="text-sm">{status}</div>}
@@ -139,6 +100,105 @@ function FourPaneLayout({
   );
 }
 
+function PreviewPane({ content, idMap, path }) {
+  const [element, setElement] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!idMap) return;
+    const t = setTimeout(() => {
+      try {
+        const localMap: Record<string, any> = {};
+        const ids = indexXml(content, [path], localMap);
+        if (!ids.length) throw new Error('No root element');
+        const combined = { ...idMap, ...localMap };
+        const el = render({
+          node: ids[0],
+          idMap: combined,
+          nodeInfo: makeRootNode(),
+          componentMap: COMPONENT_MAP,
+        });
+        setElement(el);
+        setError('');
+      } catch (err: any) {
+        setError(err.message || 'Parse error');
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [content, idMap, path]);
+
+  if (error) {
+    return <pre className="text-red-600 whitespace-pre-wrap">{error}</pre>;
+  }
+  return <div className="space-y-4">{element}</div>;
+}
+
+function EditWrapper() {
+  const path = (useParams().path || []).join('/');
+
+  const [content, setContent] = useState('');
+  const [status, setStatus] = useState('');
+  const [systemMap, setSystemMap] = useState(null);
+
+  useEffect(() => {
+    if (!path) return;
+    setStatus('Loading...');
+    fetch(`/api/file?path=${encodeURIComponent(path)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          setContent(data.content);
+          setStatus('');
+        } else {
+          setStatus(`Error: ${data.error}`);
+        }
+      })
+      .catch(err => setStatus(`Error: ${err.message}`));
+  }, [path]);
+
+  // Fetch system idMap once we know the root ID
+  useEffect(() => {
+    if (!content || systemMap) return;
+    try {
+      const temp: Record<string, any> = {};
+      const ids = indexXml(content, [path], temp);
+      if (!ids.length) return;
+      fetch(`/api/content/${encodeURIComponent(ids[0])}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok) setSystemMap(data.idMap);
+        });
+    } catch (_) { /* ignore parse errors on load */ }
+  }, [content, path, systemMap]);
+
+  const handleChange = useCallback((val) => setContent(val), []);
+
+  const handleSave = async () => {
+    setStatus('Saving...');
+    try {
+      const res = await fetch('/api/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, content })
+      });
+      const json = await res.json();
+      if (json.ok) setStatus('Saved');
+      else setStatus(`Error: ${json.error}`);
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
+  };
+
+  return (
+    <FourPaneLayout
+      Navigation={<NavigationPane />}
+      Editor={<EditControl path={path} content={content} onChange={handleChange} onSave={handleSave} status={status} />}
+      Chat={<EditorLLMChat />}
+      Preview={<PreviewPane content={content} idMap={systemMap} path={path} />}
+    />
+  );
+}
+
 function NavigationPane() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -183,11 +243,7 @@ export default function EditPage() {
     <div className="flex flex-col h-screen">
       <AppHeader />
       <div className="flex-1 overflow-hidden">
-        <FourPaneLayout
-          Navigation={<NavigationPane />}
-          Editor={<EditControl />}
-          Chat={<EditorLLMChat />}
-        />
+        <EditWrapper />
       </div>
     </div>
   );

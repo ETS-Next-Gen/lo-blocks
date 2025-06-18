@@ -61,7 +61,11 @@ function deleteNodesByProvenance(relativePaths) {
 }
 
 
-function indexXml(xml: string, provenance: Provenance) {
+export function indexXml(
+  xml: string,
+  provenance: Provenance,
+  idMap: Record<string, any> = contentStore.byId
+) {
   const parsedTree = xmlParser.parse(xml);
   const indexed = [];
 
@@ -119,12 +123,12 @@ function indexXml(xml: string, provenance: Provenance) {
       // Actions
       parseNode,
       storeEntry: (id, entry) => {
-        if (contentStore.byId[id]) {
+        if (idMap[id]) {
           throw new Error(
             `Duplicate ID "${id}" found in ${formatProvenance(provenance)}. Each element must have a unique id.`
           );
         }
-        contentStore.byId[id] = entry;
+        idMap[id] = entry;
       },
     });
 

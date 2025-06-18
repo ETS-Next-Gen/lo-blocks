@@ -101,7 +101,9 @@ function GraphPage() {
       setNodes(laidOutNodes);
       setEdges(edges);
     } catch (err) {
-      setGraphData({ nodes: [], edges: [], issues: [`Failed to fetch data: ${err.message}`] });
+      setIssues([`Failed to fetch data: ${err.message}`]);
+      setNodes([]);
+      setEdges([]);
     }
   }, [id]);
 

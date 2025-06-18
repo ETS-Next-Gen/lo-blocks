@@ -13,10 +13,9 @@ const contentDir = path.resolve('./content');
 async function main() {
   try {
     const provider = new FileStorageProvider(contentDir);
-    const { parsed, idMap } = await loadContentTree(provider);
+    const { idMap } = await loadContentTree(provider);
 
     const output = {
-      tree: parsed,
       idMap
     };
 

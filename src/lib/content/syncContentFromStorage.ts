@@ -3,8 +3,8 @@ import { StorageProvider, FileStorageProvider } from '@/lib/storage';
 import { parseOLX } from '@/lib/content/parseOLX';
 
 const contentStore = {
-  byProvenance: {} as Record<string, any>,
-  byId: {} as Record<string, any>
+  byProvenance: {},
+  byId: {}
 };
 
 export async function syncContentFromStorage(
@@ -30,7 +30,7 @@ export async function syncContentFromStorage(
   };
 }
 
-function deleteNodesByProvenance(relativePaths: string[]) {
+function deleteNodesByProvenance(relativePaths) {
   for (const relPath of relativePaths) {
     const prev = contentStore.byProvenance[relPath];
     if (prev?.nodes) {

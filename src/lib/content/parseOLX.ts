@@ -22,13 +22,13 @@ const xmlParser = new XMLParser({
 
 export function parseOLX(xml: string, provenance: Provenance, idMap: IdMap = {}) {
   const parsedTree = xmlParser.parse(xml);
-  const indexed: string[] = [];
+  const indexed = [];
 
-  function parseNode(node: any): any {
+  function parseNode(node) {
     const tag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
     if (!tag) return null;
 
-    const attributes = (node[':@'] || {}) as Record<string, any>;
+    const attributes = node[':@'] || {};
 
     if (attributes.ref) {
       if (tag !== 'Use') {
@@ -63,7 +63,7 @@ export function parseOLX(xml: string, provenance: Provenance, idMap: IdMap = {})
     if (!Component) {
       console.warn(`[OLX] No component found for tag: <${tag}> — using defaultParser`);
     }
-    const parser = (Component?.parser || defaultParser) as any;
+    const parser = Component?.parser || defaultParser;
 
     parser({
       id,
@@ -72,7 +72,7 @@ export function parseOLX(xml: string, provenance: Provenance, idMap: IdMap = {})
       attributes,
       provenance,
       parseNode,
-      storeEntry: (storeId: string, entry: any) => {
+      storeEntry: (storeId, entry) => {
         if (idMap[storeId]) {
           throw new Error(
             `Duplicate ID "${storeId}" found in ${formatProvenance(provenance)}. Each element must have a unique id.`
@@ -95,7 +95,7 @@ export function parseOLX(xml: string, provenance: Provenance, idMap: IdMap = {})
   return { ids: indexed, idMap };
 }
 
-function createId(node: any): string {
+function createId(node) {
   const attributes = node[':@'] || {};
   const id = attributes.url_name || attributes.id;
   if (id) return id;

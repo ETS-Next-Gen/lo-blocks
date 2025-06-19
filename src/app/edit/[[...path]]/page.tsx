@@ -146,6 +146,20 @@ function FourPaneLayout({
   );
 }
 
+// TODO: This needs to be more robust to internal errors.
+//
+// Nominally, React Error Boundaries are part of what we want, but
+// when we tried, they didn't immediately work as intended, so we cut our
+// loses after a timeboxed effort, but it's worth trying again.
+//
+// We also really should:
+// * Save last valid state
+// * If errors come up during the real render, revert to it.
+//
+// We probably want an FSM.
+//
+// Good way to test this is to remove the tag in render which omits invalid
+// HTML tags. An invalid HTML tag triggers errors deep in react.
 function PreviewPane({ path }) {
   const [content] = useReduxState(
     {},
@@ -216,14 +230,18 @@ function PreviewPane({ path }) {
     }
   }, [parsed, idMap]);
 
-  return (
-    <div>
-      {error && (
-        <pre className="text-red-600 mb-2">Error: {error}</pre>
-      )}
-      {rendered || (!idMap ? 'Loading...' : 'No valid preview')}
-    </div>
-  );
+  try {
+    return (
+      <div>
+        {error && (
+          <pre className="text-red-600 mb-2">Error: {error}</pre>
+        )}
+        {rendered || (!idMap ? 'Loading...' : 'No valid preview')}
+      </div>
+    );
+  } catch (err) {
+    return (<pre className="text-red-600 mb-2">Error: {err.message}</pre>);
+  }
 }
 
 function NavigationPane() {

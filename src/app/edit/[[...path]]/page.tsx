@@ -15,6 +15,9 @@ import AppHeader from '@/components/common/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReduxState } from '@/lib/state';
 import { editorFields } from '../editorFields';
+import { parseOLX } from '@/lib/content/parseOLX';
+import { render, makeRootNode } from '@/lib/render';
+import { COMPONENT_MAP } from '@/components/componentMap';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).
@@ -150,8 +153,66 @@ function PreviewPane({ path }) {
     '',
     { id: path }
   );
+  const [lastValidContent, setLastValidContent] = useState('');
+  const [idMap, setIdMap] = useState(null);
+  const [error, setError] = useState(null);
+  const [rendered, setRendered] = useState(null);
+
+  // Load base idMap from the server
+  useEffect(() => {
+    fetch('/api/content/root')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) setError(data.error);
+        else setIdMap(data.idMap);
+      })
+      .catch(err => setError(err.message));
+  }, []);
+
+  // Re-render when content or idMap changes
+  useEffect(() => {
+    if (!idMap) return;
+
+    try {
+      const { idMap: localMap, root } = parseOLX(content, [path]);
+      const merged = { ...idMap, ...localMap };
+      const node = render({
+        node: root,
+        idMap: merged,
+        nodeInfo: makeRootNode(),
+        componentMap: COMPONENT_MAP
+      });
+      setRendered(node);
+      setLastValidContent(content);
+    } catch (err) {
+      console.error('Preview parse/render error:', err);
+      if (!lastValidContent) return;
+      try {
+        const { idMap: localMap, root } = parseOLX(lastValidContent, [path]);
+        const merged = { ...idMap, ...localMap };
+        const node = render({
+          node: root,
+          idMap: merged,
+          nodeInfo: makeRootNode(),
+          componentMap: COMPONENT_MAP
+        });
+        setRendered(node);
+      } catch (err2) {
+        setRendered(
+          <pre className="text-red-600">{String(err2.message)}</pre>
+        );
+      }
+    }
+  }, [content, idMap]);
+
+  if (error) {
+    return <pre className="text-red-600">Error: {error}</pre>;
+  }
+
   return (
-    <div className="font-mono whitespace-pre-wrap text-sm">{content}</div>
+    <div className="font-mono whitespace-pre-wrap text-sm">
+      {rendered || 'Loading...'}
+    </div>
   );
 }
 

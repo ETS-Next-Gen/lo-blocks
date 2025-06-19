@@ -25,6 +25,7 @@ export function parseOLX(xml, provenance: Provenance) {
   const idMap: IdMap = {};
   const parsedTree = xmlParser.parse(xml);
   const indexed = [];
+  let rootId = null;
 
   function parseNode(node) {
     const tag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
@@ -89,12 +90,18 @@ export function parseOLX(xml, provenance: Provenance) {
   }
 
   if (Array.isArray(parsedTree)) {
-    parsedTree.forEach(parseNode);
+    parsedTree.forEach((n, idx) => {
+      const parsed = parseNode(n);
+      if (idx === 0 && parsed?.id) rootId = parsed.id;
+    });
   } else {
-    parseNode(parsedTree);
+    const parsed = parseNode(parsedTree);
+    if (parsed?.id) rootId = parsed.id;
   }
 
-  return { ids: indexed, idMap };
+  if (!rootId && indexed.length) rootId = indexed[0];
+
+  return { ids: indexed, idMap, root: rootId };
 }
 
 function createId(node) {

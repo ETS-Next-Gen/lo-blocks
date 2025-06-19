@@ -1,5 +1,6 @@
 // src/lib/content/parseOLX.ts
-import crypto from 'crypto';
+import SHA1 from 'crypto-js/sha1';
+
 import { XMLParser } from 'fast-xml-parser';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import { transformTagName } from '@/lib/content/xmlTransforms';
@@ -102,5 +103,5 @@ function createId(node) {
   if (id) return id;
 
   const canonical = JSON.stringify(node);
-  return crypto.createHash('sha1').update(canonical).digest('hex');
+  return SHA1(canonical).toString();
 }

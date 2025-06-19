@@ -54,7 +54,7 @@ function EditControl({ path }) {
         }
       })
       .catch(err => setStatus(`Error: ${err.message}`));
-  }, [path, setContent]);
+  }, [path]);
 
   const handleSave = async () => {
     setStatus('Saving...');

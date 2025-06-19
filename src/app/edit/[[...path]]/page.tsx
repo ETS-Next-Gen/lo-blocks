@@ -1,6 +1,17 @@
 // src/app/edit/[[...path]]/page.tsx
 'use client';
 
+// TODO: This is should be disected into individual, compact, general
+// components, such as:
+//
+// <RenderOLXString data={}/> // Which implements all robustness
+//
+// And similar.
+//
+// This is very close to being possible to write in OLX itself, which
+// would allow us to have students authoring content!
+
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';

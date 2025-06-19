@@ -89,14 +89,12 @@ export function parseOLX(xml, provenance: Provenance) {
     return { type: 'block', id };
   }
 
+  const rootNode = Array.isArray(parsedTree) ? parsedTree[0] : parsedTree;
+  const parsedRoot = parseNode(rootNode);
+  if (parsedRoot?.id) rootId = parsedRoot.id;
+
   if (Array.isArray(parsedTree)) {
-    parsedTree.forEach((n, idx) => {
-      const parsed = parseNode(n);
-      if (idx === 0 && parsed?.id) rootId = parsed.id;
-    });
-  } else {
-    const parsed = parseNode(parsedTree);
-    if (parsed?.id) rootId = parsed.id;
+    parsedTree.slice(1).forEach(parseNode);
   }
 
   if (!rootId && indexed.length) rootId = indexed[0];

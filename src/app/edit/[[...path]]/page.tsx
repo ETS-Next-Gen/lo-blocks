@@ -1,7 +1,7 @@
 // src/app/edit/[[...path]]/page.tsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';
 import { useParams } from 'next/navigation';
@@ -153,10 +153,14 @@ function PreviewPane({ path }) {
     '',
     { id: path }
   );
-  const [lastValidContent, setLastValidContent] = useState('');
+  const [parsed, setParsed] = useReduxState(
+    {},
+    editorFields.fieldInfoByField.parsed,
+    null,
+    { id: path }
+  );
   const [idMap, setIdMap] = useState(null);
   const [error, setError] = useState(null);
-  const [rendered, setRendered] = useState(null);
 
   // Load base idMap from the server
   useEffect(() => {
@@ -169,48 +173,39 @@ function PreviewPane({ path }) {
       .catch(err => setError(err.message));
   }, []);
 
-  // Re-render when content or idMap changes
+  // Parse content when it changes
   useEffect(() => {
     if (!idMap) return;
-
     try {
-      const { idMap: localMap, root } = parseOLX(content, [path]);
-      const merged = { ...idMap, ...localMap };
-      const node = render({
-        node: root,
+      const result = parseOLX(content, [path]);
+      setParsed(result);
+    } catch (err) {
+      console.error('Preview parse error:', err);
+    }
+  }, [content, idMap]);
+
+  const rendered = useMemo(() => {
+    if (!idMap || !parsed) return null;
+    try {
+      const merged = { ...idMap, ...parsed.idMap };
+      return render({
+        node: parsed.root,
         idMap: merged,
         nodeInfo: makeRootNode(),
         componentMap: COMPONENT_MAP
       });
-      setRendered(node);
-      setLastValidContent(content);
     } catch (err) {
-      console.error('Preview parse/render error:', err);
-      if (!lastValidContent) return;
-      try {
-        const { idMap: localMap, root } = parseOLX(lastValidContent, [path]);
-        const merged = { ...idMap, ...localMap };
-        const node = render({
-          node: root,
-          idMap: merged,
-          nodeInfo: makeRootNode(),
-          componentMap: COMPONENT_MAP
-        });
-        setRendered(node);
-      } catch (err2) {
-        setRendered(
-          <pre className="text-red-600">{String(err2.message)}</pre>
-        );
-      }
+      console.error('Preview render error:', err);
+      return <pre className="text-red-600">{String(err.message)}</pre>;
     }
-  }, [content, idMap]);
+  }, [parsed, idMap]);
 
   if (error) {
     return <pre className="text-red-600">Error: {error}</pre>;
   }
 
   return (
-    <div className="font-mono whitespace-pre-wrap text-sm">
+    <div>
       {rendered || 'Loading...'}
     </div>
   );

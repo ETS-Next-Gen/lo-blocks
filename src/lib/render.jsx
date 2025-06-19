@@ -1,4 +1,5 @@
 // src/lib/render.jsx
+import htmlTags from 'html-tags';
 import React from 'react';
 import { DisplayError, DebugWrapper } from '@/lib/util/debug';
 import { COMPONENT_MAP } from '@/components/componentMap';
@@ -172,6 +173,10 @@ export function renderCompiledKids( props ) {
         );
 
       case 'html':
+        // React fails -- spectacularly -- on invalid HTML tags.
+        if (!htmlTags.includes(child.tag)) {
+           return(<p> Invalid tag: {child.tag} </p>);
+        }
         return React.createElement(
           child.tag,
           { key: child.key, ...child.attributes },

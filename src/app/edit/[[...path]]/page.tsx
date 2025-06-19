@@ -1,7 +1,7 @@
 // src/app/edit/[[...path]]/page.tsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';
 import { useParams } from 'next/navigation';
@@ -15,6 +15,9 @@ import AppHeader from '@/components/common/AppHeader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReduxState } from '@/lib/state';
 import { editorFields } from '../editorFields';
+import { parseOLX } from '@/lib/content/parseOLX';
+import { render, makeRootNode } from '@/lib/render';
+import { COMPONENT_MAP } from '@/components/componentMap';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).
@@ -143,6 +146,20 @@ function FourPaneLayout({
   );
 }
 
+// TODO: This needs to be more robust to internal errors.
+//
+// Nominally, React Error Boundaries are part of what we want, but
+// when we tried, they didn't immediately work as intended, so we cut our
+// loses after a timeboxed effort, but it's worth trying again.
+//
+// We also really should:
+// * Save last valid state
+// * If errors come up during the real render, revert to it.
+//
+// We probably want an FSM.
+//
+// Good way to test this is to remove the tag in render which omits invalid
+// HTML tags. An invalid HTML tag triggers errors deep in react.
 function PreviewPane({ path }) {
   const [content] = useReduxState(
     {},
@@ -150,9 +167,81 @@ function PreviewPane({ path }) {
     '',
     { id: path }
   );
-  return (
-    <div className="font-mono whitespace-pre-wrap text-sm">{content}</div>
+  const [parsed, setParsed] = useReduxState(
+    {},
+    editorFields.fieldInfoByField.parsed,
+    null,
+    { id: path }
   );
+  const [idMap, setIdMap] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Load base idMap from the server
+  useEffect(() => {
+    fetch('/api/content/root')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) setError(data.error);
+        else setIdMap(data.idMap);
+      })
+      .catch(err => setError(err.message));
+  }, []);
+
+  // Parse content when it changes
+  useEffect(() => {
+    if (!idMap) return;
+    let candidate;
+    try {
+      candidate = parseOLX(content, [path]);
+    } catch (err) {
+      console.error('Preview parse error:', err);
+      setError('Parse error: ' + (err.message || String(err)));
+      return;
+    }
+    try {
+      const merged = { ...idMap, ...candidate.idMap };
+      render({
+        node: candidate.root,
+        idMap: merged,
+        nodeInfo: makeRootNode(),
+        componentMap: COMPONENT_MAP,
+      });
+      setParsed(candidate);
+      setError(null);
+    } catch (err) {
+      console.error('Preview render error:', err);
+      setError('Render error: ' + (err.message || String(err)));
+    }
+  }, [content, idMap]);
+
+  const rendered = useMemo(() => {
+    if (!idMap || !parsed) return null;
+    try {
+      const merged = { ...idMap, ...parsed.idMap };
+      return render({
+        node: parsed.root,
+        idMap: merged,
+        nodeInfo: makeRootNode(),
+        componentMap: COMPONENT_MAP,
+      });
+    } catch (err) {
+      console.error('Preview render error:', err);
+      return null;
+    }
+  }, [parsed, idMap]);
+
+  try {
+    return (
+      <div>
+        {error && (
+          <pre className="text-red-600 mb-2">Error: {error}</pre>
+        )}
+        {rendered || (!idMap ? 'Loading...' : 'No valid preview')}
+      </div>
+    );
+  } catch (err) {
+    return (<pre className="text-red-600 mb-2">Error: {err.message}</pre>);
+  }
 }
 
 function NavigationPane() {

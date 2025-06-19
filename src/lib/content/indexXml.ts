@@ -58,6 +58,7 @@ export function indexXml(
     }
 
     const id = attributes.id || attributes.url_name || createId(node);
+    if (!attributes.id) attributes.id = id;
 
     const Component = COMPONENT_MAP[tag] || COMPONENT_MAP[tag.charAt(0).toUpperCase() + tag.slice(1)];
     if (!Component) {

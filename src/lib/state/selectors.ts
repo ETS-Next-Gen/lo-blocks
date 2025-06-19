@@ -71,8 +71,10 @@ export function useFieldSelector<T = any>(
 ): T {
   const { id: optId, tag: optTag, ...rest } = normalizeOptions(options);
   const scope = field.scope; // Default of scopes.component is handled in field creation
-  const id = optId ?? idResolver.reduxId(props);
-  const tag = optTag ?? props.blueprint.OLXName;
+  const tag = optTag ?? props?.blueprint?.OLXName;
+  const id = scope === scopes.component || scope === undefined
+    ? optId ?? idResolver.reduxId(props)
+    : undefined;
 
   switch (scope) {
     case scopes.componentSetting:

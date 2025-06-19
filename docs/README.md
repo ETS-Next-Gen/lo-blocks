@@ -285,3 +285,30 @@ Avoid renaming / aliasing variables. If there's a conflict with the name
 `fields`, we don't `import fields as f from @/lib/state`, but we use the
 fully qualified name: `import * as state from @/lib/state` followed
 by `state.fields`
+
+Field Conventions
+-----------------
+
+We'd like blocks to be plug-and-play. Repoint a `target` and
+go. Switch an input inside a grader, and go. We would like to propose
+a set of conventions:
+
+* If a block has only one thing it manages, call the field `value.`
+* Points go in `grade`: This should be overrideable with a `getGrade`
+  in the blueprint. The structure is { value, maxValue }. _Question:
+  This follows edX. Should this be the more sensible score?_
+* Correctness / doneness. edX uses `correct`, but we should use
+  `status`? `done`?
+
+Otherwise, ideally, fields would map 1:1 to OLX attributes as often as
+practical, but this is not always practical. OLX is human-facing, and
+should have human-friendly semantic names. Fields are designed to be
+part of an automated system, and should have standardized names
+(e.g. `value`, as per above). For example, a semantic attribute mapped
+to `value` is probably better than a bad attribute name or bad field
+name.
+
+The rationale here is we can point things by ID. If an instructor
+points an action to an OLX ID, the system know to grab or push data to
+`id.[value]`.
+  

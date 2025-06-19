@@ -5,9 +5,12 @@ import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';
 import { useParams } from 'next/navigation';
-import { indexXml } from '@/lib/content/loadContentTree';
+import { indexXml, setTagNameTransformer } from '@/lib/content/indexXml';
+import { transformTagName } from '@/lib/content/xmlTransforms';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
+
+setTagNameTransformer(transformTagName);
 
 import Split from "react-split";
 import EditorLLMChat from '@/components/chat/EditorLLMChat';

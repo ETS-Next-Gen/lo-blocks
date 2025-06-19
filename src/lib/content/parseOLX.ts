@@ -20,7 +20,8 @@ const xmlParser = new XMLParser({
   transformTagName
 });
 
-export function parseOLX(xml: string, provenance: Provenance, idMap: IdMap = {}) {
+export function parseOLX(xml, provenance: Provenance) {
+  const idMap: IdMap = {};
   const parsedTree = xmlParser.parse(xml);
   const indexed = [];
 

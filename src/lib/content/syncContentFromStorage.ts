@@ -17,7 +17,15 @@ export async function syncContentFromStorage(
   deleteNodesByProvenance([...Object.keys(deleted), ...Object.keys(changed)]);
 
   for (const [srcId, fileInfo] of Object.entries({ ...added, ...changed })) {
-    const { ids } = parseOLX(fileInfo.content, [srcId], contentStore.byId);
+    const { ids, idMap } = parseOLX(fileInfo.content, [srcId]);
+
+    for (const [storeId, entry] of Object.entries(idMap)) {
+      if (contentStore.byId[storeId]) {
+        throw new Error(`Duplicate ID "${storeId}" found in ${srcId}`);
+      }
+      contentStore.byId[storeId] = entry;
+    }
+
     contentStore.byProvenance[srcId] = {
       nodes: ids,
       ...fileInfo

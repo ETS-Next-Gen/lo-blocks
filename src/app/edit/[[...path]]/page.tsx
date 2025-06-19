@@ -112,7 +112,8 @@ function PreviewPane({ content, idMap, path }) {
     const t = setTimeout(() => {
       try {
         const localMap: Record<string, any> = {};
-        const ids = indexXml(content, [path], localMap);
+        const prov = `file:///content/${path}`;
+        const ids = indexXml(content, [prov], localMap);
         if (!ids.length) throw new Error('No root element');
         const combined = { ...idMap, ...localMap };
         const el = render({
@@ -164,7 +165,8 @@ function EditWrapper() {
     if (!content || systemMap) return;
     try {
       const temp: Record<string, any> = {};
-      const ids = indexXml(content, [path], temp);
+      const prov = `file:///content/${path}`;
+      const ids = indexXml(content, [prov], temp);
       if (!ids.length) return;
       fetch(`/api/content/${encodeURIComponent(ids[0])}`)
         .then(res => res.json())

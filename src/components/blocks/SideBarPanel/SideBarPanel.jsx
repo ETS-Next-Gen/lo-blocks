@@ -15,37 +15,35 @@ import { childParser } from '@/lib/content/parsers';
 import _SideBarPanel from './_SideBarPanel';
 
 // === Custom parser to build named slots ===
-const sbParser = childParser(async function sideBlockParser({ rawKids, parseNode }) {
+const sbParser = childParser(function sideBlockParser({ rawKids, parseNode }) {
   let main = null;
   const sidebar = [];
 
-  for (const child of rawKids) {
+  rawKids.forEach(child => {
     const tag = Object.keys(child).find(k => ![':@', '#text', '#comment'].includes(k));
-    if (!tag) continue;
+    if (!tag) return;
 
     const block = child[tag];
 
     if (tag === 'MainPane') {
+      // MainPane -> unwrap children and parse
       const mainPaneChildren = Array.isArray(block) ? block : [block];
-      const parsedChildren = [];
-      for (const c of mainPaneChildren) {
-        const parsed = await parseNode(c);
-        if (parsed) parsedChildren.push(parsed);
-      }
-      main = parsedChildren;
+      main = mainPaneChildren
+        .map(c => parseNode(c))
+        .filter(Boolean); // parse each kid
     } else if (tag === 'Sidebar') {
       const sidebarChildren = Array.isArray(block) ? block : [block];
-      for (const n of sidebarChildren) {
+      sidebarChildren.forEach(n => {
         const inner = Array.isArray(n) ? n : [n];
-        for (const c of inner) {
-          const parsed = await parseNode(c);
+        inner.forEach(c => {
+          const parsed = parseNode(c);
           if (parsed) sidebar.push(parsed);
-        }
-      }
+        });
+      });
     } else {
       console.warn(`[SideBarPanel] Unknown tag: <${tag}>`);
     }
-  }
+  });
 
   return { main, sidebar };
 });

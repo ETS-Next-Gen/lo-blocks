@@ -96,7 +96,7 @@ function extractInnerTextFromXmlNodes(rawParsed) {
 export function childParser(fn, nameOverride) {
   fn._isChildParser = true;
 
-  const wrapped = async function wrappedParser(ctx) {
+  const wrapped = function wrappedParser(ctx) {
     const { id, tag, attributes, provenance, rawParsed, storeEntry } = ctx;
     const tagParsed = rawParsed[tag];
     const kids = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
@@ -106,7 +106,7 @@ export function childParser(fn, nameOverride) {
       attributes,
       provenance,
       rawParsed,
-      kids: await fn({ ...ctx, rawKids: kids, rawParsed: tagParsed })
+      kids: fn({ ...ctx, rawKids: kids, rawParsed: tagParsed })
     };
     storeEntry(id, entry);
     return id;
@@ -153,15 +153,14 @@ export const xml = {
 xml.staticKids = () => [];
 
 // Assumes we have a list of OLX-style Blocks. E.g. for a learning sequence.
-export const blocks = childParser(async function blocksParser({ rawKids, parseNode }) {
-  const entries = [];
-  for (const child of rawKids) {
-    const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
-    if (!tag) continue;
-    const entry = await parseNode(child);
-    if (entry && entry.id) entries.push(entry);
-  }
-  return entries;
+export const blocks = childParser(function blocksParser({ rawKids, parseNode }) {
+  return rawKids
+    .filter(child => {
+      const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
+      return !!tag;
+    })
+    .map(parseNode)
+    .filter(entry => entry.id);
 });
 blocks.staticKids = (entry) =>
   (Array.isArray(entry.kids) ? entry.kids : []).filter(k => k && k.id).map(k => k.id);

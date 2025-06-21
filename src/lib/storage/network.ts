@@ -5,16 +5,21 @@ import type {
   XmlFileInfo,
   XmlScanResult,
   FileSelection,
-  FileNode,
+  UriNode,
 } from './index';
 
-export class NetworkStorageProvider implements StorageProvider {
-  baseUrl: string;
-  filesUrl: string;
+export interface NetworkProviderOptions {
+  readEndpoint?: string;
+  listEndpoint?: string;
+}
 
-  constructor(baseUrl = '/api/file', filesUrl = '/api/files') {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
-    this.filesUrl = filesUrl.replace(/\/$/, '');
+export class NetworkStorageProvider implements StorageProvider {
+  readEndpoint: string;
+  listEndpoint: string;
+
+  constructor(options: NetworkProviderOptions = {}) {
+    this.readEndpoint = (options.readEndpoint || '/api/file').replace(/\/$/, '');
+    this.listEndpoint = (options.listEndpoint || '/api/files').replace(/\/$/, '');
   }
 
   async loadXmlFilesWithStats(
@@ -23,24 +28,26 @@ export class NetworkStorageProvider implements StorageProvider {
     throw new Error('network storage scan not implemented');
   }
 
-  async listFiles(selection: FileSelection = {}): Promise<FileNode> {
+  async listFiles(selection: FileSelection = {}): Promise<UriNode> {
     const params = new URLSearchParams();
-    if (selection.contains) params.set('contains', selection.contains);
-    if (selection.glob) params.set('glob', selection.glob);
-    const res = await fetch(
-      params.toString()
-        ? `${this.filesUrl}?${params.toString()}`
-        : this.filesUrl,
-    );
+    for (const [key, value] of Object.entries(selection)) {
+      if (value != null) params.set(key, String(value));
+    }
+    const url = params.toString()
+      ? `${this.listEndpoint}?${params.toString()}`
+      : this.listEndpoint;
+    const res = await fetch(url);
     const json = await res.json();
     if (!json.ok) {
       throw new Error(json.error || 'Failed to list files');
     }
-    return json.tree as FileNode;
+    return json.tree as UriNode;
   }
 
   async read(path: string): Promise<string> {
-    const res = await fetch(`${this.baseUrl}?path=${encodeURIComponent(path)}`);
+    const res = await fetch(
+      `${this.readEndpoint}?path=${encodeURIComponent(path)}`,
+    );
     const json = await res.json();
     if (!json.ok) {
       throw new Error(json.error || 'Failed to read');
@@ -49,7 +56,7 @@ export class NetworkStorageProvider implements StorageProvider {
   }
 
   async write(path: string, content: string): Promise<void> {
-    const res = await fetch(this.baseUrl, {
+    const res = await fetch(this.readEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path, content }),

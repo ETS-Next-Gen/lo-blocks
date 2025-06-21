@@ -59,7 +59,7 @@ function EditControl({ path }) {
     if (!path) return;
     setStatus('Loading...');
 
-    const provider = new NetworkStorageProvider('/api/file');
+    const provider = new NetworkStorageProvider();
     provider
       .read(path)
       .then(cnt => {
@@ -72,7 +72,7 @@ function EditControl({ path }) {
   const handleSave = async () => {
     setStatus('Saving...');
     try {
-      const provider = new NetworkStorageProvider('/api/file');
+      const provider = new NetworkStorageProvider();
       await provider.write(path, content);
       setStatus('Saved');
     } catch (err) {

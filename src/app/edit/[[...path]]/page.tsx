@@ -30,7 +30,7 @@ import { editorFields } from '../editorFields';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
-import { NetworkStorageProvider } from '@/lib/storage';
+import { NetworkStorageProvider } from '@/lib/storage/network';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).

@@ -1,6 +1,9 @@
 // src/app/api/file/route.js
-import { promises as fs } from 'fs';
+import { FileStorageProvider } from '@/lib/storage';
 import path from 'path';
+import { promises as fs } from 'fs';
+
+const provider = new FileStorageProvider('./content');
 
 async function resolvePath(relPath) {
   if (typeof relPath !== 'string' || relPath.includes('\0')) {
@@ -28,7 +31,7 @@ async function resolvePath(relPath) {
   if (!full.startsWith(base)) {
     throw new Error('Invalid path');
   }
-  return full;
+  return path.relative(base, full);
 }
 
 export async function GET(request) {
@@ -38,7 +41,8 @@ export async function GET(request) {
     return Response.json({ ok: false, error: 'Missing path' }, { status: 400 });
   }
   try {
-    const content = await fs.readFile(await resolvePath(relPath), 'utf-8');
+    const safe = await resolvePath(relPath);
+    const content = await provider.read(safe);
     return Response.json({ ok: true, content });
   } catch (err) {
     console.log(err.message)
@@ -53,7 +57,8 @@ export async function POST(request) {
   }
   try {
     if (content.length > 100_000) throw new Error('File too large');
-    await fs.writeFile(await resolvePath(relPath), content, 'utf-8');
+    const safe = await resolvePath(relPath);
+    await provider.write(safe, content);
     return Response.json({ ok: true });
   } catch (err) {
     console.log(err.message);

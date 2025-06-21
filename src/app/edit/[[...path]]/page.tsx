@@ -30,6 +30,7 @@ import { editorFields } from '../editorFields';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
+import { NetworkStorageProvider } from '@/lib/storage/network';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).
@@ -58,15 +59,12 @@ function EditControl({ path }) {
     if (!path) return;
     setStatus('Loading...');
 
-    fetch(`/api/file?path=${encodeURIComponent(path)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok) {
-          setContent(data.content);
-          setStatus('');
-        } else {
-          setStatus(`Error: ${data.error}`);
-        }
+    const provider = new NetworkStorageProvider();
+    provider
+      .read(path)
+      .then(cnt => {
+        setContent(cnt);
+        setStatus('');
       })
       .catch(err => setStatus(`Error: ${err.message}`));
   }, [path]);
@@ -74,14 +72,9 @@ function EditControl({ path }) {
   const handleSave = async () => {
     setStatus('Saving...');
     try {
-      const res = await fetch('/api/file', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, content })
-      });
-      const json = await res.json();
-      if (json.ok) setStatus('Saved');
-      else setStatus(`Error: ${json.error}`);
+      const provider = new NetworkStorageProvider();
+      await provider.write(path, content);
+      setStatus('Saved');
     } catch (err) {
       setStatus(`Error: ${err.message}`);
     }

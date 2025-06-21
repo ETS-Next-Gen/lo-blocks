@@ -24,19 +24,17 @@ export interface StorageProvider {
   read(path: string): Promise<string>;
   write(path: string, content: string): Promise<void>;
   update(path: string, content: string): Promise<void>;
+  listFiles(selection?: FileSelection): Promise<UriNode>;
 }
 
 export interface FileSelection {
-  contains?: string;
-  glob?: string;
+  // Reserved for future filtering options
   [key: string]: any;
 }
 
-export interface FileNode {
-  name: string;
-  path: string;
-  type: 'file' | 'directory';
-  children?: FileNode[];
+export interface UriNode {
+  uri: string;
+  children?: UriNode[];
 }
 
 /**
@@ -47,13 +45,13 @@ export interface FileNode {
 export async function listFileTree(
   selection: FileSelection = {},
   baseDir = './content'
-): Promise<FileNode> {
+): Promise<UriNode> {
   const fs = await import('fs/promises');
 
-  const walk = async (rel = ''): Promise<FileNode> => {
+  const walk = async (rel = ''): Promise<UriNode> => {
     const dirPath = path.join(baseDir, rel);
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
-    const children: FileNode[] = [];
+    const children: UriNode[] = [];
     for (const entry of entries) {
       if (entry.name.startsWith('.')) continue;
       const relPath = path.join(rel, entry.name);
@@ -63,13 +61,11 @@ export async function listFileTree(
         entry.isFile() &&
         (entry.name.endsWith('.xml') || entry.name.endsWith('.olx'))
       ) {
-        children.push({ name: entry.name, path: relPath, type: 'file' });
+        children.push({ uri: relPath });
       }
     }
     return {
-      name: rel.split('/').pop() || path.basename(baseDir),
-      path: rel,
-      type: 'directory',
+      uri: rel || '',
       children,
     };
   };
@@ -152,18 +148,28 @@ export class FileStorageProvider implements StorageProvider {
     return { added, changed, unchanged, deleted };
   }
 
-  async read(path: string): Promise<string> {
+  async read(filePath: string): Promise<string> {
     const fs = await import('fs/promises');
-    return fs.readFile(path, 'utf-8');
+    const full = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(this.baseDir, filePath);
+    return fs.readFile(full, 'utf-8');
   }
 
-  async write(path: string, content: string): Promise<void> {
+  async write(filePath: string, content: string): Promise<void> {
     const fs = await import('fs/promises');
-    await fs.writeFile(path, content, 'utf-8');
+    const full = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(this.baseDir, filePath);
+    await fs.writeFile(full, content, 'utf-8');
   }
 
   async update(path: string, content: string): Promise<void> {
     await this.write(path, content);
+  }
+
+  async listFiles(selection: FileSelection = {}): Promise<UriNode> {
+    return listFileTree(selection, this.baseDir);
   }
 }
 
@@ -183,6 +189,10 @@ export class GitStorageProvider implements StorageProvider {
   }
 
   async update(_path: string, _content: string): Promise<void> {
+    throw new Error('git storage not implemented');
+  }
+
+  async listFiles(_selection: FileSelection = {}): Promise<UriNode> {
     throw new Error('git storage not implemented');
   }
 }
@@ -205,6 +215,12 @@ export class PostgresStorageProvider implements StorageProvider {
   async update(_path: string, _content: string): Promise<void> {
     throw new Error('postgres storage not implemented');
   }
+
+  async listFiles(_selection: FileSelection = {}): Promise<UriNode> {
+    throw new Error('postgres storage not implemented');
+  }
 }
+
+export * from './network';
 
 export * from './provenance';

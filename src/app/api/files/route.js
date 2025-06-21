@@ -1,7 +1,8 @@
 // src/app/api/files/route.js
-import { listFileTree } from '@/lib/storage';
+import { FileStorageProvider } from '@/lib/storage';
 
 export async function GET() {
-  const tree = await listFileTree();
+  const provider = new FileStorageProvider('./content');
+  const tree = await provider.listFiles();
   return Response.json({ ok: true, tree });
 }

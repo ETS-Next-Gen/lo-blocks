@@ -153,14 +153,14 @@ export const xml = {
 xml.staticKids = () => [];
 
 // Assumes we have a list of OLX-style Blocks. E.g. for a learning sequence.
-export const blocks = childParser(function blocksParser({ rawKids, parseNode }) {
-  return rawKids
+export const blocks = childParser(async function blocksParser({ rawKids, parseNode }) {
+  const filtered = rawKids
     .filter(child => {
       const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
       return !!tag;
-    })
-    .map(parseNode)
-    .filter(entry => entry.id);
+    });
+  const parsed = await Promise.all(filtered.map(parseNode));
+  return parsed.filter(entry => entry && entry.id);
 });
 blocks.staticKids = (entry) =>
   (Array.isArray(entry.kids) ? entry.kids : []).filter(k => k && k.id).map(k => k.id);

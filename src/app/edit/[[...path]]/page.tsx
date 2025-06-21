@@ -23,6 +23,7 @@ import FileNav from '@/components/navigation/FileNav';
 import ComponentNav from '@/components/navigation/ComponentNav';
 import SearchNav from '@/components/navigation/SearchNav';
 import AppHeader from '@/components/common/AppHeader';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReduxState } from '@/lib/state';
 import { editorFields } from '../editorFields';
@@ -244,12 +245,17 @@ function PreviewPane({ path }) {
 
   try {
     return (
-      <div>
-        {error && (
-          <pre className="text-red-600 mb-2">Error: {error}</pre>
-        )}
-        {rendered || (!idMap ? 'Loading...' : 'No valid preview')}
-      </div>
+      <ErrorBoundary
+        resetKey={parsed}
+        handler={(err) => setError('Render error: ' + err.message)}
+      >
+        <div>
+          {error && (
+            <pre className="text-red-600 mb-2">Error: {error}</pre>
+          )}
+          {rendered || (!idMap ? 'Loading...' : 'No valid preview')}
+        </div>
+      </ErrorBoundary>
     );
   } catch (err) {
     return (<pre className="text-red-600 mb-2">Error: {err.message}</pre>);

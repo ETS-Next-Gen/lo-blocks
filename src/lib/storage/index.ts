@@ -148,15 +148,19 @@ export class FileStorageProvider implements StorageProvider {
     return { added, changed, unchanged, deleted };
   }
 
-  async read(relPath: string): Promise<string> {
+  async read(filePath: string): Promise<string> {
     const fs = await import('fs/promises');
-    const full = path.join(this.baseDir, relPath);
+    const full = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(this.baseDir, filePath);
     return fs.readFile(full, 'utf-8');
   }
 
-  async write(relPath: string, content: string): Promise<void> {
+  async write(filePath: string, content: string): Promise<void> {
     const fs = await import('fs/promises');
-    const full = path.join(this.baseDir, relPath);
+    const full = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(this.baseDir, filePath);
     await fs.writeFile(full, content, 'utf-8');
   }
 

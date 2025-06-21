@@ -206,7 +206,7 @@ function PreviewPane({ path }) {
       const prov = path ? [`file://${path}`] : [];
       candidate = parseOLX(content, prov);
     } catch (err) {
-      console.error('Preview parse error:', err);
+      console.log('Preview parse error:', err);
       setError('Parse error: ' + (err.message || String(err)));
       return;
     }
@@ -221,7 +221,7 @@ function PreviewPane({ path }) {
       setParsed(candidate);
       setError(null);
     } catch (err) {
-      console.error('Preview render error:', err);
+      console.log('Preview render error:', err);
       setError('Render error: ' + (err.message || String(err)));
     }
   }, [content, idMap]);
@@ -237,7 +237,7 @@ function PreviewPane({ path }) {
         componentMap: COMPONENT_MAP,
       });
     } catch (err) {
-      console.error('Preview render error:', err);
+      console.log('Preview render error:', err);
       return null;
     }
   }, [parsed, idMap]);

@@ -5,6 +5,7 @@ interface ErrorBoundaryProps {
   children: React.ReactNode;
   resetKey?: unknown;
   fallback?: React.ReactNode;
+  handler?: (error: Error, info: React.ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -13,10 +14,12 @@ interface ErrorBoundaryState {
 
 export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private lastValid: React.ReactNode = null;
+  private handle: (error: Error, info: React.ErrorInfo) => void;
 
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { error: null };
+    this.handle = props.handler || ((err) => console.log('[ErrorBoundary]', err));
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -24,7 +27,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('[ErrorBoundary]', error, info);
+    this.handle(error, info);
   }
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
@@ -32,6 +35,10 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
       // Retry rendering on resetKey change
       this.setState({ error: null });
       return;
+    }
+
+    if (this.props.handler !== prevProps.handler) {
+      this.handle = this.props.handler || ((err) => console.log('[ErrorBoundary]', err));
     }
 
     if (!this.state.error) {

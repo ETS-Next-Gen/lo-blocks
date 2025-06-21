@@ -48,7 +48,10 @@ export default function PreviewPage() {
       <AppHeader />
       <div className="p-6 flex-1 overflow-auto">
         <h1 className="text-xl font-bold mb-4">Preview: {id}</h1>
-        <ErrorBoundary resetKey={idMap}>
+        <ErrorBoundary
+          resetKey={idMap}
+          handler={(err) => setError(err.message)}
+        >
           <div className="space-y-4">
             {render({ node: id, idMap, nodeInfo: makeRootNode(), componentMap: COMPONENT_MAP })}
           </div>

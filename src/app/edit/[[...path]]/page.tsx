@@ -245,7 +245,10 @@ function PreviewPane({ path }) {
 
   try {
     return (
-      <ErrorBoundary resetKey={parsed}>
+      <ErrorBoundary
+        resetKey={parsed}
+        handler={(err) => setError('Render error: ' + err.message)}
+      >
         <div>
           {error && (
             <pre className="text-red-600 mb-2">Error: {error}</pre>

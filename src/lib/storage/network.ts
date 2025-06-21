@@ -1,17 +1,42 @@
 // src/lib/storage/network.ts
-import type { StorageProvider, XmlFileInfo, XmlScanResult } from './index';
+// src/lib/storage/network.ts
+import type {
+  StorageProvider,
+  XmlFileInfo,
+  XmlScanResult,
+  FileSelection,
+  FileNode,
+} from './index';
 
 export class NetworkStorageProvider implements StorageProvider {
   baseUrl: string;
+  filesUrl: string;
 
-  constructor(baseUrl = '/api/file') {
+  constructor(baseUrl = '/api/file', filesUrl = '/api/files') {
     this.baseUrl = baseUrl.replace(/\/$/, '');
+    this.filesUrl = filesUrl.replace(/\/$/, '');
   }
 
   async loadXmlFilesWithStats(
     _prev: Record<string, XmlFileInfo> = {}
   ): Promise<XmlScanResult> {
     throw new Error('network storage scan not implemented');
+  }
+
+  async listFiles(selection: FileSelection = {}): Promise<FileNode> {
+    const params = new URLSearchParams();
+    if (selection.contains) params.set('contains', selection.contains);
+    if (selection.glob) params.set('glob', selection.glob);
+    const res = await fetch(
+      params.toString()
+        ? `${this.filesUrl}?${params.toString()}`
+        : this.filesUrl,
+    );
+    const json = await res.json();
+    if (!json.ok) {
+      throw new Error(json.error || 'Failed to list files');
+    }
+    return json.tree as FileNode;
   }
 
   async read(path: string): Promise<string> {

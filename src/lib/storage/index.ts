@@ -24,6 +24,7 @@ export interface StorageProvider {
   read(path: string): Promise<string>;
   write(path: string, content: string): Promise<void>;
   update(path: string, content: string): Promise<void>;
+  listFiles(selection?: FileSelection): Promise<FileNode>;
 }
 
 export interface FileSelection {
@@ -165,6 +166,10 @@ export class FileStorageProvider implements StorageProvider {
   async update(path: string, content: string): Promise<void> {
     await this.write(path, content);
   }
+
+  async listFiles(selection: FileSelection = {}): Promise<FileNode> {
+    return listFileTree(selection, this.baseDir);
+  }
 }
 
 export class GitStorageProvider implements StorageProvider {
@@ -185,6 +190,10 @@ export class GitStorageProvider implements StorageProvider {
   async update(_path: string, _content: string): Promise<void> {
     throw new Error('git storage not implemented');
   }
+
+  async listFiles(_selection: FileSelection = {}): Promise<FileNode> {
+    throw new Error('git storage not implemented');
+  }
 }
 
 export class PostgresStorageProvider implements StorageProvider {
@@ -203,6 +212,10 @@ export class PostgresStorageProvider implements StorageProvider {
   }
 
   async update(_path: string, _content: string): Promise<void> {
+    throw new Error('postgres storage not implemented');
+  }
+
+  async listFiles(_selection: FileSelection = {}): Promise<FileNode> {
     throw new Error('postgres storage not implemented');
   }
 }

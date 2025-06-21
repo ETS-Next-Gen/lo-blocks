@@ -3,26 +3,22 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-
-interface TreeNode {
-  name: string;
-  path: string;
-  type: 'file' | 'directory';
-  children?: TreeNode[];
-}
+import { NetworkStorageProvider } from '@/lib/storage/network';
+import type { FileNode } from '@/lib/storage';
 
 export default function FileNav() {
-  const [tree, setTree] = useState<TreeNode | null>(null);
+  const [tree, setTree] = useState<FileNode | null>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    fetch('/api/files')
-      .then(res => res.json())
-      .then(data => setTree(data.tree))
+    const provider = new NetworkStorageProvider('/api/file', '/api/files');
+    provider
+      .listFiles()
+      .then(setTree)
       .catch(err => console.error(err));
   }, []);
 
-  function renderNode(node: TreeNode) {
+  function renderNode(node: FileNode) {
     if (node.type === 'file') {
       const nav = searchParams.get('nav');
       const query = nav ? `?nav=${encodeURIComponent(nav)}` : '';

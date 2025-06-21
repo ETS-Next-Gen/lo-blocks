@@ -21,6 +21,14 @@ export async function GET(request, { params }) {
       });
     }
 
+    // TODO: Break out into /api/content/root
+    if (id === 'all') {
+      return Response.json({
+        ok: true,
+        idMap
+      });
+    }
+
     // TODO: Break out into /api/content/by-id/[id]/
     if (!id || !idMap[id]) {
       return Response.json(

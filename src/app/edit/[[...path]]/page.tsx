@@ -189,7 +189,7 @@ function PreviewPane({ path }) {
 
   // Load base idMap from the server
   useEffect(() => {
-    fetch('/api/content/root')
+    fetch('/api/content/all')
       .then(res => res.json())
       .then(data => {
         if (!data.ok) setError(data.error);

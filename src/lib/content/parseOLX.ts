@@ -89,12 +89,21 @@ export function parseOLX(xml, provenance: Provenance) {
     return { type: 'block', id };
   }
 
-  const rootNode = Array.isArray(parsedTree) ? parsedTree[0] : parsedTree;
-  const parsedRoot = parseNode(rootNode);
-  if (parsedRoot?.id) rootId = parsedRoot.id;
+  const rootNode = Array.isArray(parsedTree)
+    ? parsedTree.find(n =>
+        !!Object.keys(n).find(k => ![':@', '#text', '#comment'].includes(k))
+      )
+    : parsedTree;
+
+  if (rootNode) {
+    const parsedRoot = parseNode(rootNode);
+    if (parsedRoot?.id) rootId = parsedRoot.id;
+  }
 
   if (Array.isArray(parsedTree)) {
-    parsedTree.slice(1).forEach(parseNode);
+    parsedTree
+      .filter(n => n !== rootNode)
+      .forEach(parseNode);
   }
 
   if (!rootId && indexed.length) rootId = indexed[0];

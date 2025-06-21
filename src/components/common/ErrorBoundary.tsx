@@ -13,7 +13,6 @@ interface ErrorBoundaryState {
 }
 
 export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  private lastValid: React.ReactNode = null;
   private handle: (error: Error, info: React.ErrorInfo) => void;
 
   constructor(props: ErrorBoundaryProps) {
@@ -48,7 +47,6 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
 
   render() {
     if (this.state.error) {
-      if (this.lastValid) return <>{this.lastValid}</>;
       return this.props.fallback || (
         <pre className="text-red-600">Error: {this.state.error.message}</pre>
       );

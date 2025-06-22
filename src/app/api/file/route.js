@@ -2,6 +2,7 @@
 import { FileStorageProvider } from '@/lib/storage';
 import path from 'path';
 import { promises as fs } from 'fs';
+import pegExts from '@/generated/pegExtensions.json' assert { type: 'json' };
 
 const provider = new FileStorageProvider('./content');
 
@@ -23,8 +24,10 @@ async function resolvePath(relPath) {
   const stats = await fs.lstat(full).catch(() => null);
   if (stats && stats.isSymbolicLink()) throw new Error('Symlinks not allowed');
 
-  // Check file types. To be extended.
-  if (!full.endsWith('.xml') && !full.endsWith('.olx')) {
+  // Allowed file extensions
+  const allowed = ['.xml', '.olx', '.md', ...pegExts.map(e => `.${e}`)];
+  const valid = allowed.some(ext => full.endsWith(ext));
+  if (!valid) {
     throw new Error('Invalid file type');
   }
 

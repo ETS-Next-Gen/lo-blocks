@@ -1,5 +1,6 @@
 // src/lib/storage/index.ts
 import path from 'path';
+import pegExts from '../../generated/pegExtensions.json' assert { type: 'json' };
 export interface XmlFileInfo {
   id: string;
   _metadata: any;
@@ -57,11 +58,11 @@ export async function listFileTree(
       const relPath = path.join(rel, entry.name);
       if (entry.isDirectory()) {
         children.push(await walk(relPath));
-      } else if (
-        entry.isFile() &&
-        (entry.name.endsWith('.xml') || entry.name.endsWith('.olx'))
-      ) {
-        children.push({ uri: relPath });
+      } else if (entry.isFile()) {
+        const allowed = ['.xml', '.olx', '.md', ...pegExts.map(e => `.${e}`)];
+        if (allowed.some(ext => entry.name.endsWith(ext))) {
+          children.push({ uri: relPath });
+        }
       }
     }
     return {
@@ -87,9 +88,10 @@ export class FileStorageProvider implements StorageProvider {
 
     function olxFile(entry: any, fullPath: string) {
       const fileName = entry.name || fullPath.split('/').pop();
+      const allowed = ['.xml', '.olx', '.md', ...pegExts.map(e => `.${e}`)];
       return (
         entry.isFile() &&
-        (fullPath.endsWith('.xml') || fullPath.endsWith('.olx')) &&
+        allowed.some(ext => fullPath.endsWith(ext)) &&
         !fileName.includes('~') &&
         !fileName.includes('#') &&
         !fileName.startsWith('.')

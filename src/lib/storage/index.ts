@@ -1,5 +1,6 @@
 // src/lib/storage/index.ts
 import path from 'path';
+// TODO: Consolidate to fileTypes.ts
 import pegExts from '../../generated/pegExtensions.json' assert { type: 'json' };
 import { ProvenanceURI } from '../types';
 import { fileTypes, FileType } from './fileTypes';
@@ -108,6 +109,7 @@ export class FileStorageProvider implements StorageProvider {
 
     function isContentFile(entry: any, fullPath: string) {
       const fileName = entry.name || fullPath.split('/').pop();
+      // TODO: Do this in fileTypes.ts
       const allowed = ['.xml', '.olx', '.md', ...pegExts.map(e => `.${e}`)];
       return (
         entry.isFile() &&

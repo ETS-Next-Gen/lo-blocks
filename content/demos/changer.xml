@@ -1,6 +1,6 @@
 <!-- content/demos/changer.xml -->
 <Lesson id="rewrite_lesson" launchable="true" title="Rewriting Lesson">
-  <DigitSpanTask/>
+  <DigitSpanTask id="dst"/>
   <TextBlock>Welcome to the Rewriting Station!</TextBlock>
   <TextArea id="student_essay"/>
   <LLMFeedback id="essay_rewrite"/>

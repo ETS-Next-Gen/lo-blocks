@@ -60,7 +60,9 @@ function EditControl({ path }) {
   useEffect(() => {
     if (!path) return;
     setStatus('Loading...');
-
+    // TODO: DRY. We'd like to make the provider once.
+    // HACK: This should overlay a redux provider, so we
+    // can change multiple files in the editor.
     const provider = new NetworkStorageProvider();
     provider
       .read(path)
@@ -210,7 +212,8 @@ function PreviewPane({ path }) {
       let candidate;
       try {
         const prov = path ? [`file://${path}`] : [];
-        candidate = await parseOLX(content, prov);
+        const provider = new NetworkStorageProvider();
+        candidate = await parseOLX(content, prov, provider);
       } catch (err) {
         console.log('Preview parse error:', err);
         if (!cancelled) setError('Parse error: ' + (err.message || String(err)));

@@ -57,14 +57,7 @@ function useEditComponentState(field, provenance, defaultState) {
 
 
 // We should probably pull this out into its own component file
-function EditControl({ path }) {
-  // We should make a helper, like, e.g. function useEditComponentState(field, id)
-  const [content, setContent] = useEditComponentState(
-    editorFields.fieldInfoByField.content,
-    path,
-    '',
-  );
-
+function EditControl({ content, setContent, handleSave, path }) {
   // This is status text
   // However, we would like this to have a programmatic meaning too:
   // Everything good? Failed to load? Parse error?
@@ -73,37 +66,6 @@ function EditControl({ path }) {
   const onChange = useCallback((val) => {
     setContent(val);
   }, [setContent]);
-
-  useEffect(() => {
-    if (!path) return;
-    setStatus('Loading...');
-    // TODO: DRY. We'd like to make the provider once.
-    // HACK: This should overlay a redux provider, so we
-    // can change multiple files in the editor.
-    //
-    // Should it be a hook? E.g. useProvider()? An overlay? TBD.
-    // It should definitely report redux state, though
-    const provider = new NetworkStorageProvider();
-    provider
-      .read(path)
-      .then(cnt => {
-        setContent(cnt);
-        setStatus('');
-      })
-      .catch(err => setStatus(`Error: ${err.message}`));
-  }, [path]);
-
-  // TODO: Keep track of whether we have unsaved changes
-  const handleSave = async () => {
-    setStatus('Saving...');
-    try {
-      const provider = new NetworkStorageProvider();
-      await provider.write(path, content);
-      setStatus('Saved');
-    } catch (err) {
-      setStatus(`Error: ${err.message}`);
-    }
-  };
 
   const cmExt = useMemo(() => {
     if (!path) return xml();
@@ -143,36 +105,17 @@ function EditControl({ path }) {
 //   next.js surfaces even handled errors as issues in the UX
 // * We probably want an FSM for the loading / testing / last valid
 //   state regardless.
-function PreviewPane({ path }) {
-  const [content] = useReduxState(
-    {},
-    editorFields.fieldInfoByField.content,
-    '',
-    { id: path }
-  );
+function PreviewPane({ path, content, idMap }) {
   const [parsed, setParsed] = useReduxState(
     {},
     editorFields.fieldInfoByField.parsed,
     null,
     { id: path }
   );
-  const [idMap, setIdMap] = useState(null);
   const [error, setError] = useState(null);
-
-  // Load base idMap from the server
-  useEffect(() => {
-    fetch('/api/content/all')
-      .then(res => res.json())
-      .then(data => {
-        if (!data.ok) setError(data.error);
-        else setIdMap(data.idMap);
-      })
-      .catch(err => setError(err.message));
-  }, []);
 
   // Parse content when it changes
   useEffect(() => {
-    if (!idMap) return;
     let cancelled = false;
     async function doParse() {
       let candidate;
@@ -285,7 +228,56 @@ function NavigationPane() {
 
 
 export default function EditPage() {
+  // Provenance we're editing
   const path = (useParams().path || []).join('/');
+  // Text of file
+  const [content, setContent] = useEditComponentState(
+    editorFields.fieldInfoByField.content,
+    path,
+    null,
+  );
+  const [idMap, setIdMap] = useState(null);
+  // TODO: {status: , msg}
+  // status: [ LOADING, SAVE_ERROR, SAVED, READY, SYNTAX_ERROR, ... ]
+  // msg: Human-friendly message
+  const [error, setError] = useState(null);
+
+  // TODO: Overlay ReduxStorageProvider()
+  const provider = new NetworkStorageProvider();
+  useEffect(() => {
+    if (!path) return;
+    provider
+      .read(path)
+      .then(cnt => {
+        setContent(cnt);
+      })
+      .catch(err => setError(`Error: ${err.message}`));
+  }, [path]);
+
+  // Load base idMap from the server
+  useEffect(() => {
+    fetch('/api/content/all')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) setError(data.error);
+        else setIdMap(data.idMap);
+      })
+      .catch(err => setError(err.message)); // TODO
+  }, []);
+
+  // TODO: Keep track of whether we have unsaved changes
+  const handleSave = async () => {
+    try {
+      await provider.write(path, content);
+      // TODO: Show "Saved"
+      // TODO: Set dirty bit to false
+      // TODO: Reload network / ID Map
+    } catch (err) {
+      setError(`Error: ${err.message}`);
+    }
+  };
+
+  const ready = content && idMap;
 
   return (
     <div className="flex flex-col h-screen">
@@ -293,9 +285,9 @@ export default function EditPage() {
       <div className="flex-1 overflow-hidden">
         <FourPaneLayout
           TopLeft={<NavigationPane />}
-          TopRight={<EditControl path={path} />}
+          TopRight={ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : "Loading..."}
           BottomLeft={<EditorLLMChat />}
-          BottomRight={<PreviewPane path={path} />}
+          BottomRight={ready? <PreviewPane path={path} content={content} idMap={idMap}/> : "Loading"}
         />
       </div>
     </div>

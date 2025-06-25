@@ -3,6 +3,6 @@ import { fields } from '@/lib/state/redux';
 import { scopes } from '@/lib/state/scopes';
 
 export const editorFields = fields([
-  { name: 'content', event: 'SET_CONTENT', scope: scopes.storage },
-  { name: 'parsed', event: 'SET_PARSED', scope: scopes.storage }
+  { name: 'content', scope: scopes.storage },
+  { name: 'parsed', scope: scopes.storage }
 ]);

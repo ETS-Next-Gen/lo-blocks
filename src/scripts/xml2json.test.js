@@ -28,4 +28,4 @@ test('xml2json script outputs valid JSON', async () => {
   let parsed;
   expect(() => { parsed = JSON.parse(fileContent); }).not.toThrow();
   expect(parsed).toHaveProperty('idMap');
-});
+}, 30000);

@@ -18,7 +18,8 @@ import { xml } from '@codemirror/lang-xml';
 import { markdown } from '@codemirror/lang-markdown';
 import { useParams } from 'next/navigation';
 
-import Split from "react-split";
+import { FourPaneLayout } from './FourPaneLayout';
+
 import EditorLLMChat from '@/components/chat/EditorLLMChat';
 import FileNav from '@/components/navigation/FileNav';
 import ComponentNav from '@/components/navigation/ComponentNav';
@@ -42,15 +43,31 @@ import { fileTypes } from '@/lib/storage/fileTypes';
 // import CodeMirror from '@uiw/react-codemirror';
 const CodeMirror = dynamic(() => import('@uiw/react-codemirror').then(mod => mod.default), { ssr: false });
 
+// TODO: This should be a new scope
+// We HACK this into useReduxState since it's there
+// We also need a redux filesystem overlay
+function useEditComponentState(field, provenance, defaultState) {
+  return useReduxState(
+    {}, // HACK
+    field,
+    defaultState,
+    { id: provenance }  // HACK
+  );
+}
+
 
 // We should probably pull this out into its own component file
 function EditControl({ path }) {
-  const [content, setContent] = useReduxState(
-    {},
+  // We should make a helper, like, e.g. function useEditComponentState(field, id)
+  const [content, setContent] = useEditComponentState(
     editorFields.fieldInfoByField.content,
+    path,
     '',
-    { id: path }
   );
+
+  // This is status text
+  // However, we would like this to have a programmatic meaning too:
+  // Everything good? Failed to load? Parse error?
   const [status, setStatus] = useState('');
 
   const onChange = useCallback((val) => {
@@ -63,6 +80,9 @@ function EditControl({ path }) {
     // TODO: DRY. We'd like to make the provider once.
     // HACK: This should overlay a redux provider, so we
     // can change multiple files in the editor.
+    //
+    // Should it be a hook? E.g. useProvider()? An overlay? TBD.
+    // It should definitely report redux state, though
     const provider = new NetworkStorageProvider();
     provider
       .read(path)
@@ -73,6 +93,7 @@ function EditControl({ path }) {
       .catch(err => setStatus(`Error: ${err.message}`));
   }, [path]);
 
+  // TODO: Keep track of whether we have unsaved changes
   const handleSave = async () => {
     setStatus('Saving...');
     try {
@@ -86,6 +107,8 @@ function EditControl({ path }) {
 
   const cmExt = useMemo(() => {
     if (!path) return xml();
+    // TODO: We should not assume paths. This should handle provenances.
+    // Specifically, the provider should be able to take us provenance -> type.
     const ext = path.split('.').pop() ?? '';
     if (ext === fileTypes.xml || ext === fileTypes.olx) return xml();
     if (ext === fileTypes.md) return markdown();
@@ -111,72 +134,15 @@ function EditControl({ path }) {
   );
 }
 
-// We should probably pull this out into its own component file
-function FourPaneLayout({
-  Navigation,
-  Chat,
-  Editor,
-  Preview,
-}) {
-  // You can replace the placeholders with your actual controls/components
-  return (
-    <div className="h-full w-full">
-      {/* Vertical split: Left and Right */}
-      <Split
-        className="flex h-full"
-        sizes={[25, 75]}
-        minSize={200}
-        gutterSize={6}
-        direction="horizontal"
-        style={{ display: "flex" }}
-      >
-        {/* LEFT: Navigation (top), Chat (bottom) */}
-        <Split
-          className="flex flex-col h-full"
-          sizes={[60, 40]}
-          minSize={100}
-          gutterSize={6}
-          direction="vertical"
-        >
-          <div className="p-2 overflow-auto border-b border-gray-200">
-            {Navigation || <div>Navigation</div>}
-          </div>
-          <div className="p-2 overflow-auto h-full flex flex-col">
-            {Chat || <div>Chat</div>}
-          </div>
-        </Split>
-        {/* RIGHT: Editor (top), Preview (bottom) */}
-        <Split
-          className="flex flex-col h-full"
-          sizes={[70, 30]}
-          minSize={100}
-          gutterSize={6}
-          direction="vertical"
-        >
-          <div className="p-2 overflow-auto border-b border-gray-200 h-full flex flex-col">
-            {Editor || <div>Editor</div>}
-          </div>
-          <div className="p-2 overflow-auto">{Preview || <div>Preview</div>}</div>
-        </Split>
-      </Split>
-    </div>
-  );
-}
 
 // TODO: This needs to be more robust to internal errors.
 //
-// Nominally, React Error Boundaries are part of what we want, but
-// when we tried, they didn't immediately work as intended, so we cut our
-// loses after a timeboxed effort, but it's worth trying again.
-//
-// We also really should:
-// * Save last valid state
-// * If errors come up during the real render, revert to it.
-//
-// We probably want an FSM.
-//
-// Good way to test this is to remove the tag in render which omits invalid
-// HTML tags. An invalid HTML tag triggers errors deep in react.
+// * Bad OLX can lead to render-time problems which aren't caught by
+//   exceptions
+// * Nominally, React Error Boundaries are part of what we want, but
+//   next.js surfaces even handled errors as issues in the UX
+// * We probably want an FSM for the loading / testing / last valid
+//   state regardless.
 function PreviewPane({ path }) {
   const [content] = useReduxState(
     {},
@@ -211,6 +177,7 @@ function PreviewPane({ path }) {
     async function doParse() {
       let candidate;
       try {
+	// HACK: We should not be manipulating paths directly
         const prov = path ? [`file://${path}`] : [];
         const provider = new NetworkStorageProvider();
         candidate = await parseOLX(content, prov, provider);
@@ -258,6 +225,7 @@ function PreviewPane({ path }) {
     }
   }, [parsed, idMap]);
 
+  console.log(rendered);
   try {
     return (
       <ErrorBoundary
@@ -324,10 +292,10 @@ export default function EditPage() {
       <AppHeader />
       <div className="flex-1 overflow-hidden">
         <FourPaneLayout
-          Navigation={<NavigationPane />}
-          Editor={<EditControl path={path} />}
-          Chat={<EditorLLMChat />}
-          Preview={<PreviewPane path={path} />}
+          TopLeft={<NavigationPane />}
+          TopRight={<EditControl path={path} />}
+          BottomLeft={<EditorLLMChat />}
+          BottomRight={<PreviewPane path={path} />}
         />
       </div>
     </div>

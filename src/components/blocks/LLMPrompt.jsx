@@ -7,26 +7,40 @@ import _Noop from './_Noop';
 // src/components/blocks/LLMPrompt.jsx
 // Action block to send a prompt to the LLM and store the response in `target`
 
+function parseTextWithRefs(text) {
+  const parts = [];
+  let idx = 0;
+  while (idx < text.length) {
+    const open = text.indexOf('{', idx);
+    if (open === -1) {
+      parts.push({ type: 'text', text: text.slice(idx) });
+      break;
+    }
+    if (open > idx) {
+      parts.push({ type: 'text', text: text.slice(idx, open) });
+    }
+    const close = text.indexOf('}', open + 1);
+    if (close === -1) {
+      parts.push({ type: 'text', text: text.slice(open) });
+      break;
+    }
+    const id = text.slice(open + 1, close).trim();
+    if (id) parts.push({ type: 'ref', id });
+    idx = close + 1;
+  }
+  return parts;
+}
+
 const promptParser = parsers.childParser(async function parsePrompt({ rawKids, parseNode }) {
   const kids = [];
   for (const child of rawKids) {
     const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
     if (tag) {
-      if (tag === 'Element') {
-        const tagParsed = child[tag];
-        const parts = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
-        let ref = '';
-        for (const p of parts) {
-          if (typeof p === 'object' && p['#text']) ref += p['#text'];
-        }
-        kids.push({ type: 'element', ref: ref.trim() });
-      } else {
-        const id = await parseNode(child);
-        if (id) kids.push({ type: 'block', id });
-      }
+      const id = await parseNode(child);
+      if (id) kids.push({ type: 'block', id });
     } else {
       const text = child['#text'] ?? '';
-      if (text) kids.push({ type: 'text', text });
+      if (text) kids.push(...parseTextWithRefs(text));
     }
   }
   return kids;
@@ -44,8 +58,8 @@ function doPrompt({ props }) {
   for (const child of kids) {
     if (child.type === 'text') {
       textParts.push(child.text);
-    } else if (child.type === 'element') {
-      const refId = child.ref;
+    } else if (child.type === 'ref') {
+      const refId = child.id;
       const refInst = props.idMap[refId];
       const refBlueprint = refInst && props.componentMap[refInst.tag];
       if (refBlueprint?.getValue) {

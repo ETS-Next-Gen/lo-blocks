@@ -13,10 +13,11 @@ describe('template end-to-end', () => {
 
     // Render correct
     const values = { subtitle: 'LLMs and Writing', prompt: 'Describe how LLMs are changing writing.' };
-    expect(render(ast, values)).toBe('<h2>LLMs and Writing</h2><p>Describe how LLMs are changing writing.</p>');
+    expect(render(ast, { values })).toBe('<h2>LLMs and Writing</h2><p>Describe how LLMs are changing writing.</p>');
+    expect(render(ast, { getter: () => "Hello" })).toBe('<h2>Hello</h2><p>Hello</p>');
 
     // Render missing
-    expect(render(ast, { subtitle: 'Test' })).toBe('<h2>Test</h2><p></p>');
+    expect(() => render(ast, {values: { subtitle: 'Test' }})).toThrow();
 
     // Validate
     expect(validate(ast, values)).toEqual({ valid: true, missing: [], extra: [] });

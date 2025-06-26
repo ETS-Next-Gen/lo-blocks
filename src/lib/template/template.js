@@ -10,10 +10,11 @@ export function extractPlaceholders(ast) {
   return Array.from(set);
 }
 
-export function render(ast, values) {
+export function render(ast, { values = {}, getter = (key) => {throw Error(`Invalid key: ${key}`);} }) {
   return ast.map(node => {
     if (node.type === "text") return node.value;
-    if (node.type === "placeholder") return values[node.name] ?? "";
+    if (node.type === "placeholder") return values[node.name] ?? getter(node.name);
+    throw Error(`Invalide node.type: ${node.type}`); // TODO: TS never
   }).join('');
 }
 

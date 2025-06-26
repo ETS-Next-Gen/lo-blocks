@@ -8,7 +8,7 @@ import { glob } from 'glob';
 async function loadParser(extension) {
   const clean = extension.replace(/^\./, '');
   const grammarName = clean.replace(/peg$/, '');
-  const pattern = path.resolve('src/components/blocks', `**/_${grammarName}Parser.js`);
+  const pattern = path.resolve('src', `**/_${grammarName}Parser.js`);
   const [parserFile] = await glob(pattern);
   if (!parserFile) {
     throw new Error(`No parser found for extension: ${extension}`);

@@ -46,30 +46,28 @@ export function useFieldSelector<T>(
   // - Are we losing anything nonserializable in AJAX calls?
   // - Is blueprint coming from the right canonical source in render() (probably
   //   componentMap[tag])
-  const id =
-    scope === scopes.component
-      ? optId ?? idResolver.reduxId(props)
-      : optId;
-  const tag =
-    optTag ??
-    props?.blueprint?.OLXName ??
-    props.nodeInfo?.node?.tag;
   return useSelector(
     state => {
-      const s = state?.application_state;
+      const s = state?.application_state?.[scope];
       let val;
       switch (scope) {
         case scopes.componentSetting:
-          val = selector(s?.componentSetting?.[tag]);
+          const tag =
+            optTag ??
+            props?.blueprint?.OLXName ??
+            props.nodeInfo?.node?.tag;
+          val = selector(s?.[tag]);
           break;
         case scopes.system:
-          val = selector(s?.system);
+          val = selector(s);
           break;
         case scopes.storage:
-          val = selector(s?.storage?.[id]);
-          break;
         case scopes.component:
-          val = selector(s?.component?.[id]);
+          const id =
+            scope === scopes.component
+              ? optId ?? idResolver.reduxId(props)
+              : optId;
+          val = selector(s?.[id]);
           break;
         default:
           throw Error("Unrecognized scope");

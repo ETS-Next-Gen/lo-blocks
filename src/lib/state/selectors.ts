@@ -51,17 +51,6 @@ function useApplicationSelector<T>(
   );
 }
 
-function useComponentSelector<T>(
-  id: string | Record<string, any>,
-  selector: (state: any) => T = s => s,
-  options?: SelectorExtraParam<T>
-): T {
-  return useApplicationSelector(
-    s => selector(s?.component_state?.[id]),
-    options
-  );
-}
-
 export function useFieldSelector<T>(
   props: any,  // TODO: Change to props type
   field: FieldInfo,

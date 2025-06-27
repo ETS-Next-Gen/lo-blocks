@@ -60,16 +60,16 @@ export function useFieldSelector<T>(
       let val;
       switch (scope) {
         case scopes.componentSetting:
-          val = selector(s?.componentSetting_state?.[tag]);
+          val = selector(s?.componentSetting?.[tag]);
           break;
         case scopes.system:
-          val = selector(s?.settings_state);
+          val = selector(s?.system);
           break;
         case scopes.storage:
-          val = selector(s?.storage_state?.[id]);
+          val = selector(s?.storage?.[id]);
           break;
         case scopes.component:
-          val = selector(s?.component_state?.[id]);
+          val = selector(s?.component?.[id]);
           break;
         default:
           throw Error("Unrecognized scope");

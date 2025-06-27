@@ -51,8 +51,7 @@ function useApplicationSelector<T>(
   );
 }
 
-/** @deprecated use `useFieldSelector` instead */
-export function useComponentSelector<T>(
+function useComponentSelector<T>(
   id: string | Record<string, any>,
   selector: (state: any) => T = s => s,
   options?: SelectorExtraParam<T>
@@ -72,7 +71,6 @@ export function useFieldSelector<T>(
   const { id: optId, tag: optTag, ...rest } = normalizeOptions(options);
   const scope = field.scope; // Default of scopes.component is handled in field creation
 
-  console.log("ID", optId, options, props);
   // HACK: Clean up the lines below. This code works, but is slightly wrong.
   //
   // This was added since blueprint was sometimes missing (perhaps due to server-side

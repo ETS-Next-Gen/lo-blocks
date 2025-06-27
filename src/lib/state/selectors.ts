@@ -72,6 +72,7 @@ export function useFieldSelector<T>(
   const { id: optId, tag: optTag, ...rest } = normalizeOptions(options);
   const scope = field.scope; // Default of scopes.component is handled in field creation
 
+  console.log("ID", optId, options, props);
   // HACK: Clean up the lines below. This code works, but is slightly wrong.
   //
   // This was added since blueprint was sometimes missing (perhaps due to server-side
@@ -111,11 +112,12 @@ export function useFieldSelector<T>(
         rest
       );
     case scopes.component:
-    default:
       return useApplicationSelector(
         s => selector(s?.component_state?.[id]),
         rest
       );
+    default:
+      throw Error("Unrecognized scope");
   }
 }
 

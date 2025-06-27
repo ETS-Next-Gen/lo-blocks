@@ -2,7 +2,7 @@
 import React from 'react';
 import { dev, CORRECTNESS } from '@/lib/blocks';
 import * as state from '@/lib/state';
-import { useFieldSelector, useComponentSelector } from '@/lib/state';
+import { useFieldSelector } from '@/lib/state';
 import { inferRelatedNodes } from "@/lib/blocks/olxdom";
 import { ignore } from "@/lib/content/parsers";
 

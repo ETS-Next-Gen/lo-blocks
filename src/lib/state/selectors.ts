@@ -58,7 +58,7 @@ export function useFieldSelector<T>(
   options?: FieldSelectorOptions<T>
 ): T {
   // HACK. Selector should run over s.?[field], but it's part of our code migration.
-  const { id: optId, tag: optTag, selector = (s: any) => s?.[field.name], ...rest } = normalizeOptions(options);
+  const { id: optId, tag: optTag, fallback, selector = (s: any) => s?.[field.name], ...rest } = normalizeOptions(options);
   const scope = field.scope; // Default of scopes.component is handled in field creation
 
   // HACK: Clean up the lines below. This code works, but is slightly wrong.
@@ -82,20 +82,27 @@ export function useFieldSelector<T>(
     optTag ??
     props?.blueprint?.OLXName ??
     props.nodeInfo?.node?.tag;
-  return useApplicationSelector(
-    s => {
+  return useSelector(
+    state => {
+      const s = state?.application_state;
+      let val;
       switch (scope) {
         case scopes.componentSetting:
-          return selector(s?.componentSetting_state?.[tag]);
+          val = selector(s?.componentSetting_state?.[tag]);
+          break;
         case scopes.system:
-          return selector(s?.settings_state);
+          val = selector(s?.settings_state);
+          break;
         case scopes.storage:
-          return selector(s?.storage_state?.[id]);
+          val = selector(s?.storage_state?.[id]);
+          break;
         case scopes.component:
-          return selector(s?.component_state?.[id]);
+          val = selector(s?.component_state?.[id]);
+          break;
         default:
           throw Error("Unrecognized scope");
       }
+      return val !== undefined ? val : fallback;
     },
     rest
   );

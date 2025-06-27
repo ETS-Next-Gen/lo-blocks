@@ -1,5 +1,5 @@
 // src/lib/blocks/redux.test.tsx
-import * as redux from './redux';
+import * as redux from './fields';
 
 const { fields } = redux;
 const { __testables } = redux;

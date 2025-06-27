@@ -2,7 +2,8 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { renderHook, act } from '@testing-library/react';
 
-import { fields, useReduxState } from './redux';
+import { fields } from './fields';
+import { useReduxState } from './redux';
 import { scopes } from './scopes';
 import { store } from './store';
 

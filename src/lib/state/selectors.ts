@@ -24,46 +24,62 @@ export interface SelectorOptions<T> {
 }
 
 // --- Selectors ---
-export function useFieldSelector<T>(
-  props,  // TODO: Change to props type
+export const fieldSelector = <T>(
+  state,
+  props,
   field: FieldInfo,
   options: SelectorOptions<T> = {}
-): T {
-  // HACK. Selector should run over s.?[field], but it's part of our code migration.
-  const { id: optId, tag: optTag, fallback, selector = (s: any) => s?.[field.name], ...rest } = options;
-  const scope = field.scope; // Default of scopes.component is handled in field creation
+): T => {
+  const {
+    id: optId,
+    tag: optTag,
+    // TODO: This should run over the field. We do this for when we need multiple fields (ReduxInput),
+    // but really, field should be a list
+    selector = (s: any) => s?.[field.name],
+    fallback,
+  } = options;
 
-  return useSelector(
-    state => {
-      const s = state?.application_state?.[scope];
-      let val;
-      switch (scope) {
-        case scopes.componentSetting:
-          const tag = optTag ?? props?.blueprint?.OLXName ?? props.nodeInfo?.node?.tag;
-          val = selector(s?.[tag]);
-          break;
-        case scopes.system:
-          val = selector(s);
-          break;
-        case scopes.storage:
-        case scopes.component:
-          const id = optId ?? idResolver.reduxId(props);
-          val = selector(s?.[id]);
-          break;
-        default:
-          throw Error("Unrecognized scope");
+  const { scope } = field;
+  const scopedState = state?.application_state?.[scope];
+
+  const value: T | undefined = (() => {
+    switch (scope) {
+      case scopes.componentSetting: {
+        const tag =
+          optTag ??
+          props?.blueprint?.OLXName ??
+          props.nodeInfo?.node?.tag;
+        return selector(scopedState?.[tag]);
       }
-      return val !== undefined ? val : fallback;
-    },
-    rest
+      case scopes.system:
+        return selector(scopedState);
+      case scopes.storage:
+      case scopes.component: {
+        const id = optId ?? idResolver.reduxId(props);
+        return selector(scopedState?.[id]);
+      }
+      default:
+        throw new Error('Unrecognized scope');
+    }
+  })();
+
+  return value === undefined ? (fallback as T) : value;
+};
+
+
+/** React-friendly wrapper that forwards any equalityFn from options. */
+export const useFieldSelector = <T>(
+  props: any,               // TODO: narrow when convenient
+  field: FieldInfo,
+  options: SelectorOptions<T> = {}
+): T =>
+  useSelector(
+    (state) => fieldSelector(state, props, field, options),
+    options.equalityFn
   );
-}
+
 
 // TODO: We should figure out where this goes.
-//
-// This should use redux.assertValidField, but we want to be mindful
-// of circular imports, etc.
-
 export function useReduxInput(
   props,
   field: FieldInfo,
@@ -141,7 +157,3 @@ export function useReduxInput(
     }
   ];
 }
-
-// Export internals for test
-export const __testables = {
-};

@@ -175,6 +175,17 @@ context-relevant blocks. This allows us to, instead of passing IDs, to
 pass around `props`, and change the logic around extracting IDs as
 this evolves and as we figure things out.
 
+At this stage, though, we only have two ID types:
+
+* reduxId (should this be stateId?) refers to what we store the item
+  under in redux
+* nodeId refers to where the node goes in idMap
+
+This distinction came down when handling lists in a graphic organizer
+and considering certain types of templated content. One OLX node
+definition may come up multiple times in a render if it is e.g. from
+an expanding list of documents in a graphic organizer.
+
 DAG Structure
 -------------
 

@@ -11,6 +11,8 @@
 
 const ID_RESOLUTION_MATRIX = {
   reduxId:      ["stateId", "id", "urlName", "url_name"],
+  nodeId:       "nodeId.sentinel",  // Handled out-of-line; included for introspection in test case
+  // And, e.g.:
   urlName:      ["urlName", "url_name", "id"],
   htmlId:       ["id", "urlName", "url_name", "key"],
   reactKey:     ["key", "id", "urlName", "url_name"],
@@ -45,16 +47,41 @@ function resolveIdForContext(context, matrix = ID_RESOLUTION_MATRIX) {
   };
 }
 
-// Exported functions
+// ID used for maintaining state.
+//
+// One node in OLX may lead to between zero and many states. For example, in
+// lists and templated content, a node like:
+//    <TextArea id="supporting_argument/>
+// May need to translate to have multiple state for each time it appears:
+//    graphic_organizer.1.supporting_argument
+//    graphic_organizer.2.supporting_argument
+//    graphic_organizer.3.supporting_argument
+// All of this still comes from the OLX node supporting_argument
+//
+// TODO:
+// * Helpers to point targets, graders, LLMs, etc. appropriately.
+// * Corresponding OLX formats.
+// * Helpers to properly combine prefixes. E.g. lists-of-lists or
+//   lists-in-namespaces
 const _reduxId = resolveIdForContext("reduxId");
 export const reduxId = (input, defaultValue) => {
   const base = _reduxId(input, defaultValue);
   const prefix = input?.idPrefix || '';
   return prefix ? `${prefix}.${base}` : base;
 };
+
+// If we would like to look ourselves up in idMap.
+//
+// In the above example, supporting_argument
+export const nodeId = (input) => {
+  return input.node.id;
+};
+
+// And, e.g.:
 export const urlName = resolveIdForContext("urlName");
 export const htmlId = resolveIdForContext("htmlId");
 export const reactKey = resolveIdForContext("reactKey");
 export const displayName = resolveIdForContext("displayName");
+
 
 export const __testables = { ID_RESOLUTION_MATRIX };

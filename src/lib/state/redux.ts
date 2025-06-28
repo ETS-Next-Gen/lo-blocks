@@ -3,6 +3,7 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
+import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 
 import * as lo_event from 'lo_event';
 
@@ -66,6 +67,15 @@ export const fieldSelector = <T>(
   })();
 
   return value === undefined ? (fallback as T) : value;
+};
+
+// Convenience selector that fetches the current Redux state automatically.
+export const selectFromStore = <T>(
+  field: FieldInfo,
+  options: SelectorOptions<T> = {}
+): T => {
+  const state = reduxLogger.store.getState();
+  return fieldSelector(state, undefined, field, options);
 };
 
 

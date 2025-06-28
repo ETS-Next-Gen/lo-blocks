@@ -59,7 +59,9 @@ function resolveIdForContext(context, matrix = ID_RESOLUTION_MATRIX) {
 //
 // TODO:
 // * Helpers to point targets, graders, LLMs, etc. appropriately.
-// * Corresponding OLX formats
+// * Corresponding OLX formats.
+// * Helpers to properly combine prefixes. E.g. lists-of-lists or
+//   lists-in-namespaces
 const _reduxId = resolveIdForContext("reduxId");
 export const reduxId = (input, defaultValue) => {
   const base = _reduxId(input, defaultValue);

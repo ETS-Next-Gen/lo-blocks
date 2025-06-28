@@ -108,6 +108,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
         fields={ componentMap[tag].blueprint?.fields?.fieldInfoByField }
         nodeInfo={ childNodeInfo }
         componentMap={ componentMap }
+        idPrefix={ idPrefix }
       />
     </DebugWrapper>
   );

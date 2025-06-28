@@ -11,11 +11,12 @@
 
 const ID_RESOLUTION_MATRIX = {
   reduxId:      ["stateId", "id", "urlName", "url_name"],
-  /* And, eg.:
+  nodeId:       "nodeId.sentinel",  // Handled out-of-line; included for introspection in test case
+  // And, e.g.:
   urlName:      ["urlName", "url_name", "id"],
   htmlId:       ["id", "urlName", "url_name", "key"],
   reactKey:     ["key", "id", "urlName", "url_name"],
-  displayName:  ["displayName", "display_name", "urlName", "url_name", "name", "id"] */
+  displayName:  ["displayName", "display_name", "urlName", "url_name", "name", "id"]
 };
 
 /**
@@ -76,11 +77,11 @@ export const nodeId = (input) => {
   return input.node.id;
 };
 
-/* And, e.g.:
+// And, e.g.:
 export const urlName = resolveIdForContext("urlName");
 export const htmlId = resolveIdForContext("htmlId");
 export const reactKey = resolveIdForContext("reactKey");
 export const displayName = resolveIdForContext("displayName");
-*/
+
 
 export const __testables = { ID_RESOLUTION_MATRIX };

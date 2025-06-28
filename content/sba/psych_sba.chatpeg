@@ -1,11 +1,12 @@
 Title: Sleep Refusal Scenario
 Author: [Add author here]
 Course: Intro to Psychology
-----
+~~~~
 
-# [id=scene.1] Introduction
+#Introduction [id=scene.1]
+#-------------------------
 
-Annie: Hey, sorry I'm late. I was talking to my roommate about a problem.
+Annie: Hey, sorry I'm late. I was talking to my roommate about a problem. [id=start]
 
 JJ: What's going on? Is it something you can tell us?
 
@@ -27,11 +28,11 @@ for your friend, Annie. We'll also be studying while we’re helping!
 
 Annie: That sounds like a win-win, to me.
 
----
+### Section:
 
 # [id=scene.2] Brainstorming
 
-JJ: Let's brainstorm some ideas for her. I don't have any kids myself, but I have a younger sister.
+JJ: Let's brainstorm some ideas for her. I don't have any kids myself, but I have a younger sister. [id=brainstorming]
 
 Lin: And I've got little cousins.
 
@@ -57,10 +58,11 @@ You: Say that you won't play any games with him ever again unless he goes to sle
 You: I'm with the "do nothing" crowd. She shouldn't do anything at all.  
 If he stays up, he stays up. That's on him. He'll be so tired the next day, he'll probably never do it again!
 
----
+### Section:
 
 # [id=scene.3] PostQuiz1 -- Understanding Reinforcement and Punishment
 
+[id=scene.3]
 Lin: I think we're getting a lot closer to helping your roommate out,  
 Annie, but can you text her to see what she and the parents have  
 been doing recently to try to get the kid to go to bed?
@@ -86,7 +88,7 @@ Lin: That means we need to figure out things to suggest that will reinforce coop
 # [activity: display messages screenshot]
 peg_sba_sidebar -> messages_image
 
----
+### Section:
 
 # [id=scene.4] PreQuiz2 -- Positive/Negative Reinforcement and Punishment
 
@@ -123,7 +125,7 @@ peg_sba_sidebar -> positive_negative_reinforcement_punishment
 # [activity: display poster image]
 peg_sba_sidebar -> poster_image
 
----
+### Section:
 
 # [id=scene.5] Quiz 1: Reinforcement and Punishment
 
@@ -217,7 +219,7 @@ the way psychologists think about it. If it increases the likelihood someone
 does something, psychologists call it reinforcement, and if it decreases  
 the likelihood, psychologists call it punishment.
 
----
+### Section:
 
 # [id=scene.6] Quiz 2: Positive and Negative Reinforcement and Punishment
 
@@ -307,7 +309,7 @@ excluded in the past, she learned that she really did not want to participate in
 group after all. Essentially, she was discouraged from participating by having  
 participation taken away.
 
----
+### Section:
 
 # [id=scene.7] Considering No-Rules Parenting
 
@@ -355,7 +357,7 @@ peg_sba_sidebar -> email_to_babysitter_edit
 # [activity: AI feedback]
 peg_sba_sidebar -> email_feedback
 
----
+### Section:
 
 # [id=scene.8] Selecting a Strategy
 

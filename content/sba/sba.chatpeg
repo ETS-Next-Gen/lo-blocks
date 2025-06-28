@@ -1,7 +1,7 @@
 // content/sba/sba.chatpeg
 Title: Microbiology SBA
 Author: Adapted Conversation
-----
+~~~~
 [id=intro_start]
 Annie: Hey, sorry I'm late to the lab.
 
@@ -9,10 +9,13 @@ JJ: No problem. What are we doing today?
 
 peg_sba_sidebar -> CapaDemo
 
-Annie: Same thing we do every day pinky, try to synthesize some proteins!
+Annie: Same thing we do every day pinky, try to synthesize some proteins! [id=proteins]
 
 peg_sba_sidebar -> eigen_q1
 -- pause --
+
+Argument
+--------
 
 JJ: Awwww... I prefer lipids
 

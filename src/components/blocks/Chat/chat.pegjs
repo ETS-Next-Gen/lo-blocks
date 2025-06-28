@@ -27,7 +27,7 @@
  *
  *   Title: Clean Room Training
  *   Author: Dr. Z
- *   ----
+ *   ~~~~~~
  *   --- waitFor: studentReady ---
  *   [id=start mood=excited]
  *   Bob: Welcome to the clean room! [expression=happy]
@@ -57,7 +57,7 @@ Conversation
 
 // Case 1: header + body
 ConversationWithHeader
-  = header:ConversationHeader divider:SectionDivider body:ConversationBody {
+  = header:ConversationHeader divider:HeaderDivider body:ConversationBody {
       return { type: "Conversation", header, body };
     }
 
@@ -86,8 +86,26 @@ HeaderLine
 
 // Body of the document: could contain dialogues, commands, etc.
 ConversationBody
-  = lines:(CommentLine / BlankLine / WaitCommand / PauseCommand / CommandBlock / ArrowCommand / DialogueGroup)* {
+  = lines:(CommentLine / SectionHeaderBlock / BlankLine / WaitCommand / PauseCommand / CommandBlock / ArrowCommand / DialogueGroup)* {
       return lines.filter(Boolean);
+    }
+
+SectionHeaderBlock
+  = title:SectionHeaderTitle meta:InlineMetadata? _ NewLine underline:SectionUnderline BlankLine* {
+      return {
+        type: "SectionHeader",
+        title: title.trim(),
+        metadata: meta || {},
+      };
+  }
+
+SectionHeaderTitle
+  = chars:[^\r\n\[]+ { return chars.join(''); }
+
+SectionUnderline
+  = _ dashes:"-" dashTail:[\-*+]* _ NewLine {
+      if (dashes.length + dashTail.length >= 3) return null;
+      expected("at least 3 dashes in section underline");
     }
 
 StartCommandBlock
@@ -100,6 +118,11 @@ CommandContent
   = content:(!EndCommandBlock .)* {
       return content.join('');
   }
+
+// Do we want multiline commands?
+// Perhaps:
+// CommandContent
+//  = content:[^\r\n]* { return content.join(''); }
 
 CommandBlock
   = _ StartCommandBlock _ content:CommandContent EndCommandBlock {
@@ -246,9 +269,9 @@ CommentLine
       return null;
     }
 
-// A divider between sections — e.g. '---', '----*', '---+' etc.
-SectionDivider
-  = dashes:"-" dashTail:[\-*+]* NewLine {
+// A divider between metadata and text — e.g. '~~~' or '~~~~~~'
+HeaderDivider
+  = dashes:"~" dashTail:[\~*+]* NewLine {
       if (dashes.length + dashTail.length >= 3) return "divider";
       expected("at least 3 dashes in section divider");
     }

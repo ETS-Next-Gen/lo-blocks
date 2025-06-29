@@ -3,6 +3,8 @@
   <SideBarPanel>
     <MainPane>
       <Use ref="peg_sba" />
+      <Use ref="peg_sba" clip="[8,12]"/>
+      <Use ref="peg_sba" clip="[8,22]"/>
     </MainPane>
     <Sidebar>
       <UseHistory id="peg_sba_sidebar" target="eigen_q1"/>

@@ -37,8 +37,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
     return render({ node: entry, idMap, key, nodeInfo, componentMap, idPrefix });
   }
 
-  // Handle { type: 'block', id }
-  // We should also support overrides in the near future.
+  // Handle { type: 'block', id, overrides }
   if (
     typeof node === 'object' &&
     node !== null &&
@@ -56,7 +55,10 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
         />
       );
     }
-    return render({ node: entry, idMap, key, nodeInfo, componentMap, idPrefix });
+    const nodeWithOverrides = node.overrides
+      ? { ...entry, attributes: { ...entry.attributes, ...node.overrides } }
+      : entry;
+    return render({ node: nodeWithOverrides, idMap, key, nodeInfo, componentMap, idPrefix });
   }
 
   // Handle structured OLX-style node

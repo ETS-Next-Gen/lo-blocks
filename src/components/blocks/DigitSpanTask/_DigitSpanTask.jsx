@@ -8,7 +8,7 @@ import { DisplayError } from '@/lib/util/debug';
 
 export function _DigitSpanTask( props ) {
   const { id, kids = [], attributes = {}, fields } = props;
-  const mode = attributes.mode || 'forward'; // 'forward' | 'backward' | 'ascending'
+  const mode = attributes.mode ?? 'forward'; // 'forward' | 'backward' | 'ascending'
 
   const [sequence, setSequence] = useReduxState(props, fields.sequence, []);
   const [userInput, setUserInput] = useReduxState(props, fields.userInput, '');
@@ -23,11 +23,7 @@ export function _DigitSpanTask( props ) {
   }, [step, sequence]);
 
   function generateSequence(length) {
-    const seq = [];
-    for (let i = 0; i < length; i++) {
-      seq.push(Math.floor(Math.random() * 9) + 1);
-    }
-    return seq;
+    return Array.from({ length }, () => Math.floor(Math.random() * 9) + 1);
   }
 
   async function playSequence() {

@@ -7,7 +7,7 @@ import { transformTagName } from '@/lib/content/xmlTransforms';
 
 import * as parsers from '@/lib/content/parsers';
 import { Provenance, IdMap } from '@/lib/types';
-import { formatProvenance } from '@/lib/storage/provenance';
+import { formatProvenanceList } from '@/lib/storage/provenance';
 
 const defaultParser = parsers.blocks.parser;
 
@@ -40,7 +40,7 @@ export async function parseOLX(
     if (attributes.ref) {
       if (tag !== 'Use') {
         throw new Error(
-          `Invalid 'ref' attribute on <${tag}> in ${formatProvenance(provenance)}. Only <use> elements may have 'ref'.`
+          `Invalid 'ref' attribute on <${tag}> in ${formatProvenanceList(provenance).join(', ')}. Only <use> elements may have 'ref'.`
         );
       }
 
@@ -49,7 +49,7 @@ export async function parseOLX(
       );
       if (childKeys.length > 0) {
         throw new Error(
-          `<Use ref="..."> in ${formatProvenance(provenance)} must not have kid elements. Found kids: ${childKeys.join(', ')}`
+          `<Use ref="..."> in ${formatProvenanceList(provenance).join(', ')} must not have kid elements. Found kids: ${childKeys.join(', ')}`
         );
       }
 
@@ -81,7 +81,7 @@ export async function parseOLX(
       storeEntry: (storeId, entry) => {
         if (idMap[storeId]) {
           throw new Error(
-            `Duplicate ID "${storeId}" found in ${formatProvenance(provenance)}. Each element must have a unique id.`
+            `Duplicate ID "${storeId}" found in ${formatProvenanceList(provenance).join(', ')}. Each element must have a unique id.`
           );
         }
         idMap[storeId] = entry;

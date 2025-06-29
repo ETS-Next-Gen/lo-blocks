@@ -7,14 +7,7 @@ import * as cp  from './_chatParser.js';
 import { _Chat } from './_Chat';
 
 export const fields = state.fields([
-  'index',           // pointer into the full body array
-  'start',           // (future) id of first block to show
-  'end',             // (future) id of last block to show
-
-  'footerMode',
-  'scrollPosition',
-
-  'value'            // External. TODO: How should we handle these?
+  'value',           // pointer into the full body array
 ]);
 
 const Chat = dev({

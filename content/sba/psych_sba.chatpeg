@@ -3,8 +3,8 @@ Author: [Add author here]
 Course: Intro to Psychology
 ~~~~
 
-#Introduction [id=scene.1]
-#-------------------------
+Introduction [id=scene.1]
+-------------------------
 
 Annie: Hey, sorry I'm late. I was talking to my roommate about a problem. [id=start]
 
@@ -28,9 +28,8 @@ for your friend, Annie. We'll also be studying while we’re helping!
 
 Annie: That sounds like a win-win, to me.
 
-### Section:
-
-# [id=scene.2] Brainstorming
+Brainstorming [id=scene.2]
+--------------------------
 
 JJ: Let's brainstorm some ideas for her. I don't have any kids myself, but I have a younger sister. [id=brainstorming]
 
@@ -58,11 +57,9 @@ You: Say that you won't play any games with him ever again unless he goes to sle
 You: I'm with the "do nothing" crowd. She shouldn't do anything at all.  
 If he stays up, he stays up. That's on him. He'll be so tired the next day, he'll probably never do it again!
 
-### Section:
+PostQuiz1 -- Understanding Reinforcement and Punishment [id=scene.3] 
+--------------------------------------------------------------------
 
-# [id=scene.3] PostQuiz1 -- Understanding Reinforcement and Punishment
-
-[id=scene.3]
 Lin: I think we're getting a lot closer to helping your roommate out,  
 Annie, but can you text her to see what she and the parents have  
 been doing recently to try to get the kid to go to bed?
@@ -88,9 +85,8 @@ Lin: That means we need to figure out things to suggest that will reinforce coop
 # [activity: display messages screenshot]
 peg_sba_sidebar -> messages_image
 
-### Section:
-
-# [id=scene.4] PreQuiz2 -- Positive/Negative Reinforcement and Punishment
+PreQuiz2 -- Positive/Negative Reinforcement and Punishment [id=scene.4]
+-----------------------------------------------------------------------
 
 Annie: Hey guys, there's still something we need to get clear in our own heads before we offer any solutions to my roommate.  
 The most effective behavior modification technique, according to what we learned earlier, is **positive**  

@@ -6,64 +6,83 @@ import React, { useCallback, useMemo } from 'react';
 import { useReduxState, updateReduxField } from '@/lib/state';
 import { ChatComponent, InputFooter, AdvanceFooter } from '@/components/common/ChatComponent';
 
+import * as chatUtils from './chatUtils';
 
 export function _Chat(props) {
-  const { id, fields, kids } = props;
+  const { id, fields, kids, clip, history } = props;
 
   /*  Full parsed body (dialogue lines + command entries).  */
   const allEntries = kids.parsed.body;
 
+  // Clip student is going through
+  const clipRange = useMemo(() => {
+    if (!clip) {
+      // Default: whole doc
+      return { start: 0, end: allEntries.length - 1, valid: true };
+    }
+    // Resolve using your PEG+process logic
+    return chatUtils.clip(
+      { body: allEntries }, clip) || { start: 0, end: allEntries.length - 1, valid: false };
+  }, [allEntries, clip]);
+
+  // Messages befiore the clip
+  const historyRange = useMemo(() => {
+    if (!history) return null;
+    return chatUtils.clip({ body: allEntries }, history);
+  }, [allEntries, history]);
+
+  // All visible messages in the window
+  const windowRange = useMemo(() => {
+    const start = historyRange ? Math.min(historyRange.start, clipRange.start) : clipRange.start;
+    const end = clipRange.end;
+    return { start, end };
+  }, [clipRange, historyRange]);
   /**
    * `index` counts **how many raw entries** we’ve consumed
    * (including command entries that never appear in the UI).
    */
   const [index, setIndex] = useReduxState(
     props,
-    fields.index,
-    1 // start by showing the first block
+    fields.value,
+    clipRange.start // start by showing the first block
   );
 
-  /* ----------------------------------------------------------------
-   * Derived collections
-   * -------------------------------------------------------------- */
+  // Clamp index to within the clip
+  const windowedIndex = Math.max(clipRange.start, Math.min(index, clipRange.end));
 
-  /** Dialogue-only entries shown in the transcript so far */
+  // Show only entries within current visible window
   const visibleMessages = useMemo(() => {
     return allEntries
-      .slice(0, index)
-      .filter((b) => b.type === 'Line');
-  }, [allEntries, index]);
+      .slice(windowRange.start, windowedIndex + 1)
+      .filter(b => b.type === 'Line');
+  }, [allEntries, windowRange, windowedIndex]);
+
 
   /** Total number of dialogue lines (commands excluded) */
   const totalDialogueLines = useMemo(() => {
-    return allEntries.filter((b) => b.type === 'Line').length;
-  }, [allEntries]);
+    return allEntries
+      .slice(windowRange.start, windowRange.end + 1)
+      .filter(b => b.type === 'Line').length;
+  }, [allEntries, windowRange]);
 
-  const conversationFinished = visibleMessages.length >= totalDialogueLines;
+  const conversationFinished = windowedIndex >= clipRange.end;
 
   /* ----------------------------------------------------------------
    * Advance handler
    * -------------------------------------------------------------- */
 
   const handleAdvance = useCallback(() => {
-    let nextIndex = index;
-
-    /* Walk forward until we hit the next dialogue line,
-     * executing (and skipping) any intervening command entries.
-     */
-    while (nextIndex < allEntries.length) {
-      const block = allEntries[nextIndex];
-      console.log(block);
-
+    let nextIndex = windowedIndex;
+    while (nextIndex < windowRange.end) {
+      const block = allEntries[nextIndex + 1];
+      if (!block) break;
       if (block.type === 'ArrowCommand') {
-        updateReduxField(props, fields.value, block.target, {id: block.source});
-        nextIndex += 1; // Skip command entries entirely
+        updateReduxField(props, fields.value, block.target, { id: block.source });
+        nextIndex += 1;
         continue;
       }
-
       nextIndex += 1;
-
-      if (block.type === "Line" || block.type === "PauseCommand") {
+      if (block.type === 'Line' || block.type === 'PauseCommand') {
         break;
       }
       console.log("[Chat] WARNING: Unhandled block type");
@@ -71,8 +90,8 @@ export function _Chat(props) {
       console.log(block.type);
     }
 
-    setIndex(Math.min(nextIndex, allEntries.length));
-  }, [index, allEntries, setIndex]);
+    setIndex(Math.min(nextIndex, windowRange.end));
+  }, [windowedIndex, windowRange, allEntries, setIndex]);
 
   /* ----------------------------------------------------------------
    * Footers

@@ -7,17 +7,22 @@ const client = new OpenAI({
 
 export async function listChatCompletions(
   messages,
-  { maxTokens = 128, temperature = 0.7 } = {}
+  {
+    maxTokens = 128,
+    tools,
+    tool_choice
+  } = {}
 ) {
 
   const res = await client.chat.completions.create({
     model: "gpt-3.5-turbo",
     messages,
     max_tokens: maxTokens,
-    temperature
+    ...(tools && { tools }),
+    ...(tool_choice && { tool_choice }),
   });
 
-  const reply = res.choices?.[0]?.message?.content;
+  const reply = res.choices?.[0]?.message;
 
   return reply ?? "";
 }

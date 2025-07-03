@@ -17,19 +17,22 @@ const default_prompt =     [
     { role: "user", content: "Hi, how are you?"},
   ];
     
-async function processPrompt(prompt, tokens, temperature) {
+async function processPrompt(prompt, tokens, tools, tool_choice) {
   const maxTokens = Number(tokens);
   return await listChatCompletions(
     prompt,
-    {maxTokens: maxTokens}
+    {
+      maxTokens: maxTokens,
+      tools,
+      tool_choice
+    }
   );
 }
 
 export async function GET(request) {
   const prompt = request.nextUrl.searchParams.get('prompt') ?? default_prompt;
   const tokens = request.nextUrl.searchParams.get('tokens') ?? default_tokens;
-  const temperature = request.nextUrl.searchParams.get('temperature') ?? default_temperature;
-  const jsonResponse = await processPrompt(prompt, tokens, temperature);
+  const jsonResponse = await processPrompt(prompt, tokens);
   return NextResponse.json({'response': jsonResponse});
 }
 
@@ -39,8 +42,9 @@ export async function POST(request) {
 
   const prompt = req?.prompt ?? default_prompt;
   const tokens = req?.tokens ?? default_tokens;
-  const temperature = req?.temperature ?? default_temperature;
+  const tools = req?.tools ?? undefined;
+  const tool_choice = req?.tool_choice ?? undefined;
 
-  const jsonResponse = await processPrompt(prompt, tokens, temperature);
+  const jsonResponse = await processPrompt(prompt, tokens, tools, tool_choice);
   return NextResponse.json({'response': jsonResponse});
 }

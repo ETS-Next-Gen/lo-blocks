@@ -25,6 +25,28 @@ export const LLM_STATUS = {
   TOOL_RUNNING: 'LLM_TOOL_RUNNING',
 };
 
+async function handleToolCalls(toolCalls, tools) {
+  // Collect promises for all tool calls in parallel
+  return Promise.all(toolCalls.map(async (call) => {
+    const tool = findToolByName(tools, call.function.name);
+    let result = '';
+    if (tool) {
+      let args = {};
+      try { args = JSON.parse(call.function.arguments || '{}'); } catch {}
+      result = await tool.callback(args);
+    }
+    return {
+      role: 'tool',
+      content: result,
+      tool_call_id: call.id,
+    };
+  }));
+}
+
+function findToolByName(tools, name) {
+  return tools?.find(t => t.function.name === name);
+}
+
 function useChat(params = {}) {
   const { tools = [] } = params;
   const [messages, setMessages] = useState([
@@ -57,8 +79,18 @@ function useChat(params = {}) {
             tools: tools ? tools.map(({ callback, ...rest }) => rest) : []
           }),
         });
-        const json = await res.json();
-        const content = json.choices?.[0]?.message?.content || json.response?.content;
+        const json = (await res.json()).choices?.[0];
+        const content = json?.message?.content;
+        const toolCalls = json?.message.tool_calls;
+        if (toolCalls?.length) {
+          const toolResponses = await handleToolCalls(toolCalls, tools);
+          history = [
+            ...history,
+            json.message,
+            ...toolResponses
+          ];
+          continue;
+        }
         if (content) {
           setMessages((m) => [...m, { type: 'Line', speaker: 'LLM', text: content }]);
           setStatus(LLM_STATUS.RESPONSE_READY);
@@ -69,6 +101,7 @@ function useChat(params = {}) {
       } catch (err) {
         setMessages((m) => [...m, { type: 'SystemMessage', text: 'Error contacting LLM' }]);
         setStatus(LLM_STATUS.ERROR);
+        break;
       }
     }
   };
@@ -77,7 +110,7 @@ function useChat(params = {}) {
 }
 
 export default function EditorLLMChat() {
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage } = useChat({tools: tools});
   const footer = <InputFooter onSendMessage={sendMessage} />;
 
   return (

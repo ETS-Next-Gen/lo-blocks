@@ -1,0 +1,19 @@
+| ID                              | Activity Type / Description                                           |
+|----------------------------------|---------------------------------------------------------------------|
+| student_suggestion              | Constructed response: student brainstorms solutions                 |
+| messages_image                  | Display: screenshot of messages                                     |
+| positive_negative_reinforcement_punishment | Multi-drop: classify statements as types of reinforcement/punishment |
+| poster_image                    | Display: motivational poster                                        |
+| reinforce_punish_1/2/3/4        | Table: radio button quiz, basic reinforcement/punishment            |
+| quiz1_score                     | Table: show scores for first quiz                                   |
+| review_item                     | Radio: review answers (Y/N)                                         |
+| positive_negative_1/2/3/4       | Table: radio button quiz, positive/negative/ reinforcement/punishment |
+| quiz2_score                     | Table: show scores for second quiz                                  |
+| review_item2                    | Radio: review answers (Y/N)                                         |
+| norulesparenting_summary        | Tab: summary of no-rules parenting arguments                        |
+| email_to_babysitter             | Constructed response: draft email                                   |
+| email_to_babysitter_edit        | Constructed response: edit email                                    |
+| email_feedback                  | AI feedback: comment on email                                       |
+| age_appropriacy                 | Checkbox: mark which strategies are age-appropriate                 |
+| age_appropriacy_explanation     | Constructed response: explain choices on age appropriacy            |
+| age_appropriacy_feedback        | AI feedback: on age appropriacy explanation                         |

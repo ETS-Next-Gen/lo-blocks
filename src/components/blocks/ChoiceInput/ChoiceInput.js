@@ -19,12 +19,10 @@ const ChoiceInput = core({
       infer: ['kids'],
       targets: props.targets
     });
-    console.log("ids>>>>", ids);
     const choices = ids.map(cid => {
       const inst = props.idMap?.[cid];
       return { id: cid, tag: inst?.tag };
     });
-    console.log(">>>>>>>", value, choices);
     return { value, choices };
   }
 });

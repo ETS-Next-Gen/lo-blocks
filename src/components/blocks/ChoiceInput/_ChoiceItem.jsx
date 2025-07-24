@@ -1,10 +1,10 @@
-// src/components/blocks/_ChoiceItem.jsx
+// src/components/blocks/ChoiceInput/_ChoiceItem.jsx
 'use client';
 
 import React from 'react';
 import { useFieldSelector, updateReduxField } from '@/lib/state';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
-import { fields as choiceFields } from './ChoiceInput/ChoiceInput';
+import { fields as choiceFields } from './ChoiceInput';
 import { renderCompiledKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 

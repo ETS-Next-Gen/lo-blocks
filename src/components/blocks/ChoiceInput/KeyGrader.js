@@ -1,9 +1,9 @@
-// src/components/blocks/KeyGrader.js
+// src/components/blocks/ChoiceInput/KeyGrader.js
 import * as parsers from '@/lib/content/parsers';
 import * as blocks from '@/lib/blocks';
-import _Noop from './_Noop';
+import _Noop from '../_Noop';
 import * as state from '@/lib/state';
-import { CORRECTNESS } from '../../lib/blocks/correctness.js';
+import { CORRECTNESS } from '@/lib/blocks/correctness.js';
 
 export const fields = state.fields(['correct', 'message']);
 

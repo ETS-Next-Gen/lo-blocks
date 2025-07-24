@@ -132,7 +132,7 @@ function PreviewPane({ path, content, idMap }) {
       try {
         const merged = { ...idMap, ...candidate.idMap };
         render({
-          key: candidate.root?.id ?? 'candidate-root',
+          key: candidate.root,
           node: candidate.root,
           idMap: merged,
           nodeInfo: makeRootNode(),
@@ -158,7 +158,7 @@ function PreviewPane({ path, content, idMap }) {
     try {
       const merged = { ...idMap, ...parsed.idMap };
       return render({
-        key: parsed.root?.id ?? 'parsed-root',
+        key: parsed.root,
         node: parsed.root,
         idMap: merged,
         nodeInfo: makeRootNode(),

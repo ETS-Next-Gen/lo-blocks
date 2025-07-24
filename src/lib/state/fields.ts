@@ -1,6 +1,6 @@
 import { Scope, scopes } from '../state/scopes';
 import { FieldInfoByField, FieldInfoByEvent, FieldInfo } from '../types';
-import { ReduxFieldsReturn } from '../blocks';
+import { ReduxFieldsReturn } from '../types';
 
 const _fieldInfoByField: FieldInfoByField = {};
 const _fieldInfoByEvent: FieldInfoByEvent = {};

@@ -1,4 +1,5 @@
 // src/lib/types.ts
+import { z } from 'zod';
 
 export type JSONValue =
   | string
@@ -59,20 +60,36 @@ export interface Fields {
 
 // Blocks
 // Blueprint: How we declare / register them.
-export interface BlockBlueprint {
-  name?: string;
-  namespace: string;
-  component?: React.ComponentType<any>;
-  action?: Function;
-  isGrader?: boolean;
-  parser?: Function;
-  staticKids?: Function;
-  reducers?: Function[];
-  fields?: Fields;
-  getValue?: Function;
-  extraDebug?: React.ComponentType<any>;
-  description?: string;
-}
+
+const ReduxFieldInfo = z.object({
+  type: z.literal('field'),
+  name: z.string(),
+  event: z.string(),
+  scope: z.string(),
+}).strict();
+const ReduxFieldInfoMap = z.record(ReduxFieldInfo);
+export const ReduxFieldsReturn = z.object({
+  fieldInfoByField: ReduxFieldInfoMap,
+  fieldInfoByEvent: ReduxFieldInfoMap,
+}).strict();
+
+// === Schema ===
+export const BlockBlueprintSchema = z.object({
+  name: z.string().optional(),
+  namespace: z.string().nonempty(),
+  component: z.custom<React.ComponentType<any>>().optional(),
+  action: z.function().optional(),
+  isGrader: z.boolean().optional(),
+  parser: z.function().optional(),
+  staticKids: z.function().optional(),
+  reducers: z.array(z.function()).optional(),
+  fields: ReduxFieldsReturn.optional(),
+  getValue: z.function().optional(),
+  extraDebug: z.custom<React.ComponentType<any>>().optional(),
+  description: z.string().optional(),
+}).strict();
+
+export type BlockBlueprint = z.infer<typeof BlockBlueprintSchema>;
 
 // Blocks don't pass in the namespace; that's added by the partial
 type BlockBlueprintReg = Omit<BlockBlueprint, "namespace">;

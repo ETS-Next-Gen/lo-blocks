@@ -1,10 +1,7 @@
 // src/lib/blocks/index.tsx
-export * from './factory';
-export * from './namespaces';
-// TODO when building we have the following error:
-// Type error: Module './olxdom' has already exported a member named '__testables'.
-// Consider explicitly re-exporting to resolve the ambiguity.
-export * from './olxdom';
-export * from './idResolver';
-export * from './actions';
-export * from './correctness';
+export { blocks } from './factory';
+export { core, dev, test } from './namespaces';
+export { getAllNodes, getKidsBFS, getKidsDFS, getParents, inferRelatedNodes } from './olxdom';
+export { displayName, htmlId, nodeId, reactKey, reduxId, urlName } from './idResolver';
+export { action, executeNodeActions, grader, input, isAction, isInput } from './actions';
+export { CORRECTNESS } from './correctness';

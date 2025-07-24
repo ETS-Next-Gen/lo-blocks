@@ -19,7 +19,7 @@ export const COMPONENT_MAP = { ...BlockRegistry };
 
 // We will validate it here, looking for common error(s).
 function assertValidComponent(component, name) {
-  if (typeof component !== "function") {
+  if (typeof component !== "object") {
     console.log("Failed to validate", name, component, typeof component, component.name);
     throw new Error(
       `Component "${name}" is invalid. This may be due to importing a "use client" component in a server context. ` +

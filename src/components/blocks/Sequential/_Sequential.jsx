@@ -16,6 +16,7 @@ export default function _Sequential(props) {
   );
 
   // Get the child components to display as sequence items
+  // TODO: We probably only want to render the active child.
   const kids = renderCompiledKids(props);
   const numItems = kids.length;
 

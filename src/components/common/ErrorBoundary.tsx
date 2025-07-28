@@ -41,7 +41,9 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     }
 
     if (!this.state.error) {
-      this.lastValid = this.props.children;
+      // TODO the logic should be trying to render. If it fails, we
+      // switch back to the last valid version
+      // this.lastValid = this.props.children;
     }
   }
 

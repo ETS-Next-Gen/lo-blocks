@@ -1,4 +1,6 @@
 import { Scope, scopes } from '../state/scopes';
+import { FieldInfoByField, FieldInfoByEvent, FieldInfo } from '../types';
+import { ReduxFieldsReturn } from '../types';
 
 const _fieldInfoByField: FieldInfoByField = {};
 const _fieldInfoByEvent: FieldInfoByEvent = {};
@@ -98,8 +100,9 @@ export function fields(fieldList: (string | { name: string; event?: string; scop
     fieldInfoByEvent,
   };
 
+  // TODO document what this code is doing
   Object.defineProperty(result, 'extend', {
-    value: (...rest: ReduxFieldsReturn[]) => concatFields(result, ...rest),
+    value: (...rest: typeof ReduxFieldsReturn[]) => concatFields(result, ...rest),
     enumerable: false,
   });
 

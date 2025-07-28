@@ -1,15 +1,23 @@
 // src/lib/graph/parseIdMap.ts
 import { COMPONENT_MAP } from '@/components/componentMap';
+import { GraphNode, GraphEdge, ParseError } from '@/lib/types';
+
+interface ParseResult {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  issues: ParseError[];
+  launchable: string[];
+}
 
 /**
  * Parses the idMap structure into React Flow compatible nodes and edges.
  *
  * TODO: Remove duplicate IDs
  */
-export function parseIdMap(idMap) {
-  const nodes = [];
-  const edges = [];
-  const launchable = [];
+export function parseIdMap(idMap: Record<string, any>): ParseResult {
+  const nodes: GraphNode[] = [];
+  const edges: GraphEdge[] = [];
+  const launchable: string[] = [];
 
   // IF something goes wrong, we add it here
   // At present, unused, as nothing is going wrong.

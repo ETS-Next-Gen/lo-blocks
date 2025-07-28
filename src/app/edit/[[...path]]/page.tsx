@@ -34,6 +34,7 @@ import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import { NetworkStorageProvider } from '@/lib/storage/network';
 import { fileTypes } from '@/lib/storage/fileTypes';
+import { ComponentError } from '@/lib/types';
 
 // This causes CoadMirror not to load on all pages (it gets its own
 // chunk for pages that need it).
@@ -96,7 +97,6 @@ function EditControl({ content, setContent, handleSave, path }) {
   );
 }
 
-
 // TODO: This needs to be more robust to internal errors.
 //
 // * Bad OLX can lead to render-time problems which aren't caught by
@@ -112,7 +112,7 @@ function PreviewPane({ path, content, idMap }) {
     null,
     { id: path }
   );
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<ComponentError>(null);
 
   // Parse content when it changes
   useEffect(() => {
@@ -132,6 +132,7 @@ function PreviewPane({ path, content, idMap }) {
       try {
         const merged = { ...idMap, ...candidate.idMap };
         render({
+          key: candidate.root,
           node: candidate.root,
           idMap: merged,
           nodeInfo: makeRootNode(),
@@ -157,6 +158,7 @@ function PreviewPane({ path, content, idMap }) {
     try {
       const merged = { ...idMap, ...parsed.idMap };
       return render({
+        key: parsed.root,
         node: parsed.root,
         idMap: merged,
         nodeInfo: makeRootNode(),
@@ -229,7 +231,8 @@ function NavigationPane() {
 
 export default function EditPage() {
   // Provenance we're editing
-  const path = (useParams().path ?? []).join('/');
+  const rawPath = useParams().path;
+  const path = Array.isArray(rawPath) ? rawPath.join('/') : rawPath ?? '';
   // Text of file
   const [content, setContent] = useEditComponentState(
     editorFields.fieldInfoByField.content,
@@ -240,7 +243,7 @@ export default function EditPage() {
   // TODO: {status: , msg}
   // status: [ LOADING, SAVE_ERROR, SAVED, READY, SYNTAX_ERROR, ... ]
   // msg: Human-friendly message
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<ComponentError>(null);
 
   // TODO: Overlay ReduxStorageProvider()
   const provider = new NetworkStorageProvider();

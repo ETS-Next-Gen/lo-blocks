@@ -1,36 +1,7 @@
 // src/lib/blocks/factory.tsx
 import React from 'react';
-import { z } from 'zod';
 
-const ReduxFieldInfo = z.object({
-  type: z.literal('field'),
-  name: z.string(),
-  event: z.string(),
-  scope: z.string(),
-}).strict();
-const ReduxFieldInfoMap = z.record(ReduxFieldInfo);
-const ReduxFieldsReturn = z.object({
-  fieldInfoByField: ReduxFieldInfoMap,
-  fieldInfoByEvent: ReduxFieldInfoMap,
-}).strict();
-
-// === Schema ===
-export const BlockBlueprintSchema = z.object({
-  name: z.string().optional(),
-  namespace: z.string().nonempty(),
-  component: z.custom<React.ComponentType<any>>().optional(),
-  action: z.function().optional(),
-  isGrader: z.boolean().optional(),
-  parser: z.function().optional(),
-  staticKids: z.function().optional(),
-  reducers: z.array(z.function()).optional(),
-  fields: ReduxFieldsReturn.optional(),
-  getValue: z.function().optional(),
-  extraDebug: z.custom<React.ComponentType<any>>().optional(),
-  description: z.string().optional(),
-}).strict();
-
-export type BlockBlueprint = z.infer<typeof BlockBlueprintSchema>;
+import { BlockBlueprint, BlockBlueprintSchema, Block, FieldInfoByField } from '../types';
 
 function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
   if (field !== undefined && field !== null) {
@@ -39,9 +10,9 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 }
 
 // === Main factory ===
-function createBlock(config: BlockBlueprint): React.ComponentType<any> {
+function createBlock(config: BlockBlueprint): Block {
   const parsed = BlockBlueprintSchema.parse(config);
-  const Component = config.component ?? (() => null);
+  const Component: React.ComponentType<any> = config.component ?? (() => null);
 
   // === Strict name resolution ===
   const rawName =
@@ -61,7 +32,7 @@ function createBlock(config: BlockBlueprint): React.ComponentType<any> {
   // (Block as any)._isBlock = true
   // And similar.
   // Commit 430ab50f062a538d95c7d5d9630e7783d696de25 is the last one using the preferred format.
-  const Block = {
+  const block: Block = {
     component: Component,
     _isBlock: true,
 
@@ -70,7 +41,7 @@ function createBlock(config: BlockBlueprint): React.ComponentType<any> {
     staticKids: config.staticKids,
     reducers: config.reducers ?? [],
     getValue: config.getValue,
-    fields: parsed?.fields?.fieldInfoByField ?? {},
+    fields: parsed?.fields?.fieldInfoByField as FieldInfoByField ?? {},
 
     OLXName: olxName,
     description: parsed.description,
@@ -78,11 +49,9 @@ function createBlock(config: BlockBlueprint): React.ComponentType<any> {
 
     blueprint: config
   }
-
-
   assertUnimplemented(parsed.reducers, 'reducers');
 
-  return Block;
+  return block;
 }
 
 export const blocks = (namespace: string) =>

@@ -8,19 +8,20 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import AppHeader from '@/components/common/AppHeader';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useReduxState, settingsFields } from '@/lib/state';
+import { ComponentError } from '@/lib/types';
 
 export default function PreviewPage() {
   const params = useParams();
-  const id = params?.id as string;
+  const id = params.id as string;
   const [debug] = useReduxState(
     {},
     settingsFields.fieldInfoByField.debug,
     false,
-    { id: true, tag: true } // HACK: This works around not having proper props. Should be fixed. See below
+    { id: id, tag: 'preview' } // HACK: This works around not having proper props. Should be fixed. See below
   );
 
   const [idMap, setIdMap] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<ComponentError>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -53,7 +54,13 @@ export default function PreviewPage() {
           handler={(err) => setError(err.message)}
         >
           <div className="space-y-4">
-            {render({ node: id, idMap, nodeInfo: makeRootNode(), componentMap: COMPONENT_MAP })}
+            {render({
+              node: id,
+              key: id,
+              idMap,
+              nodeInfo: makeRootNode(),
+              componentMap: COMPONENT_MAP
+            })}
           </div>
         </ErrorBoundary>
 

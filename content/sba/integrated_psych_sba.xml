@@ -64,7 +64,7 @@
     <!-- Scene 7: Final Recommendation -->
     <SplitPanel id="Scene7" sizes="60,40">
       <LeftPane>
-        <Use ref="psych_chat" clip="'Final Recommendations'" /> <!-- Lists all 68 -->
+        <Use ref="psych_chat" clip="'Final Recommendation'" />
       </LeftPane>
       <RightPane>
         <TextBlock>

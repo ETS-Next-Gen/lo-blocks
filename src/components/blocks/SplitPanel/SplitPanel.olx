@@ -1,0 +1,28 @@
+<!-- SplitPanel Block Example -->
+<Lesson id="SplitPanelExample" title="SplitPanel Block Demo" launchable="true">
+
+  <!-- Basic 50/50 Split -->
+  <SplitPanel id="BasicSplit" sizes="50,50">
+    <LeftPane>
+      <TextBlock>
+        # Left Panel Content
+
+	SplitPanel creates side-by-side layouts perfect for:
+        - Instruction + Practice
+        - Content + Activities
+        - Chat + Sidebar
+        - Compare & Contrast
+      </TextBlock>
+    </LeftPane>
+    <RightPane>
+      <TextBlock>
+        # Right Panel Content
+
+	This panel shows how content can be organized spatially for better learning experiences.
+
+	The `sizes` attribute controls the relative widths (e.g., "60,40" for 60%/40% split).
+      </TextBlock>
+    </RightPane>
+  </SplitPanel>
+
+</Lesson>

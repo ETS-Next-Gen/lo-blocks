@@ -1,0 +1,51 @@
+<!-- Sequential Block Example -->
+<Lesson id="SequentialExample" title="Sequential Block Demo" launchable="true">
+  
+  <!-- Basic Sequential with multiple content types -->
+  <Sequential id="BasicSequence">
+    
+    <!-- Step 1: Introduction -->
+    <TextBlock>
+      # Welcome to Sequential Learning
+      
+      This demonstrates how Sequential blocks create step-by-step learning experiences.
+      
+      **Key Features:**
+      - Navigate forward/backward through steps
+      - State preservation across steps  
+      - Flexible content in each step
+    </TextBlock>
+    
+    <!-- Step 2: Interactive Problem -->
+    <CapaProblem id="Practice">
+      <p>Let's practice! What does a Sequential block do?</p>
+      <KeyGrader>
+        <ChoiceInput>
+          <Key>Creates step-by-step learning sequences</Key>
+          <Distractor>Only displays static text</Distractor>
+          <Distractor>Requires all steps to be completed simultaneously</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+    </CapaProblem>
+    
+    <!-- Step 3: Advanced Usage -->
+    <SplitPanel sizes="50,50">
+      <LeftPane>
+        <TextBlock>
+          ## Advanced Sequential Usage
+          
+          Sequential blocks can contain:
+          - Other Sequential blocks (nested)
+          - SplitPanel layouts
+          - Interactive components
+          - Dynamic content with UseHistory
+        </TextBlock>
+      </LeftPane>
+      <RightPane>
+        <TextArea placeholder="Reflect on how you might use Sequential blocks in your own content..." />
+      </RightPane>
+    </SplitPanel>
+    
+  </Sequential>
+  
+</Lesson>

@@ -9,6 +9,7 @@ const HelloAction = blocks.test({
     action: ()=>alert("Hello, World!")
   }),
   name: 'HelloAction',
+  description: 'Testing block that shows "Hello, World!" alert when triggered',
   component: _Noop
 });
 

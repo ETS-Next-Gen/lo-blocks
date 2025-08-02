@@ -17,6 +17,7 @@ function _TextBlock( props ) {
 const TextBlock = test({
   ...parsers.text,
   name: "TextBlock",
+  description: 'Simple text container for testing and development',
   component: _TextBlock
 });
 

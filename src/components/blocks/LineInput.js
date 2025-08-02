@@ -9,6 +9,7 @@ export const fields = state.fields(['value']);
 const LineInput = core({
   ...parsers.blocks,
   name: 'LineInput',
+  description: 'Single-line text input field for student responses',
   component: _LineInput,
   fields,
   getValue: (state, id) => state?.[id]?.value ?? '',

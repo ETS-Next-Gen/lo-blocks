@@ -42,6 +42,7 @@ function _Correctness(props) {
 const Correctness = dev({
   ...ignore,
   name: 'Correctness',
+  description: 'Visual indicator showing grading status (correct/incorrect/unsubmitted)',
   component: _Correctness,
   fields
 });

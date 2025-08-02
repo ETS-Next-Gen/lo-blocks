@@ -10,13 +10,13 @@ import { gradeNumerical } from '@/lib/util/numeric.js';
 // TODO: Why is this correctness and not correct?
 export const fields = state.fields(['correct', 'message']);
 
-// Block implementing a very simple numerical grader used for testing.
 const NumericalGrader = blocks.test({
   ...parsers.blocks,
   ...blocks.grader({
     grader: gradeNumerical,
   }),
   name: 'NumericalGrader',
+  description: 'Grades numeric answers with tolerance for rounding and formatting variations',
   component: _Noop,
   fields,
 });

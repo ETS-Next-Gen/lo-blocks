@@ -13,6 +13,7 @@ const RatioGrader = blocks.test({
     grader: gradeRatio,
   }),
   name: 'RatioGrader',
+  description: 'Grades ratio and fraction answers, comparing the ratio between two inputs',
   component: _Noop,
   fields,
 });

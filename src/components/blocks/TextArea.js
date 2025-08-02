@@ -8,6 +8,7 @@ export const fields = state.fields(['value']);
 const TextArea = core({
   ...parsers.blocks,
   name: 'TextArea',
+  description: 'Multi-line text input field for longer student responses',
   component: _TextArea,
   fields: fields,
   getValue: (state, id) => state?.[id]?.value ?? '',

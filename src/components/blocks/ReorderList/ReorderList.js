@@ -9,6 +9,7 @@ export const fields = state.fields(['order']);
 const ReorderList = dev({
   ...parsers.blocks,
   name: 'ReorderList',
+  description: 'Interactive drag-and-drop list for students to reorder items',
   component: _ReorderList,
   fields,
   getValue: (reduxState, id) => reduxState?.[id]?.order ?? [],

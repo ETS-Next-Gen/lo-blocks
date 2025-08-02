@@ -9,6 +9,7 @@ export const fields = state.fields(['value']);
 const NumberInput = core({
   ...parsers.text,
   name: 'NumberInput',
+  description: 'Numeric input field that parses and validates numerical values',
   component: _NumberInput,
   fields,
   // TODO: Figure out this signature. In the generic, we'll probably need

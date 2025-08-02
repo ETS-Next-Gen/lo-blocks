@@ -15,6 +15,7 @@ const _ComplexInput = (props) =>
 const ComplexInput = core({
   ...parsers.blocks,
   name: 'ComplexInput',
+  description: 'Text input for complex numbers with validation (supports i/j notation)',
   component: _ComplexInput,
   fields,
   getValue: (state, id) => state?.[id]?.value ?? '',

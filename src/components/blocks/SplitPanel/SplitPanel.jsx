@@ -34,6 +34,7 @@ splitParser.staticKids = entry => [
 const SplitPanel = dev({
   ...splitParser,
   name: 'SplitPanel',
+  description: 'Two-column layout with separate LeftPane and RightPane sections',
   component: _SplitPanel
 });
 

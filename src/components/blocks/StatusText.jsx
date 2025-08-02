@@ -31,6 +31,7 @@ function _StatusText(props) {
 const StatusText = dev({
   ...ignore,
   name: 'StatusText',
+  description: 'Displays short grader feedback messages and status text (e.g. used inside CapaProblem)',
   component: _StatusText,
   fields
 });

@@ -6,6 +6,7 @@ import _ChoiceItem from './_ChoiceItem.jsx';
 const Key = dev({
   ...parsers.text,
   name: 'Key',
+  description: 'Correct answer choice option for multiple choice questions',
   component: _ChoiceItem,
 });
 

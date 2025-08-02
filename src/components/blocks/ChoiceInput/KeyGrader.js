@@ -23,6 +23,7 @@ const KeyGrader = blocks.test({
   ...parsers.blocks,
   ...blocks.grader({ grader: gradeKeySelected }),
   name: 'KeyGrader',
+  description: 'Grades multiple choice selections by checking if Key was chosen over Distractor',
   component: _Noop,
   fields,
 });

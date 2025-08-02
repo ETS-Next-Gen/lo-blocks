@@ -55,6 +55,7 @@ sbParser.staticKids = entry => [
 const SideBarPanel = dev({
   ...sbParser,
   name: 'SideBarPanel',
+  description: 'Layout with separate MainPane and Sidebar sections for content organization',
   component: _SideBarPanel
 });
 

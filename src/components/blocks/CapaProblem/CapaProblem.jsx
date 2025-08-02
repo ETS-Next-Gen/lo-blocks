@@ -128,6 +128,7 @@ const CapaProblem = dev({
   parser: capaParser,
   staticKids: capaParser.staticKids,
   name: 'CapaProblem',
+  description: 'Interactive problem container with inputs, grading, and automatic check/status buttons',
   component: _CapaProblem
 });
 

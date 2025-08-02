@@ -2,6 +2,12 @@
  <!-- Student input activities -->
   <TextArea id="student_suggestion" placeholder="What do YOU think she should do to get the 6-year-old to go to sleep at bedtime?"/>
   
+  <Markdown id="case_study_title">
+    ## Case Study Context
+  </Markdown>
+
+  <Image id="bedtime_scenario_image" src="images/bedtime_scenario.svg" alt="A 6-year-old child refusing to go to bed while caregiver looks on" width="400" height="300" />
+
   <Markdown id="messages_image">
     ## Messages between Annie's roommate and parents:
     

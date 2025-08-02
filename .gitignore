@@ -51,3 +51,6 @@ src/generated/pegExtensions.json
 # Autosaves
 *~
 *\#
+
+# Copied images
+public/content

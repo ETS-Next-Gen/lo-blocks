@@ -47,6 +47,21 @@ export interface StorageProvider {
   write(path: string, content: string): Promise<void>;
   update(path: string, content: string): Promise<void>;
   listFiles(selection?: FileSelection): Promise<UriNode>;
+
+  /**
+   * Resolve a relative path against a base provenance URI
+   * @param baseProvenance - Provenance URI of current OLX file
+   * @param relativePath - Relative path from OLX (e.g., "static/image.png")
+   * @returns Resolved path relative to content root (e.g., "mycourse/static/image.png")
+   */
+  resolveRelativePath(baseProvenance: ProvenanceURI, relativePath): string;
+
+  /**
+   * Check if an image file exists and is valid
+   * @param imagePath - Path relative to content root
+   * @returns Promise<boolean>
+   */
+  validateImagePath(imagePath): Promise<boolean>;
 }
 
 export interface FileSelection {
@@ -193,6 +208,41 @@ export class FileStorageProvider implements StorageProvider {
   async listFiles(selection: FileSelection = {}): Promise<UriNode> {
     return listFileTree(selection, this.baseDir);
   }
+
+  resolveRelativePath(baseProvenance: ProvenanceURI, relativePath): string {
+    // Extract the file path from provenance URI relative to this provider's baseDir
+    // e.g., "file:///home/user/projects/lo-blocks/content/sba/file.xml" -> "sba/file.xml"
+    if (!baseProvenance.startsWith('file://')) {
+      throw new Error(`Unsupported provenance format: ${baseProvenance}`);
+    }
+
+    const filePath = baseProvenance.slice(7); // Remove "file://"
+    const relativeFilePath = path.relative(this.baseDir, filePath);
+
+    if (relativeFilePath.startsWith('..')) {
+      throw new Error(`Provenance file outside base directory: ${baseProvenance}`);
+    }
+
+    const baseDir = path.dirname(relativeFilePath);
+    const resolved = path.join(baseDir, relativePath);
+    return path.normalize(resolved);
+  }
+
+  async validateImagePath(imagePath): Promise<boolean> {
+    try {
+      const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
+      if (!imageExts.some(ext => imagePath.toLowerCase().endsWith(ext))) {
+        return false;
+      }
+
+      const fullPath = await resolveSafePath(this.baseDir, imagePath);
+      const fs = await import('fs/promises');
+      const stat = await fs.stat(fullPath);
+      return stat.isFile();
+    } catch {
+      return false;
+    }
+  }
 }
 
 export class GitStorageProvider implements StorageProvider {
@@ -217,6 +267,14 @@ export class GitStorageProvider implements StorageProvider {
   async listFiles(_selection: FileSelection = {}): Promise<UriNode> {
     throw new Error('git storage not implemented');
   }
+
+  resolveRelativePath(_baseProvenance: ProvenanceURI, _relativePath): string {
+    throw new Error('git storage not implemented');
+  }
+
+  async validateImagePath(_imagePath): Promise<boolean> {
+    throw new Error('git storage not implemented');
+  }
 }
 
 export class PostgresStorageProvider implements StorageProvider {
@@ -239,6 +297,14 @@ export class PostgresStorageProvider implements StorageProvider {
   }
 
   async listFiles(_selection: FileSelection = {}): Promise<UriNode> {
+    throw new Error('postgres storage not implemented');
+  }
+
+  resolveRelativePath(_baseProvenance: ProvenanceURI, _relativePath): string {
+    throw new Error('postgres storage not implemented');
+  }
+
+  async validateImagePath(_imagePath): Promise<boolean> {
     throw new Error('postgres storage not implemented');
   }
 }

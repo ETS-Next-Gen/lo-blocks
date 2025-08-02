@@ -2,6 +2,7 @@
 import { StorageProvider, FileStorageProvider, fileTypes } from '@/lib/storage';
 import type { ProvenanceURI, OLXLoadingError } from '@/lib/types';
 import { parseOLX } from '@/lib/content/parseOLX';
+import { copyImagesToPublic } from '@/lib/content/imageSync';
 
 const contentStore = {
   byProvenance: {},
@@ -76,6 +77,9 @@ export async function syncContentFromStorage(
       };
     }
   }
+
+  // Copy images to public directory for Next.js optimization
+  await copyImagesToPublic(provider);
 
   return {
     parsed: contentStore.byProvenance,

@@ -1,4 +1,15 @@
 // src/lib/content/imageSync.js
+//
+// Image synchronization - copies content images to Next.js public directory.
+//
+// Handles the automatic copying of image files from the content directory
+// to the public directory where Next.js can serve them efficiently. This
+// bridges Learning Observer's content storage system with Next.js's static
+// file serving requirements.
+//
+// The sync process preserves directory structure and only copies actual
+// image files, avoiding unnecessary files in the public directory.
+//
 import fs from 'fs/promises';
 import path from 'path';
 

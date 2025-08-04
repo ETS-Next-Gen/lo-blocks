@@ -1,4 +1,19 @@
 // src/lib/content/syncContentFromStorage.ts
+//
+// Content synchronization - main orchestrator for loading OLX content into memory.
+//
+// Manages the complete pipeline from file system to in-memory representation:
+// - Scans storage provider for OLX/XML files with change detection
+// - Parses files through the OLX parser with error collection
+// - Maintains global idMap for block lookups across all content
+// - Handles duplicate ID detection and conflict resolution
+// - Triggers image synchronization for Next.js serving
+//
+// This is the primary entry point for loading Learning Observer content,
+// providing both initial loading and incremental updates as files change.
+// The system maintains provenance tracking so errors can be traced back
+// to specific files and locations.
+//
 import { StorageProvider, FileStorageProvider, fileTypes } from '@/lib/storage';
 import type { ProvenanceURI, OLXLoadingError } from '@/lib/types';
 import { parseOLX } from '@/lib/content/parseOLX';

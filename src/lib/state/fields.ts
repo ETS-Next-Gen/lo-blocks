@@ -1,3 +1,21 @@
+// src/lib/state/fields.ts
+//
+// Field definition system - declarative state management for Learning Observer blocks.
+//
+// CRITICAL TRANSFORMATION: What blocks declare vs. what React components receive:
+//
+// 1. Block declares: `fields: state.fields(['value', 'loading'])`
+// 2. `fields()` returns: `{ fieldInfoByField: { value: FieldInfo, loading: FieldInfo }, ... }`
+// 3. Render extracts: `fields={ blueprint.fields.fieldInfoByField }` (render.jsx:127)
+// 4. Component receives: `props.fields.value` (as FieldInfo object)
+//
+// So blocks work with simple field names, but the internals have FieldInfo
+// objects that contain the mapping to events and scopes. The render system does
+// the transformation from the blueprint's fieldInfoByField to fields in component props.
+//
+// Usage in components: `useReduxInput(props, props.fields.value, fallback)`
+// where `props.fields.value` is a FieldInfo with {name, event, scope}.
+//
 import { Scope, scopes } from '../state/scopes';
 import { FieldInfoByField, FieldInfoByEvent, FieldInfo } from '../types';
 import { ReduxFieldsReturn } from '../types';

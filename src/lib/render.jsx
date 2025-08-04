@@ -1,4 +1,21 @@
 // src/lib/render.jsx
+//
+// Rendering engine - transforms static OLX structure into dynamic rendered tree.
+//
+// Takes the static OLX DAG (idMap) and creates a dynamic rendered OLX DAG with
+// active nodeInfo relationships. This is NOT a direct OLX → React transformation,
+// but rather: Static OLX DAG → Dynamic Rendered OLX DAG → React components
+//
+// Key responsibilities:
+// - Creates nodeInfo tree with parent/child relationships for actions system
+// - Handles component mapping and props resolution
+// - Manages ID resolution and prefixes for list contexts
+// - Provides error boundaries for robust content display
+// - Supports debugging wrappers for development
+//
+// The dynamic OLX structure enables the actions system to find related blocks
+// and coordinate behaviors across the content hierarchy.
+//
 import htmlTags from 'html-tags';
 import React from 'react';
 import { DisplayError, DebugWrapper } from '@/lib/util/debug';

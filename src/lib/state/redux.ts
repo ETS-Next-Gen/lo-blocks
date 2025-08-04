@@ -1,4 +1,24 @@
 // src/lib/state/redux.ts
+//
+// Redux integration layer - React hooks and utilities for accessing Learning Observer state.
+//
+// Provides the interface between React components and the Redux store, with
+// Learning Observer-specific features:
+// - Field-based selectors that understand scoping and ID resolution
+// - Automatic state updates through lo_event logging
+// - Input-specific hooks for form controls with selection tracking
+// - Type-safe state access with fallback values
+//
+// Key functions:
+// - `useFieldSelector`: Get state values with automatic re-rendering
+// - `updateReduxField`: Update state and trigger analytics logging
+// - `useReduxInput`: Complete form control integration with selection state
+// - `fieldSelector`: Core selector logic for different state scopes
+//
+// The system bridges the educational semantics (fields, scopes, analytics)
+// with standard React patterns, making it easy for block developers to
+// build stateful learning components.
+//
 'use client';
 
 import { useRef, useEffect, useCallback } from 'react';

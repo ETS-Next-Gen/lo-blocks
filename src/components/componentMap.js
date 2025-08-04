@@ -8,9 +8,6 @@ export const COMPONENT_MAP = { ...BlockRegistry };
 
 // We add dummy development components here.
 [
-  'LLMButton',
-  'LLMPrompt',
-  'Element',
   'Sidebar',
   'MainPane',
 ].forEach(name => {

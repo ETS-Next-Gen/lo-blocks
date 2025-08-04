@@ -1,4 +1,22 @@
 // src/lib/blocks/actions.jsx
+//
+// Block actions system - enables blocks to perform behaviors beyond rendering.
+//
+// Actions allow blocks to respond to events (clicks, submissions, etc.) by:
+// - Grading student inputs and updating correctness state
+// - Making LLM API calls to generate dynamic content
+// - Triggering workflows across multiple related blocks
+//
+// Key concepts:
+// - `action()` mixin: Makes a block executable with custom logic
+// - `grader()` mixin: Specialized action for assessment that collects inputs,
+//   runs grading logic, and logs results to learning analytics
+// - `input()` mixin: Makes a block's value accessible to other blocks
+// - `executeNodeActions()`: Finds and runs all related actions automatically
+//
+// The system uses inference to automatically find related blocks (inputs for
+// graders, targets for actions) based on DOM hierarchy and explicit targeting.
+//
 import { inferRelatedNodes, getAllNodes } from './olxdom';
 import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import * as lo_event from 'lo_event';
@@ -130,11 +148,37 @@ export function executeNodeActions(props) {
   ids.forEach(targetId => {
     const targetInstance = props.idMap[targetId];
     const targetBlueprint = map[targetInstance.tag];
+
+    // Find the action's nodeInfo in the dynamic OLX DOM tree
+    // Actions should already be rendered as part of the tree, so we need to find them
+    const actionNodeInfo = getNodeById(props, targetId);
+
+    if (!actionNodeInfo) {
+      throw new Error(`Action ${targetId} not found in dynamic DOM tree - this indicates a bug in the rendering system`);
+    }
+
+    // Create proper props for the action component
+    // Match the props structure that render.jsx creates for normal components
+    const actionProps = {
+      // Copy essential props from original context
+      idMap: props.idMap,
+      componentMap: props.componentMap,
+      idPrefix: undefined,  // Actions use their own ID context, not the triggering component's prefix. TODO: Get the right one in.
+
+      // Target-specific props (like render.jsx does)
+      ...targetInstance.attributes,        // OLX attributes from target action
+      kids: targetInstance.kids || [],     // Children of the action block
+      id: targetId,
+      blueprint: targetBlueprint,
+      fields: targetBlueprint.fields?.fieldInfoByField || {}, // Transformed fields like render.jsx:127
+      nodeInfo: actionNodeInfo,
+    };
+
     targetBlueprint.action({
       targetId,
       targetInstance,
       targetBlueprint,
-      props
+      props: actionProps
     });
   });
 }

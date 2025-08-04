@@ -1,6 +1,13 @@
 // src/lib/llm/client.jsx
-
-// OBSOLETE / DEPRECATED
+//
+// LLM client (legacy) - deprecated direct LLM integration interface.
+//
+// This is the original LLM client implementation that's being
+// replaced by an OpenAI-compatible API system. The new API enables
+// multiple consumers including LLMAction blocks. Left while
+// migrating, but should not be used for new development.
+//
+// OBSOLETE / DEPRECATED - Use OpenAI-compatible API instead
 
 import * as lo_event from 'lo_event';
 import * as reducers from 'lo_event/lo_event/lo_assess/reducers';

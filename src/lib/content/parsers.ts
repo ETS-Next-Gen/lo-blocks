@@ -1,4 +1,20 @@
-// src/lib/olx/parsers.js
+// src/lib/content/parsers.ts
+//
+// OLX content parsers - composable utilities for processing Learning Observer XML content.
+//
+// Provides a parser combinator library for transforming OLX (Open Learning XML) into
+// the internal block representation. Key parsers include:
+//
+// - `childParser()`: Decorator that allows for simple parser functions handling the 95% use-case of just transforming children
+// - `blocks`: A childParser that processes lists of block elements (filters out text/comments)
+// - `text`: Extracts plain text content with whitespace handling
+// - `peggyParser()`: Integrates PEG grammars for domain-specific formats
+// - `xml`/`xmljson`: Raw XML passthrough for complex content
+//
+// Preserves provenance (file/line info) for debugging and authoring.
+//
+// This enables Learning Observer to support a range of teacher-friendly ways of structuring content.
+//
 import { XMLBuilder } from 'fast-xml-parser';
 import path from 'path';
 import type { OLXLoadingError } from '@/lib/types';

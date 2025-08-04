@@ -1,4 +1,17 @@
 // src/lib/state/store.ts
+//
+// Redux store configuration - sets up the Learning Observer state management system.
+//
+// Integrates Redux with lo_event for learning analytics, creating a store that:
+// - Organizes state by scopes (component/system/storage/componentSetting)
+// - Automatically logs all state changes for learning research
+// - Collects event types from all registered blocks
+// - Provides debugging and replay capabilities
+//
+// The store bridges educational technology patterns (detailed event logging)
+// with modern React state management, enabling both real-time interactions
+// and comprehensive learning analytics.
+//
 'use client';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';

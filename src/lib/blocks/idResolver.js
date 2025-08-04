@@ -1,13 +1,24 @@
 // src/lib/blocks/idResolver.js
-/*
- * IDs are complex (see /docs/). We would like explicit logic for
- * managing IDs. This is a first stab at it.
- *
- * - We don't know the ID Resolution Matrix is correct
- * - We do want to have a central place to do this
- * - We may want to add different types of context in the future
- *   (e.g. add prefixes, namespaces, etc. to various IDs)
- */
+//
+// ID resolution system - handles the complex mapping between different ID types.
+//
+// IDs are complex (see /docs/). We would like explicit logic for managing IDs.
+// This is a first stab at it and is half-baked:
+// - We don't know the ID Resolution Matrix is correct
+// - We do want to have a central place to do this
+// - We may want to add different types of context in the future
+//   (e.g. add prefixes, namespaces, etc. to various IDs)
+//
+// Learning Observer blocks need multiple types of IDs for different purposes:
+// - `reduxId`: Key for storing state in Redux (may include prefixes for lists)
+// - `nodeId`: Reference in the OLX content tree (for lookups in idMap)
+// - `htmlId`: DOM element ID for accessibility and styling
+// - `reactKey`: React reconciliation key for list rendering
+// - `urlName`: Human-friendly URL component (like edX url_name)
+//
+// Some of these may be identical, but for example, an OLX node repeated
+// twice will have one ID in the static DOM, but need two IDs in anything
+// render-time (like React keys)
 
 const ID_RESOLUTION_MATRIX = {
   reduxId:      ["stateId", "id", "urlName", "url_name"],

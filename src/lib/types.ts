@@ -1,4 +1,17 @@
 // src/lib/types.ts
+//
+// Type definitions - central TypeScript types for Learning Observer architecture.
+//
+// Defines the core data structures that flow through the Learning Observer system:
+// - Content types (OLX, provenance, errors)
+// - Block system types (blueprints, components, fields)
+// - State management types (Redux fields, scopes)
+// - Storage types (providers, file metadata)
+//
+// TypeScript philosophy: We use types to avoid confusion on major interfaces
+// and data structures, but generally don't type basic values (string, any, etc.).
+// Focus is on documenting contracts between system components, not exhaustive typing.
+//
 import { z } from 'zod';
 
 export type JSONValue =

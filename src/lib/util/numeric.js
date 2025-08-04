@@ -1,4 +1,17 @@
 // src/lib/util/numeric.js
+//
+// Numerical utilities - mathematical operations for Learning Observer assessment.
+//
+// Provides numerical grading functions for STEM education, supporting:
+// - Complex number parsing and arithmetic
+// - Tolerance-based comparison (absolute and percentage)
+// - Range checking with inclusive/exclusive bounds
+// - Ratio/fraction grading
+//
+// These utilities enable sophisticated mathematical assessment comparable to
+// systems like LON-CAPA and edX, supporting both exact and approximate answers
+// with flexible tolerance specifications.
+//
 import Complex from 'complex.js';
 import { CORRECTNESS } from '../blocks/correctness.js';
 

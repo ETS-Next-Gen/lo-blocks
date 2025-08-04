@@ -1,9 +1,22 @@
 // src/lib/blocks/olxdom.js
-// Helper functions for traversing the OLX shadow DOM
 //
-// This is dynamically constructed during the render, and represents
-// the currently-rendered OLX nodes (removing duplicates)
-
+// OLX DOM traversal - navigation utilities for the Learning Observer
+// dynamic content DAG.
+//
+// The OLX DOM is Learning Observer's internal representation of educational content,
+// distinct from both the React virtual DOM and the browser DOM. It represents the
+// semantic structure of learning activities as a directed acyclic graph (DAG).
+//
+// Key concepts:
+// - `nodeInfo`: Represents a rendered block with parent/child relationships
+// - `renderedKids`: Active child nodes (may be subset of static kids)
+// - DAG structure: Content can be reused/referenced multiple times
+// - Inference: Automatically finding related blocks for actions/grading
+//
+// This provides the traversal primitives that power the action system's ability
+// to automatically find inputs for graders, targets for LLM calls, etc.
+//
+// This should not be confused with the static OLX DAG.
 
 /**
  * Traverses up the parent chain, returning all parent nodeInfos

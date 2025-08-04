@@ -1,4 +1,17 @@
 // src/lib/storage/provenance.ts
+//
+// Provenance utilities - tracking content source and location for debugging.
+//
+// Implements Learning Observer's provenance system using three related types:
+// - ProvenanceURI: String format like "file:///path/to/content.xml"
+// - ProvenanceStruct: Parsed object with {type, path, ...metadata}
+// - ProvenanceEntry: Either URI string or struct object
+// - Lists, which can contain either format and get converted as needed.
+//
+// The system tracks where content comes from through the parsing pipeline,
+// enabling precise error reporting ("syntax error in mycourse/lesson1.xml:42"),
+// content dependency tracking across storage providers, and authoring.
+//
 import { FileProvenance, GenericProvenance, ProvenanceStruct, ProvenanceURI, ProvenanceEntry } from '../types';
 
 export function parseProvenance(uri: ProvenanceURI): ProvenanceStruct {

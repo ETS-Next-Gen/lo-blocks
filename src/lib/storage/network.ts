@@ -1,5 +1,16 @@
 // src/lib/storage/network.ts
-// src/lib/storage/network.ts
+//
+// Network storage provider - HTTP-based content access for Learning Observer.
+//
+// Enables Learning Observer to load content from remote servers via HTTP APIs,
+// supporting scenarios like:
+// - Content served from a separate CMS or authoring system
+// - Multi-tenant deployments with shared content repositories
+// - Content distribution networks for large-scale delivery
+//
+// The provider translates storage operations into HTTP requests against
+// configurable endpoints, maintaining the same interface as local file storage.
+//
 import type {
   StorageProvider,
   XmlFileInfo,

@@ -1,4 +1,19 @@
 // src/lib/blocks/factory.tsx
+//
+// Block factory - the core mechanism for creating Learning Observer blocks.
+//
+// This file implements the `createBlock()` function that transforms a BlockBlueprint
+// configuration into a fully-formed Block object. Blocks are the fundamental unit
+// of interactivity in Learning Observer - each block combines:
+// - A React component for rendering
+// - Parser logic for processing OLX content
+// - State fields for data management
+// - Optional actions (grading, LLM calls, etc.)
+//
+// The factory handles name resolution, validation, and creates the standardized
+// Block interface that the rest of the system expects. It also provides namespace
+// support for organizing blocks by domain/author.
+//
 import React from 'react';
 
 import { BlockBlueprint, BlockBlueprintSchema, Block, FieldInfoByField } from '../types';
@@ -28,7 +43,7 @@ function createBlock(config: BlockBlueprint): Block {
   }
 
   // HACK: Blocks should be react components with properties. We wrapped this up in a dictionary for debugging.
-  // We should annotate the component itself with:   
+  // We should annotate the component itself with:
   // (Block as any)._isBlock = true
   // And similar.
   // Commit 430ab50f062a538d95c7d5d9630e7783d696de25 is the last one using the preferred format.

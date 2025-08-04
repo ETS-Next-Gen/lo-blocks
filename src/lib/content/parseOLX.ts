@@ -1,4 +1,20 @@
 // src/lib/content/parseOLX.ts
+//
+// OLX document parser - main entry point for processing Learning Observer XML content.
+//
+// Transforms complete OLX documents into the internal idMap representation that
+// the rest of Learning Observer uses for rendering and interaction. The parser:
+//
+// - Uses fast-xml-parser to handle XML parsing with attribute preservation
+// - Routes each XML tag to appropriate block-specific parsers
+// - Builds a flat idMap of all blocks for efficient lookups
+// - Handles <Use ref="..."> references for content reuse (DAG structure)
+// - Generates IDs for blocks that don't have explicit ones
+// - Collects and reports parsing errors with detailed provenance
+//
+// The result is a normalized representation where all content is addressable
+// by ID, relationships are explicit, and the structure supports DAG reuse patterns.
+//
 import SHA1 from 'crypto-js/sha1';
 
 import { XMLParser } from 'fast-xml-parser';

@@ -1,4 +1,13 @@
 // src/lib/graph/parseIdMap.ts
+//
+// Graph visualization - converts Learning Observer content into visual node graphs.
+//
+// Transforms the idMap content structure into React Flow compatible nodes and edges
+// for visualizing learning content as an interactive graph. Extracts parent-child
+// relationships from block staticKids and identifies launchable entry points.
+//
+// Currently used for debugging content structure and relationships in DAG-based content.
+//
 import { COMPONENT_MAP } from '@/components/componentMap';
 import { GraphNode, GraphEdge, ParseError } from '@/lib/types';
 

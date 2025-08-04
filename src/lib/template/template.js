@@ -1,3 +1,15 @@
+// src/lib/template/template.js
+//
+// Template system - simple placeholder substitution using PEG grammar.
+//
+// Provides a lightweight templating system with {{placeholder}} syntax:
+// - `compile`: Parse template strings into AST
+// - `render`: Substitute values into compiled templates
+// - `validate`: Check for missing or extra template variables
+//
+// Generic templating utility - used by Learning Observer content authoring
+// among other applications that need parameterized text generation.
+//
 import * as tp from './_templateParser.js'; // Your generated parser
 
 export const compile = tp.parse;

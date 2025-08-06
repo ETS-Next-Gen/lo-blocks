@@ -4,6 +4,7 @@ import * as blocks from '@/lib/blocks';
 import * as state from '@/lib/state';
 import * as reduxClient from '@/lib/llm/reduxClient';
 import _Noop from './_Noop';
+import _Hidden from './_Hidden';
 
 export const fields = state.fields([]);
 
@@ -82,7 +83,7 @@ const LLMAction = blocks.test({
   }),
   name: 'LLMAction',
   description: 'Executes LLM prompts with embedded Element references and updates target components',
-  component: _Noop,
+  component: _Hidden,
   fields,
 });
 

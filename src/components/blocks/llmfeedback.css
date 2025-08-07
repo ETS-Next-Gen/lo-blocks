@@ -1,0 +1,31 @@
+/* LLMFeedback Component Styles */
+
+.lo-tag-llmfeedback .llm-feedback-container {
+  background-color: var(--lo-surface);
+  border: 1px solid var(--lo-border);
+  border-radius: var(--lo-radius-md);
+  padding: var(--lo-space-lg);
+  font-size: var(--lo-font-size-sm);
+  margin: var(--lo-space-lg) 0;
+}
+
+.lo-tag-llmfeedback .llm-feedback-icon {
+  text-align: center;
+  font-size: var(--lo-font-size-xl);
+  margin-bottom: var(--lo-space-md);
+}
+
+.lo-tag-llmfeedback .llm-feedback-content {
+  color: var(--lo-text-primary);
+  line-height: var(--lo-line-height-normal);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.lo-tag-llmfeedback .llm-feedback-content:empty {
+  color: var(--lo-text-muted);
+}
+
+.lo-tag-llmfeedback .llm-feedback-content:empty::before {
+  content: "Waiting for AI response...";
+}

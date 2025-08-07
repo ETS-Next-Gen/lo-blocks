@@ -23,9 +23,11 @@ function _LLMFeedback(props) {
   );
 
   return (
-    <div className="bg-gray-50 border rounded p-3 text-sm">
-      <div className="text-center text-xl">🤖</div>
-      {llmState === LLM_STATUS.RUNNING ? <Spinner /> : feedback}
+    <div className="llm-feedback-container">
+      <div className="llm-feedback-icon">🤖</div>
+      <div className="llm-feedback-content">
+        {llmState === LLM_STATUS.RUNNING ? <Spinner /> : feedback}
+      </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ function _ActionButton(props) {
   const { label } = props;
   const onClick = () => executeNodeActions(props);
   return (
-    <button onClick={onClick} className="bg-blue-600 text-white px-3 py-1 rounded">
+    <button onClick={onClick}>
       {label}
       {renderCompiledKids( props )}
     </button>

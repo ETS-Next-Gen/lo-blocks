@@ -45,15 +45,13 @@ function _SideBarPanel( props ) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-4">
-      <div key="MainPane" className="flex-1">
-        <h1>Main</h1>
+    <div className="sidebarpanel-container">
+      <div key="MainPane" className="main-pane">
         {render({ ...props, node: main })}
       </div>
-      <div key="Sidebar" className="w-full md:w-64 space-y-3">
-        <h1>Sidebar</h1>
+      <div key="Sidebar" className="sidebar">
         {sidebar.map((node, i) => (
-          <div key={i} className="bg-white rounded shadow-sm border p-3 text-sm">
+          <div key={i} className="sidebar-item">
             {render({ ...props, node, key: i })}
           </div>
         ))}

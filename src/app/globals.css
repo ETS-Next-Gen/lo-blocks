@@ -10,6 +10,10 @@
 @import "@fontsource/geist-sans/800.css";
 @import "@fontsource/geist-mono/900.css";
 
+/* Learning Observer Theme System */
+@import "../styles/theme.css";
+@import "../styles/components.css";
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

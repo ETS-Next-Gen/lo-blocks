@@ -33,24 +33,23 @@ function _Course(props) {
   }
 
   return (
-    <div className="course-container flex h-full">
+    <div className="course-container">
       {/* Left Navigation Accordion */}
-      <div className="course-navigation w-80 border-r border-gray-200 bg-gray-50 overflow-y-auto">
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+      <div className="course-navigation">
+        <div>
+          <h1>{title}</h1>
         </div>
         
-        <div className="p-2">
+        <div>
           {chapters.map((chapter) => (
-            <div key={chapter.id} className="mb-2">
+            <div key={chapter.id}>
               {/* Chapter Header */}
               <button
                 onClick={() => handleChapterClick(chapter.id)}
-                className="w-full text-left p-3 rounded-md hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">{chapter.title}</span>
-                  <span className="text-gray-500">
+                <div>
+                  <span>{chapter.title}</span>
+                  <span>
                     {expandedChapter === chapter.id ? '▼' : '▶'}
                   </span>
                 </div>
@@ -58,16 +57,12 @@ function _Course(props) {
 
               {/* Chapter Children */}
               {expandedChapter === chapter.id && (
-                <div className="ml-4 mt-2 space-y-1">
+                <div>
                   {chapter.children.map((child) => (
                     <button
                       key={child.id}
                       onClick={() => handleChildClick(child.id)}
-                      className={`w-full text-left p-2 rounded text-sm transition-colors ${
-                        selectedChild === child.id
-                          ? 'bg-blue-100 text-blue-900'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
+                      className={selectedChild === child.id ? 'selected' : ''}
                     >
                       {child.attributes?.title || child.tag || child.id}
                     </button>
@@ -80,9 +75,9 @@ function _Course(props) {
       </div>
 
       {/* Right Content Area */}
-      <div className="course-content flex-1 overflow-y-auto">
+      <div className="course-content">
         {selectedChildNode ? (
-          <div className="p-6">
+          <div>
             {render({ 
               node: selectedChildNode, 
               idMap: props.idMap, 
@@ -92,7 +87,7 @@ function _Course(props) {
             })}
           </div>
         ) : (
-          <div className="p-6 text-gray-500">
+          <div>
             <p>Select a section from the navigation to begin.</p>
           </div>
         )}

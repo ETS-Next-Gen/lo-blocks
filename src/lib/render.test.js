@@ -46,7 +46,7 @@ describe('assignReactKeys', () => {
 
 describe('render with <Use> overrides', () => {
   it('applies attribute overrides when rendering', async () => {
-    const xml = '<Lesson id="L"><ActionButton id="B" label="One"/><Use ref="B" label="Two"/></Lesson>';
+    const xml = '<Vertical id="L"><ActionButton id="B" label="One"/><Use ref="B" label="Two"/></Vertical>';
     const { idMap, root } = await parseOLX(xml, ['file://test.xml']);
     const reduxStore = store.init();
     const element = render({ node: root, idMap, nodeInfo: makeRootNode(), componentMap: COMPONENT_MAP });

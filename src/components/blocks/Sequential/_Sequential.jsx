@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { useReduxState } from '@/lib/state';
-import { renderCompiledKids } from '@/lib/render';
+import { render, renderCompiledKids } from '@/lib/render';
 import HistoryBar from '../../common/HistoryBar';
 import { fields } from './Sequential';
 
@@ -16,9 +16,10 @@ export default function _Sequential(props) {
   );
 
   // Get the child components to display as sequence items
-  // TODO: We probably only want to render the active child.
-  const kids = renderCompiledKids(props);
-  const numItems = kids.length;
+  // Only render the active child for performance
+  const allKids = props.kids || [];
+  const numItems = allKids.length;
+  const currentChild = index >= 0 && index < numItems ? allKids[index] : null;
 
   // Navigation handlers
   const handlePrev = () => {
@@ -42,8 +43,8 @@ export default function _Sequential(props) {
   // Create history array for HistoryBar (just indices)
   const history = Array.from({ length: numItems }, (_, i) => i);
 
-  // Current item to display
-  const currentItem = kids[index] || null;
+  // Render only the current item for performance
+  const currentItem = currentChild ? render({ ...props, node: currentChild }) : null;
 
   return (
     <div className="w-full">

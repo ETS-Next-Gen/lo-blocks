@@ -1,4 +1,4 @@
-Learning Observer Blocks
+cLearning Observer Blocks
 ========================
 
 **Learning Blocks** is a modular, extensible runtime for delivering rich, interactive learning and assessment experiences. It’s part of the [Learning Observer](https://github.com/ETS-Next-Gen/writing_observer) project — a flexible, open, and inspectable platform for learning analytics, course delivery, and authoring.
@@ -136,6 +136,17 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+### Sandboxed environments
+
+For local development, we use Firejail. Firejail will limit the scope of if e.g. an npm package is backdoored or otherwise compromised.
+
+- Firejail-wrapped scripts will fail under extra sandboxes (e.g., github CI/CD, Codex Web). In such environments, prefer `npm run build-automation` and `npm run test-automation` (no Firejail wrappers).
+- For local development (humans or agents on a dev machine), use the standard Firejail-wrapped scripts
+- Codex CLI: run commands outside the extra Codex sandbox ("escalated permissions").
+  - Typical failure signatures: `cannot create /run/firejail/profile/...` (Firejail) and `listen EPERM ... /tmp/tsx-XXXX/....pipe` (tsx/vitest).
+
+The `xml2json` script is generally not a CI/CD step and does not have an automation wrapper (although it’s exercised through wrapped tests when needed).
 
 ## Learn More
 

@@ -1,4 +1,4 @@
-<Vertical id="activities">
+<Vertical id="activities" launchable="true">
 
   <!-- Opening screen - problem image -->
   <Vertical id="bedtime_scenario_image">

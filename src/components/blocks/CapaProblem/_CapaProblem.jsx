@@ -37,7 +37,7 @@ export default function _CapaProblem(props) {
   const headerNode = renderBlock(props, 'Correctness', { id: `${id}_header_status`, targets });
   const footerNode = renderBlock(props, 'CapaButton', { id: `${id}_footer_controls`, targets });
 
-  const title = props.displayName || props.display_name || props.title || props.id || 'Problem';
+  const title = props.title || props.displayName || props.id || 'Problem';
 
   // Compute header color based on correctness of first grader (via state hooks)
   const firstGraderId = graderIds[0];

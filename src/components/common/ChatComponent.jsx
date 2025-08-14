@@ -175,6 +175,16 @@ export function ChatComponent({
     }
   }, [initialScrollPosition]);
 
+  // Always scroll to the bottom when new messages are added
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages]);
+
   // Handle Space to advance only when this chat region (or its children) has focus.
   const handleKeyDown = useCallback(
     (e) => {
@@ -227,7 +237,7 @@ export function ChatComponent({
       </div>
       <div
         ref={chatContainerRef}
-        className={`${height} overflow-y-auto p-4 bg-white flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        className={`${height} overflow-y-auto p-4 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500`}
         tabIndex={0}
         role="region"
         aria-label="Chat transcript. Press space to advance."

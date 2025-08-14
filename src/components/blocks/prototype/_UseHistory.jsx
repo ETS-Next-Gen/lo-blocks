@@ -7,11 +7,13 @@ import { useReduxInput, useReduxState } from '@/lib/state';
 import HistoryBar from '@/components/common/HistoryBar';
 
 export function _UseHistory(props) {
-  const { target, fields } = props;
+  const { target, fields, initial } = props;
+  const defaultHistory = initial ? [initial] : (target ? [target] : []);
+  const defaultIndex = defaultHistory.length > 0 ? defaultHistory.length - 1 : 0;
 
   const [value] = useReduxInput(props, fields.value, target);
-  const [history, setHistory] = useReduxState(props, fields.history, []);
-  const [index, setIndex] = useReduxState(props, fields.index, 0);
+  const [history, setHistory] = useReduxState(props, fields.history, defaultHistory);
+  const [index, setIndex] = useReduxState(props, fields.index, defaultIndex);
   const [showHistory] = useReduxState(props, fields.showHistory, true);
   const [follow] = useReduxState(props, fields.follow, true);
 

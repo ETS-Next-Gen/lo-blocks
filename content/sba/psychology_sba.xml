@@ -3,7 +3,7 @@
   
   <!-- Left Panel: SMS Conversation -->
   <LeftPane>
-    <Chat id="psych_chat" src="psych_sba_complete.chatpeg" height="100%" />
+    <Chat id="psych_chat" src="psych_sba_complete.chatpeg" height="h-96" />
   </LeftPane>
   
   <!-- Right Panel: Activities reference -->

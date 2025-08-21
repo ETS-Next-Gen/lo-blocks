@@ -68,12 +68,17 @@ export default function _TextHighlight(props) {
   // Refs for DOM and drag state (no useState per spec)
   const containerRef = useRef(null);
   const wordRefs = useRef(new Map()); // index -> HTMLElement
-  const wordRects = useRef(new Map()); // index -> DOMRect
   const dragging = useRef(false);
   const dragStartPoint = useRef({ x: 0, y: 0 });
   const dragCurrentPoint = useRef({ x: 0, y: 0 });
-  const selectionAtDragStart = useRef(new Set());
   const paintSelect = useRef(true); // true: add, false: remove
+  const startWordIndexRef = useRef(null); // remember the starting word for this drag
+  const forcedPaint = useRef(null); // null=auto, true=force add, false=force erase
+  const processedThisDrag = useRef(new Set()); // indices processed during current drag
+  const didDrag = useRef(false);
+  const DRAG_THRESHOLD = 4; // px to classify as a real drag
+  const selectedRef = useRef(new Set(selectedIndices));
+  useEffect(() => { selectedRef.current = new Set(selectedIndices); }, [selectedIndices]);
 
   // Calculate correct answers
   const correctIndices = useMemo(() => {
@@ -179,51 +184,16 @@ export default function _TextHighlight(props) {
     }
   };
 
-  // Helpers for drag selection based on rectangle overlap (>= 50% area considered "mostly selected")
-  const computeWordRects = () => {
-    wordRects.current.clear();
-    wordRefs.current.forEach((el, idx) => {
-      if (el && typeof idx === 'number' && idx >= 0) {
-        wordRects.current.set(idx, el.getBoundingClientRect());
-      }
-    });
-  };
-
-  const getDragRect = () => {
-    const x1 = Math.min(dragStartPoint.current.x, dragCurrentPoint.current.x);
-    const y1 = Math.min(dragStartPoint.current.y, dragCurrentPoint.current.y);
-    const x2 = Math.max(dragStartPoint.current.x, dragCurrentPoint.current.x);
-    const y2 = Math.max(dragStartPoint.current.y, dragCurrentPoint.current.y);
-    return { left: x1, top: y1, right: x2, bottom: y2, width: x2 - x1, height: y2 - y1 };
-  };
-
-  const rectIntersectionArea = (a, b) => {
-    const left = Math.max(a.left, b.left);
-    const right = Math.min(a.right, b.right);
-    const top = Math.max(a.top, b.top);
-    const bottom = Math.min(a.bottom, b.bottom);
-    const w = Math.max(0, right - left);
-    const h = Math.max(0, bottom - top);
-    return w * h;
-  };
-
-  const indicesOverlappedByDrag = () => {
-    const drag = getDragRect();
-    const overlapped = new Set();
-    const isPoint = drag.width <= 0 && drag.height <= 0;
-    wordRects.current.forEach((rect, idx) => {
-      if (!rect) return;
-      if (isPoint) {
-        if (drag.left >= rect.left && drag.left <= rect.right && drag.top >= rect.top && drag.top <= rect.bottom) {
-          overlapped.add(idx);
-        }
-      } else {
-        const area = rect.width * rect.height || 1;
-        const inter = rectIntersectionArea(drag, rect);
-        if (inter / area >= 0.5) overlapped.add(idx);
-      }
-    });
-    return overlapped;
+  // Paint-by-hit helpers (no rectangle math)
+  const applyHit = (idx) => {
+    if (typeof idx !== 'number' || idx < 0) return;
+    if (processedThisDrag.current.has(idx)) return;
+    processedThisDrag.current.add(idx);
+    const next = new Set(selectedRef.current);
+    if (paintSelect.current) next.add(idx); else next.delete(idx);
+    setSelectedIndices(next);
+    selectedRef.current = next;
+    if (mode === 'immediate') updateImmediateFeedback(next);
   };
 
   // Click toggles a single word
@@ -243,58 +213,80 @@ export default function _TextHighlight(props) {
   // Drag selection: paint to add/remove based on starting word selection
   const startDrag = (clientX, clientY, startWordIndex) => {
     dragging.current = true;
+    didDrag.current = false;
+    processedThisDrag.current.clear();
     dragStartPoint.current = { x: clientX, y: clientY };
     dragCurrentPoint.current = { x: clientX, y: clientY };
-    selectionAtDragStart.current = new Set(selectedIndices);
-    computeWordRects();
-    if (typeof startWordIndex === 'number' && startWordIndex >= 0) {
-      paintSelect.current = !selectionAtDragStart.current.has(startWordIndex);
+    startWordIndexRef.current = (typeof startWordIndex === 'number') ? startWordIndex : null;
+    if (forcedPaint.current !== null) {
+      paintSelect.current = !!forcedPaint.current;
+    } else if (typeof startWordIndex === 'number' && startWordIndex >= 0) {
+      paintSelect.current = !selectedRef.current.has(startWordIndex);
     } else {
-      const overlapped = indicesOverlappedByDrag();
-      let allSelected = overlapped.size > 0;
-      overlapped.forEach((idx) => { if (!selectionAtDragStart.current.has(idx)) allSelected = false; });
-      paintSelect.current = !allSelected;
+      paintSelect.current = true;
     }
   };
 
   const updateDrag = (clientX, clientY) => {
     if (!dragging.current) return;
     dragCurrentPoint.current = { x: clientX, y: clientY };
-    const overlapped = indicesOverlappedByDrag();
-    const base = selectionAtDragStart.current;
-    const next = new Set(base);
-    overlapped.forEach((idx) => {
-      if (paintSelect.current) {
-        next.add(idx);
-      } else {
-        next.delete(idx);
+    const dx = dragCurrentPoint.current.x - dragStartPoint.current.x;
+    const dy = dragCurrentPoint.current.y - dragStartPoint.current.y;
+    const crossed = (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD);
+    if (!didDrag.current && crossed) {
+      didDrag.current = true;
+      // Paint the starting word once we know it's a real drag
+      if (typeof startWordIndexRef.current === 'number' && startWordIndexRef.current >= 0) {
+        applyHit(startWordIndexRef.current);
       }
-    });
-    setSelectedIndices(next);
-    if (mode === 'immediate') updateImmediateFeedback(next);
+    }
+    if (!didDrag.current) return; // still a click; don’t paint yet
+    // Hit-test element under pointer, bubble up to data-word-index
+    const el = document.elementFromPoint(clientX, clientY);
+    let node = el, idx = null;
+    while (node && node !== containerRef.current) {
+      if (node.getAttribute) {
+        const v = node.getAttribute('data-word-index');
+        if (v !== null) { idx = Number(v); break; }
+      }
+      node = node.parentNode;
+    }
+    if (typeof idx === 'number') applyHit(idx);
   };
 
   const endDrag = () => {
     dragging.current = false;
-  };
-
-  // Mouse event handlers
+    forcedPaint.current = null;
+    processedThisDrag.current.clear();
+    startWordIndexRef.current = null;
+  };// Mouse event handlers
   const handleMouseDown = (e, wordIndex) => {
+    if (e.button !== 0) return; // left only
     if (mode === 'self-check' || mode === 'self_check') {
       if (showAnswer) return;
     }
     if (mode === 'graded' && checked) return;
     e.preventDefault();
     e.stopPropagation();
+    // Modifiers: Shift/Ctrl/Meta => force add, Alt => force erase
+    if (e.altKey) forcedPaint.current = false;
+    else if (e.shiftKey || e.ctrlKey || e.metaKey) forcedPaint.current = true;
+    else forcedPaint.current = null;
     startDrag(e.clientX, e.clientY, wordIndex);
   };
 
   const handleContainerMouseDown = (e) => {
+    if (e.button !== 0) return;
     if (mode === 'self-check' || mode === 'self_check') {
       if (showAnswer) return;
     }
     if (mode === 'graded' && checked) return;
     e.preventDefault();
+    e.stopPropagation();
+    // Modifiers: Shift/Ctrl/Meta => force add, Alt => force erase
+    if (e.altKey) forcedPaint.current = false;
+    else if (e.shiftKey || e.ctrlKey || e.metaKey) forcedPaint.current = true;
+    else forcedPaint.current = null;
     startDrag(e.clientX, e.clientY, null);
   };
 
@@ -414,10 +406,11 @@ export default function _TextHighlight(props) {
     >
       <div className="prompt mb-4 font-semibold text-lg">{parsed.prompt}</div>
 
-      <div className="text-content mb-4 text-base leading-relaxed" onMouseDown={handleContainerMouseDown}>
+      <div className="text-content mb-4 text-base leading-relaxed" onMouseDown={handleContainerMouseDown} style={{ userSelect: 'none', touchAction: 'none' }}>
         {wordData.map((word, idx) => (
           <span
             key={idx}
+            data-word-index={word.index >= 0 ? word.index : undefined}
             ref={(el) => {
               if (word.index >= 0) {
                 if (el) wordRefs.current.set(word.index, el);
@@ -425,8 +418,13 @@ export default function _TextHighlight(props) {
               }
             }}
             onMouseDown={(e) => handleMouseDown(e, word.index)}
-            onClick={() => handleWordClick(word.index)}
+            onClick={(e) => {
+              if (didDrag.current) { e.preventDefault(); e.stopPropagation(); return; }
+              handleWordClick(word.index);
+            }}
             style={getWordStyle(word)}
+            role="button"
+            aria-pressed={selectedIndices.has(word.index)}
           >
             {word.text}
           </span>

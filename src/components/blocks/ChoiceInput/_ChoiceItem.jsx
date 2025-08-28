@@ -3,7 +3,7 @@
 
 import React, { useMemo } from 'react';
 import { useFieldSelector, updateReduxField } from '@/lib/state';
-import { inferRelatedNodes } from '@/lib/blocks/olxdom';
+import { inferRelatedNodes, splitFeedbackFromKids } from '@/lib/blocks/olxdom';
 import { fields as choiceFields } from './ChoiceInput';
 import { fields as graderFields } from './KeyGrader';
 import { renderCompiledKids } from '@/lib/render';
@@ -12,30 +12,10 @@ import { renderBlock } from '@/lib/renderHelpers';
 import { CORRECTNESS } from '@/lib/blocks';
 
 export default function _ChoiceItem(props) {
-  const { kids: originalKids = [] } = props;
-  let feedback;
-  let kids = originalKids;
+  const { feedbackNode, kids } = splitFeedbackFromKids(props);
+  const feedbackId = feedbackNode.id;
 
-  if (Array.isArray(originalKids)) {
-    const remaining = [];
-    for (const child of originalKids) {
-      if (child && child.type === 'block' && props.idMap?.[child.id].tag === 'Feedback') {
-        if (Array.isArray(props.idMap?.[child.id].kids)) {
-          feedback = props.idMap?.[child.id].kids
-            .map(k => {
-              if (typeof k === 'string') return k;
-              if (k && typeof k === 'object' && k.type === 'text') return k.text;
-              return '';
-            })
-            .join('')
-            .trim();
-        }
-      } else {
-        remaining.push(child);
-      }
-    }
-    kids = remaining;
-  }
+  // TODO this ought to use our helpers for determining the feedbac
   const parentIds = useMemo(() => {
     return inferRelatedNodes(props, {
       selector: n => n?.blueprint?.name === 'ChoiceInput',
@@ -68,10 +48,10 @@ export default function _ChoiceItem(props) {
     { id: parentId, fallback: '' }
   );
 
-  const graderMessage = useFieldSelector(
+  const correctness = useFieldSelector(
     props,
-    graderFields.fieldInfoByField.message,
-    { id: graderId, fallback: '' }
+    graderFields.fieldInfoByField.correct,
+    { id: graderId, fallback: CORRECTNESS.UNSUBMITTED }
   );
   const checked = selected === props.id;
 
@@ -82,12 +62,6 @@ export default function _ChoiceItem(props) {
         props,
         graderFields.fieldInfoByField.correct,
         CORRECTNESS.UNSUBMITTED,
-        { id: graderId }
-      );
-      updateReduxField(
-        props,
-        graderFields.fieldInfoByField.message,
-        '',
         { id: graderId }
       );
     }
@@ -102,9 +76,9 @@ export default function _ChoiceItem(props) {
         onChange={handleChange}
        />
       {renderCompiledKids({ ...props, kids })}
-      {checked && feedback && graderMessage && (
-        <div className="mt-2">
-          {renderBlock(props, 'StatusText', { targets: graderId, field: 'message' })}
+      {feedbackNode && (
+        <div className="mt-1">
+          {renderBlock(props,'Feedback', { id: feedbackId, visible: checked && correctness !== CORRECTNESS.UNSUBMITTED }, feedbackNode.kids)}
         </div>
       )}
     </label>

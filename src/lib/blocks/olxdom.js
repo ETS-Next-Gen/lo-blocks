@@ -163,7 +163,7 @@ export function getAllNodes(nodeInfo, { selector = () => true } = {}) {
 export function inferRelatedNodes(props, {
   selector,
   infer,
-  targets,
+  targets
 } = {}) {
   const { nodeInfo } = props;
   if (!nodeInfo) { console.log(props); throw new Error("inferRelatedNodes: props.nodeInfo is required"); };
@@ -222,6 +222,46 @@ export async function getValueById(props, id) {
   } else {
     console.warn(`⚠️ getValueById: Block ${blockNode.tag} (${id}) has no getValue method`);
   }
+}
+
+/**
+ * Split a block's kids into normal kids and an optional Feedback block.
+ *
+ * @param {Object} props
+ * @param {Array} props.kids - original kids array
+ * @param {Object} props.idMap - map of ids to nodes
+ * @param {Object} [props.nodeInfo] - optional nodeInfo for helper-based lookup
+ * @returns {{kids: Array, feedbackNode: any}}
+ */
+export function splitFeedbackFromKids({ kids: originalKids = [], idMap, nodeInfo } = {}) {
+  const kids = [];
+  let feedbackNode;
+
+  // Use existing inference helpers when nodeInfo is available
+  let feedbackIds = [];
+  if (nodeInfo) {
+    feedbackIds = inferRelatedNodes(
+      { nodeInfo },
+      { selector: n => n?.blueprint?.name === 'Feedback', infer: ['kids'] }
+    );
+  }
+
+  // TODO could this be improved on?
+  if (Array.isArray(originalKids)) {
+    for (const child of originalKids) {
+      if (
+        child &&
+        child.type === 'block' &&
+        (feedbackIds.includes(child.id) || idMap?.[child.id]?.tag === 'Feedback')
+      ) {
+        feedbackNode = idMap?.[child.id];
+      } else {
+        kids.push(child);
+      }
+    }
+    return { kids, feedbackNode };
+  }
+  return { kids: originalKids, feedbackNode };
 }
 
 /**

@@ -1,13 +1,18 @@
 // src/components/blocks/Feedback.js
-import { core } from '@/lib/blocks';
+import { dev } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
-import _Feedback from './_Feedback';
+import _Hidden from './_Hidden';
+import _Noop from './_Noop';
 
-const Feedback = core({
+const Feedback = dev({
   ...parsers.blocks(),
   name: 'Feedback',
   description: 'Metadata container for choice feedback; not rendered directly',
-  component: _Feedback,
+  component: (props) => {
+    const visible = props.visible === true || props.visible === 'true';
+    const Component = visible ? _Noop : _Hidden;
+    return <Component {...props} />;
+  },
 });
 
 export default Feedback;

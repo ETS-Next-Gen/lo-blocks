@@ -3,9 +3,23 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useReduxState } from '@/lib/state';
+import { DisplayError } from '@/lib/util/debug';
 
 export default function _TextHighlight(props) {
-  const { kids = {}, mode = 'immediate', showRealtimeFeedback = false } = props;
+  const { kids = {}, mode = 'immediate', showRealtimeFeedback = false, fields = {} } = props;
+
+  // Validate mode
+  const validModes = ['immediate', 'graded', 'selfcheck'];
+  if (!validModes.includes(mode)) {
+    return (
+      <DisplayError
+        props={props}
+        name="TextHighlight Mode Error"
+        message={`Mode must be one of: ${validModes.join(', ')}`}
+        technical={`Received mode: "${mode}"`}
+      />
+    );
+  }
 
   // Parse the content from kids
   const parsed = useMemo(() => {
@@ -56,24 +70,30 @@ export default function _TextHighlight(props) {
   }, [parsed.segments]);
 
   // Redux state management - store as array, work with as Set
-  const [selectedArray, setSelectedArray] = useReduxState(props, props.fields.value, []);
+  const [selectedArray, setSelectedArray] = useReduxState(props, fields.value, []);
   const selectedIndices = new Set(selectedArray || []);
   const setSelectedIndices = (newSet) => setSelectedArray(Array.from(newSet));
 
-  const [attempts, setAttempts] = useReduxState(props, props.fields.attempts, 0);
-  const [feedback, setFeedback] = useReduxState(props, props.fields.feedback, '');
-  const [showAnswer, setShowAnswer] = useReduxState(props, props.fields.showAnswer, false);
-  const [checked, setChecked] = useReduxState(props, props.fields.checked, false);
+  // Local state to trigger re-renders during selection
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
 
-  // Refs for DOM and drag state (no useState per spec)
+  const [attempts, setAttempts] = useReduxState(props, fields.attempts, 0);
+  const [feedback, setFeedback] = useReduxState(props, fields.feedback, '');
+  const [showAnswer, setShowAnswer] = useReduxState(props, fields.showAnswer, false);
+  const [checked, setChecked] = useReduxState(props, fields.checked, false);
+
+  // Refs for DOM elements
   const containerRef = useRef(null);
   const wordRefs = useRef(new Map()); // index -> HTMLElement
-  const wordRects = useRef(new Map()); // index -> DOMRect
-  const dragging = useRef(false);
-  const dragStartPoint = useRef({ x: 0, y: 0 });
-  const dragCurrentPoint = useRef({ x: 0, y: 0 });
-  const selectionAtDragStart = useRef(new Set());
-  const paintSelect = useRef(true); // true: add, false: remove
+
+  // TODO: Consider moving selection state to Redux for learning analytics
+  //
+  // useRef doesn't let us fully reconstruct state.
+  //
+  // This is a bug for later. We want to use redux selectors, rather than hooks here,
+  // probably.
+  const isSelecting = useRef(false);
+  const lastBrowserSelection = useRef(new Set()); // Track current browser selection
 
   // Calculate correct answers
   const correctIndices = useMemo(() => {
@@ -179,142 +199,138 @@ export default function _TextHighlight(props) {
     }
   };
 
-  // Helpers for drag selection based on rectangle overlap (>= 50% area considered "mostly selected")
-  const computeWordRects = () => {
-    wordRects.current.clear();
-    wordRefs.current.forEach((el, idx) => {
-      if (el && typeof idx === 'number' && idx >= 0) {
-        wordRects.current.set(idx, el.getBoundingClientRect());
+  // Handle native text selection
+  const getSelectedWordIndices = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return new Set();
+
+    const selectedIndices = new Set();
+    const range = selection.getRangeAt(0);
+
+    // Check each word element to see if it's in the selection
+    wordRefs.current.forEach((element, index) => {
+      if (!element || index < 0) return;
+
+      // Check if this element intersects with the selection range
+      const wordRange = document.createRange();
+      wordRange.selectNodeContents(element);
+
+      // Compare ranges
+      const isInSelection =
+        range.compareBoundaryPoints(Range.START_TO_END, wordRange) >= 0 &&
+        range.compareBoundaryPoints(Range.END_TO_START, wordRange) <= 0;
+
+      if (isInSelection) {
+        selectedIndices.add(index);
       }
     });
+
+    return selectedIndices;
   };
 
-  const getDragRect = () => {
-    const x1 = Math.min(dragStartPoint.current.x, dragCurrentPoint.current.x);
-    const y1 = Math.min(dragStartPoint.current.y, dragCurrentPoint.current.y);
-    const x2 = Math.max(dragStartPoint.current.x, dragCurrentPoint.current.x);
-    const y2 = Math.max(dragStartPoint.current.y, dragCurrentPoint.current.y);
-    return { left: x1, top: y1, right: x2, bottom: y2, width: x2 - x1, height: y2 - y1 };
-  };
+  /**
+   * Pure function to compute new render selection
+   * @param {Set} oldRenderSelection - Current rendered selection (set of word indices)
+   * @param {Set} browserSelection - Browser's current selection (set of word indices)
+   * @returns {Set} New render selection
+   */
+  const computeNewRenderSelection = (oldRenderSelection, browserSelection) => {
+    // If no browser selection, return old render selection unchanged
+    if (!browserSelection || browserSelection.size === 0) {
+      return oldRenderSelection;
+    }
 
-  const rectIntersectionArea = (a, b) => {
-    const left = Math.max(a.left, b.left);
-    const right = Math.min(a.right, b.right);
-    const top = Math.max(a.top, b.top);
-    const bottom = Math.min(a.bottom, b.bottom);
-    const w = Math.max(0, right - left);
-    const h = Math.max(0, bottom - top);
-    return w * h;
-  };
+    // Create new selection by toggling browser-selected words
+    const newSelection = new Set(oldRenderSelection);
 
-  const indicesOverlappedByDrag = () => {
-    const drag = getDragRect();
-    const overlapped = new Set();
-    const isPoint = drag.width <= 0 && drag.height <= 0;
-    wordRects.current.forEach((rect, idx) => {
-      if (!rect) return;
-      if (isPoint) {
-        if (drag.left >= rect.left && drag.left <= rect.right && drag.top >= rect.top && drag.top <= rect.bottom) {
-          overlapped.add(idx);
-        }
+    browserSelection.forEach(idx => {
+      if (newSelection.has(idx)) {
+        newSelection.delete(idx); // Toggle off if already selected
       } else {
-        const area = rect.width * rect.height || 1;
-        const inter = rectIntersectionArea(drag, rect);
-        if (inter / area >= 0.5) overlapped.add(idx);
+        newSelection.add(idx); // Toggle on if not selected
       }
     });
-    return overlapped;
+
+    return newSelection;
   };
 
   // Click toggles a single word
-  const handleWordClick = (wordIndex) => {
+  const handleWordClick = (e, wordIndex) => {
     if (wordIndex < 0) return;
-    if (mode === 'self-check' || mode === 'self_check') {
-      if (showAnswer) return;
-    }
+    if (mode === 'selfcheck' && showAnswer) return;
     if (mode === 'graded' && checked) return;
+
+    // Only toggle on click without selection
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return; // Let selection handler deal with it
+    }
 
     const next = new Set(selectedIndices);
-    if (next.has(wordIndex)) next.delete(wordIndex); else next.add(wordIndex);
-    setSelectedIndices(next);
-    if (mode === 'immediate') updateImmediateFeedback(next);
-  };
-
-  // Drag selection: paint to add/remove based on starting word selection
-  const startDrag = (clientX, clientY, startWordIndex) => {
-    dragging.current = true;
-    dragStartPoint.current = { x: clientX, y: clientY };
-    dragCurrentPoint.current = { x: clientX, y: clientY };
-    selectionAtDragStart.current = new Set(selectedIndices);
-    computeWordRects();
-    if (typeof startWordIndex === 'number' && startWordIndex >= 0) {
-      paintSelect.current = !selectionAtDragStart.current.has(startWordIndex);
+    if (next.has(wordIndex)) {
+      next.delete(wordIndex);
     } else {
-      const overlapped = indicesOverlappedByDrag();
-      let allSelected = overlapped.size > 0;
-      overlapped.forEach((idx) => { if (!selectionAtDragStart.current.has(idx)) allSelected = false; });
-      paintSelect.current = !allSelected;
+      next.add(wordIndex);
     }
-  };
-
-  const updateDrag = (clientX, clientY) => {
-    if (!dragging.current) return;
-    dragCurrentPoint.current = { x: clientX, y: clientY };
-    const overlapped = indicesOverlappedByDrag();
-    const base = selectionAtDragStart.current;
-    const next = new Set(base);
-    overlapped.forEach((idx) => {
-      if (paintSelect.current) {
-        next.add(idx);
-      } else {
-        next.delete(idx);
-      }
-    });
     setSelectedIndices(next);
     if (mode === 'immediate') updateImmediateFeedback(next);
   };
 
-  const endDrag = () => {
-    dragging.current = false;
-  };
-
-  // Mouse event handlers
-  const handleMouseDown = (e, wordIndex) => {
-    if (mode === 'self-check' || mode === 'self_check') {
-      if (showAnswer) return;
-    }
+  // Handle selection start
+  const handleMouseDown = (e) => {
+    if (mode === 'selfcheck' && showAnswer) return;
     if (mode === 'graded' && checked) return;
-    e.preventDefault();
-    e.stopPropagation();
-    startDrag(e.clientX, e.clientY, wordIndex);
+
+    isSelecting.current = true;
+    lastBrowserSelection.current = new Set();
+    window.getSelection().removeAllRanges();
   };
 
-  const handleContainerMouseDown = (e) => {
-    if (mode === 'self-check' || mode === 'self_check') {
-      if (showAnswer) return;
+  // Handle selection end
+  const handleMouseUp = (e) => {
+    if (!isSelecting.current) return;
+    isSelecting.current = false;
+
+    const selection = window.getSelection();
+    if (!selection || selection.toString().length === 0) {
+      // This was just a click, not a selection
+      return;
     }
-    if (mode === 'graded' && checked) return;
-    e.preventDefault();
-    startDrag(e.clientX, e.clientY, null);
+
+    // Get the browser's selected word indices
+    const browserSelection = getSelectedWordIndices();
+
+    // Compute new render selection using pure function
+    const newRenderSelection = computeNewRenderSelection(selectedIndices, browserSelection);
+
+    // Update state with new selection
+    setSelectedIndices(newRenderSelection);
+    if (mode === 'immediate') updateImmediateFeedback(newRenderSelection);
+
+    // Clear the browser selection after processing
+    setTimeout(() => {
+      window.getSelection().removeAllRanges();
+    }, 10);
   };
 
+  // Track browser selection changes
   useEffect(() => {
-    const onMove = (e) => {
-      if (!dragging.current) return;
-      updateDrag(e.clientX, e.clientY);
+    const handleSelectionChange = () => {
+      if (isSelecting.current) {
+        // Update last browser selection while selecting
+        lastBrowserSelection.current = getSelectedWordIndices();
+        forceUpdate(); // Trigger re-render to show preview
+      }
     };
-    const onUp = () => {
-      if (!dragging.current) return;
-      endDrag();
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+
+    // Cleanup on unmount
     return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('selectionchange', handleSelectionChange);
+      wordRefs.current.clear();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, showAnswer, checked, selectedArray]);
+  }, []);
 
   // Check answers for graded mode
   const checkAnswers = () => {
@@ -340,21 +356,34 @@ export default function _TextHighlight(props) {
   // Get word color based on state and mode
   const getWordStyle = (word) => {
     if (word.index < 0) return {};
-    const isSelected = selectedIndices.has(word.index);
+
+    // During selection: render computeNewRenderSelection(selectionState, lastBrowserSelection)
+    // Idle: render selectionState
+    let effectiveSelection = selectedIndices;
+    if (isSelecting.current && lastBrowserSelection.current.size > 0) {
+      effectiveSelection = computeNewRenderSelection(selectedIndices, lastBrowserSelection.current);
+    }
+    const isSelected = effectiveSelection.has(word.index);
 
     let backgroundColor = '';
     let borderColor = '';
     let cursor = 'pointer';
 
-    // Self-check mode with answer shown
-    if (mode === 'self-check' || mode === 'self_check') {
+    // Selfcheck mode with answer shown
+    if (mode === 'selfcheck') {
       if (showAnswer) {
+        // Show instructor's answer with colors
         if (word.isRequired) backgroundColor = '#c3f0c3';
         else if (word.isOptional) backgroundColor = '#fff3cd';
         else if (word.isFeedbackTrigger) backgroundColor = '#ffcdd2';
+
+        // Overlay student's selection with gray border
+        if (isSelected) {
+          borderColor = '#9e9e9e';
+        }
         cursor = 'default';
       } else if (isSelected) {
-        // before reveal: neutral selection visualization
+        // Before reveal: neutral selection visualization
         backgroundColor = '#e0e0e0';
       }
     }
@@ -362,21 +391,16 @@ export default function _TextHighlight(props) {
     else if ((mode === 'graded' && checked) || (mode === 'immediate' && showRealtimeFeedback)) {
       if (isSelected) {
         if (!correctIndices.has(word.index)) {
+          // Student selected incorrectly - red background
           backgroundColor = '#ffcdd2';
         } else {
-          // Only show green/yellow if the whole group (all required in it) is satisfied
-          const g = groups.byToken?.get(word.index);
-          let groupSatisfied = true;
-          if (g) {
-            for (const idx of g.required) { if (!selectedIndices.has(idx)) { groupSatisfied = false; break; } }
-          }
-          if (groupSatisfied) {
-            backgroundColor = word.isRequired ? '#c3f0c3' : '#fff3cd';
-          } else {
-            backgroundColor = '#e3e3e3';
-            borderColor = '#9e9e9e';
-          }
+          // Student selected correctly - green/yellow background
+          backgroundColor = word.isRequired ? '#c3f0c3' : '#fff3cd';
         }
+      } else if (correctIndices.has(word.index)) {
+        // Student missed this - dashed border to show what should be selected
+        borderColor = word.isRequired ? '#4ade80' : '#fbbf24';
+        backgroundColor = 'transparent';
       }
     } else {
       // Selection state (all modes before reveal/check) — gray
@@ -388,21 +412,24 @@ export default function _TextHighlight(props) {
 
     return {
       backgroundColor,
-      border: borderColor ? `2px solid ${borderColor}` : '',
+      outline: borderColor ? `2px ${backgroundColor === 'transparent' ? 'dashed' : 'solid'} ${borderColor}` : '',
+      outlineOffset: '-2px',
       borderRadius: '3px',
-      padding: '0 2px',
-      cursor,
-      userSelect: 'none'
+      padding: '2px 4px',
+      margin: '0 -2px',
+      cursor
     };
   };
 
   // Error display
   if (parsed.error) {
     return (
-      <div className="text-highlight-error p-4 border-2 border-red-500 rounded bg-red-50">
-        <div className="font-bold text-red-800 mb-2">TextHighlight Error</div>
-        <div className="text-red-700">{parsed.prompt}</div>
-      </div>
+      <DisplayError
+        props={props}
+        name="TextHighlight Parsing Error"
+        message="Unable to parse TextHighlight content"
+        technical={parsed.prompt}
+      />
     );
   }
 
@@ -410,11 +437,28 @@ export default function _TextHighlight(props) {
     <div
       className="text-highlight-container p-4 border rounded-lg"
       ref={containerRef}
-      style={{ userSelect: 'none' }}
     >
+      <style>{`
+        .text-highlight-container .text-content ::selection {
+          background-color: transparent;
+        }
+        .text-highlight-container .text-content ::-moz-selection {
+          background-color: transparent;
+        }
+      `}</style>
       <div className="prompt mb-4 font-semibold text-lg">{parsed.prompt}</div>
 
-      <div className="text-content mb-4 text-base leading-relaxed" onMouseDown={handleContainerMouseDown}>
+      <div
+        className="text-content mb-4 text-base leading-relaxed"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        style={{
+          WebkitUserSelect: 'text',
+          MozUserSelect: 'text',
+          msUserSelect: 'text',
+          userSelect: 'text'
+        }}
+      >
         {wordData.map((word, idx) => (
           <span
             key={idx}
@@ -424,8 +468,7 @@ export default function _TextHighlight(props) {
                 else wordRefs.current.delete(word.index);
               }
             }}
-            onMouseDown={(e) => handleMouseDown(e, word.index)}
-            onClick={() => handleWordClick(word.index)}
+            onClick={(e) => handleWordClick(e, word.index)}
             style={getWordStyle(word)}
           >
             {word.text}
@@ -446,7 +489,7 @@ export default function _TextHighlight(props) {
         {mode === 'graded' && checked && (
           <button onClick={resetGraded} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Try Again</button>
         )}
-        {(mode === 'self-check' || mode === 'self_check') && !showAnswer && (
+        {mode === 'selfcheck' && !showAnswer && (
           <button onClick={revealAnswer} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Compare</button>
         )}
       </div>

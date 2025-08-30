@@ -7,19 +7,15 @@
  */
 export function gradeArrangement(props, { input }) {
   console.log('gradeArrangement called with:', { props, input });
-  const { algorithm = 'exact', partialCredit = false, kids = [] } = props;
+  const { algorithm = 'exact', partialCredit = false } = props;
   
   // Extract the actual arrangement array from the input object
   const arrangement = input.arrangement || [];
   console.log('extracted arrangement:', arrangement);
   
-  // The correct order is the original order in the XML (0, 1, 2, ...)
+  // The correct order is always [0,1,2,3...] - the XML order
   const correctOrder = Array.from({ length: arrangement.length }, (_, i) => i);
-  console.log('correctOrder:', correctOrder);
-  
-  // Check if arrangement matches correct order
-  const isExactMatch = arrangement.length === correctOrder.length && 
-    arrangement.every((val, i) => val === correctOrder[i]);
+  console.log('correct order (always XML order):', correctOrder);
 
   switch (algorithm) {
     case 'exact':
@@ -44,8 +40,15 @@ export function gradeArrangement(props, { input }) {
  */
 function gradeExact(arrangement, correctOrder) {
   console.log('gradeExact:', { arrangement, correctOrder });
+  console.log('comparison details:');
+  arrangement.forEach((val, index) => {
+    console.log(`position ${index}: got ${val}, expected ${correctOrder[index]}, match: ${val === correctOrder[index]}`);
+  });
+  
   const isCorrect = arrangement.length === correctOrder.length && 
     arrangement.every((val, index) => val === correctOrder[index]);
+  
+  console.log('final result:', isCorrect);
 
   return {
     score: isCorrect ? 1.0 : 0.0,

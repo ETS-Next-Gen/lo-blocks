@@ -41,12 +41,58 @@ export default function _SortableInput(props) {
     return shuffled;
   };
 
-  // Initialize arrangement if empty - just an array of indices
+  // Initialize arrangement if empty - handle index attributes for display order
   React.useEffect(() => {
     if (arrangement.length === 0 && kids.length > 0) {
       const indices = Array.from({ length: kids.length }, (_, i) => i);
-      const initialOrder = shuffle ? shuffleArray(indices) : indices;
-      setArrangement(initialOrder);
+      
+      // Check for index attributes to specify display order
+      const hasIndexAttributes = kids.some(kid => kid?.attributes?.index);
+      
+      if (hasIndexAttributes) {
+        // Build initial order based on index attributes
+        const positioned = [];
+        const unpositioned = [];
+        
+        kids.forEach((kid, i) => {
+          const index = kid?.attributes?.index;
+          if (index !== undefined) {
+            const position = parseInt(index, 10) - 1; // Convert to 0-based
+            positioned.push({ kidIndex: i, position });
+          } else {
+            unpositioned.push(i);
+          }
+        });
+        
+        // Place items with index attributes at their specified positions
+        const result = new Array(kids.length);
+        positioned.forEach(({ kidIndex, position }) => {
+          if (position >= 0 && position < kids.length) {
+            result[position] = kidIndex;
+          }
+        });
+        
+        // Shuffle unpositioned items into remaining slots
+        const emptySlots = [];
+        for (let i = 0; i < result.length; i++) {
+          if (result[i] === undefined) {
+            emptySlots.push(i);
+          }
+        }
+        
+        const shuffledUnpositioned = shuffleArray(unpositioned);
+        emptySlots.forEach((slot, i) => {
+          if (i < shuffledUnpositioned.length) {
+            result[slot] = shuffledUnpositioned[i];
+          }
+        });
+        
+        setArrangement(result);
+      } else {
+        // No index attributes - use shuffle parameter
+        const initialOrder = shuffle ? shuffleArray(indices) : indices;
+        setArrangement(initialOrder);
+      }
     }
   }, [arrangement.length, kids.length, shuffle, setArrangement]);
 

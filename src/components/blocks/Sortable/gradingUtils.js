@@ -1,21 +1,26 @@
 // src/components/blocks/Sortable/gradingUtils.js
 
 /**
- * Grade a sortable arrangement using various algorithms
- * This is called by the grader framework with (props, { input })
- * where input is the arrangement array of indices
+ * Grade a sortable arrangement
+ * 
+ * Called by the grader framework with (props, { input })
+ * where input contains the arrangement from SortableInput.
+ * 
+ * The correct order is always [0,1,2,3...] representing the XML order.
+ * Items should be arranged to match their order in the XML source.
+ * 
+ * @param {Object} props - Grader props including algorithm and partialCredit
+ * @param {Object} input - Input state from SortableInput containing arrangement
+ * @returns {Object} - { correct: boolean, message: string, score: number }
  */
 export function gradeArrangement(props, { input }) {
-  console.log('gradeArrangement called with:', { props, input });
   const { algorithm = 'exact', partialCredit = false } = props;
-  
+
   // Extract the actual arrangement array from the input object
   const arrangement = input.arrangement || [];
-  console.log('extracted arrangement:', arrangement);
-  
+
   // The correct order is always [0,1,2,3...] - the XML order
   const correctOrder = Array.from({ length: arrangement.length }, (_, i) => i);
-  console.log('correct order (always XML order):', correctOrder);
 
   switch (algorithm) {
     case 'exact':
@@ -37,23 +42,18 @@ export function gradeArrangement(props, { input }) {
 
 /**
  * Exact match grading - all or nothing
+ * @param {Array} arrangement - Current arrangement of indices
+ * @param {Array} correctOrder - Expected arrangement
+ * @returns {Object} - Grading result
  */
 function gradeExact(arrangement, correctOrder) {
-  console.log('gradeExact:', { arrangement, correctOrder });
-  console.log('comparison details:');
-  arrangement.forEach((val, index) => {
-    console.log(`position ${index}: got ${val}, expected ${correctOrder[index]}, match: ${val === correctOrder[index]}`);
-  });
-  
-  const isCorrect = arrangement.length === correctOrder.length && 
+  const isCorrect = arrangement.length === correctOrder.length &&
     arrangement.every((val, index) => val === correctOrder[index]);
-  
-  console.log('final result:', isCorrect);
 
   return {
     score: isCorrect ? 1.0 : 0.0,
     correct: isCorrect,
-    message: isCorrect 
+    message: isCorrect
       ? 'Perfect! All items are in the correct order.'
       : 'Not quite right. Check the order and try again.'
   };
@@ -61,6 +61,10 @@ function gradeExact(arrangement, correctOrder) {
 
 /**
  * Partial credit grading - points for each correct position
+ * @param {Array} arrangement - Current arrangement of indices
+ * @param {Array} correctOrder - Expected arrangement
+ * @param {boolean} allowPartialCredit - Whether to give partial credit
+ * @returns {Object} - Grading result
  */
 function gradePartial(arrangement, correctOrder, allowPartialCredit = true) {
   let correctCount = 0;
@@ -93,6 +97,9 @@ function gradePartial(arrangement, correctOrder, allowPartialCredit = true) {
 
 /**
  * Adjacent pairs grading - credit for correct adjacent relationships
+ * @param {Array} arrangement - Current arrangement of indices
+ * @param {Array} correctOrder - Expected arrangement
+ * @returns {Object} - Grading result
  */
 function gradeAdjacent(arrangement, correctOrder) {
   if (arrangement.length < 2) {
@@ -125,7 +132,11 @@ function gradeAdjacent(arrangement, correctOrder) {
 }
 
 /**
- * Spearman correlation grading - measures rank correlation
+ * Spearman rank correlation grading
+ * Measures how well the arrangement correlates with the correct order
+ * @param {Array} arrangement - Current arrangement of indices
+ * @param {Array} correctOrder - Expected arrangement
+ * @returns {Object} - Grading result
  */
 function gradeSpearman(arrangement, correctOrder) {
   const n = arrangement.length;

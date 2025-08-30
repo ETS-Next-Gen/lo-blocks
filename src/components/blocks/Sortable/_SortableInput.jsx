@@ -6,6 +6,86 @@ import { useReduxState } from '@/lib/state';
 import { render } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 
+/**
+ * Fisher-Yates shuffle algorithm
+ * @param {Array} array - Array to shuffle
+ * @returns {Array} - New shuffled array
+ */
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
+ * Extract display positions from kids' index attributes
+ * @param {Array} kids - Array of kid elements with optional index attributes
+ * @returns {Object} - { positioned: items with index, unpositioned: items without }
+ */
+function extractDisplayPositions(kids) {
+  const positioned = [];
+  const unpositioned = [];
+
+  kids.forEach((kid, i) => {
+    const index = kid?.attributes?.index;
+    if (index !== undefined) {
+      const position = parseInt(index, 10) - 1; // Convert to 0-based
+      positioned.push({ kidIndex: i, position });
+    } else {
+      unpositioned.push(i);
+    }
+  });
+
+  return { positioned, unpositioned };
+}
+
+/**
+ * Build initial arrangement based on index attributes and shuffle parameter
+ * @param {Array} kids - Array of kid elements
+ * @param {boolean} shuffle - Whether to shuffle unpositioned items
+ * @returns {Array} - Initial arrangement of indices
+ */
+function buildInitialArrangement(kids, shuffle) {
+  const indices = Array.from({ length: kids.length }, (_, i) => i);
+  const hasIndexAttributes = kids.some(kid => kid?.attributes?.index);
+
+  if (!hasIndexAttributes) {
+    // No index attributes - use shuffle parameter
+    return shuffle ? shuffleArray(indices) : indices;
+  }
+
+  // Build arrangement based on index attributes
+  const { positioned, unpositioned } = extractDisplayPositions(kids);
+  const result = new Array(kids.length);
+
+  // Place items with index attributes at specified positions
+  positioned.forEach(({ kidIndex, position }) => {
+    if (position >= 0 && position < kids.length) {
+      result[position] = kidIndex;
+    }
+  });
+
+  // Find empty slots and fill with shuffled unpositioned items
+  const emptySlots = [];
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] === undefined) {
+      emptySlots.push(i);
+    }
+  }
+
+  const shuffledUnpositioned = shuffleArray(unpositioned);
+  emptySlots.forEach((slot, i) => {
+    if (i < shuffledUnpositioned.length) {
+      result[slot] = shuffledUnpositioned[i];
+    }
+  });
+
+  return result;
+}
+
 export default function _SortableInput(props) {
   const { kids = [], dragMode = 'whole', fields = {}, shuffle = true } = props;
 
@@ -31,74 +111,17 @@ export default function _SortableInput(props) {
     );
   }
 
-  // Simple Fisher-Yates shuffle
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  // Initialize arrangement if empty - handle index attributes for display order
+  // Initialize arrangement if empty
   React.useEffect(() => {
     if (arrangement.length === 0 && kids.length > 0) {
-      const indices = Array.from({ length: kids.length }, (_, i) => i);
-      
-      // Check for index attributes to specify display order
-      const hasIndexAttributes = kids.some(kid => kid?.attributes?.index);
-      
-      if (hasIndexAttributes) {
-        // Build initial order based on index attributes
-        const positioned = [];
-        const unpositioned = [];
-        
-        kids.forEach((kid, i) => {
-          const index = kid?.attributes?.index;
-          if (index !== undefined) {
-            const position = parseInt(index, 10) - 1; // Convert to 0-based
-            positioned.push({ kidIndex: i, position });
-          } else {
-            unpositioned.push(i);
-          }
-        });
-        
-        // Place items with index attributes at their specified positions
-        const result = new Array(kids.length);
-        positioned.forEach(({ kidIndex, position }) => {
-          if (position >= 0 && position < kids.length) {
-            result[position] = kidIndex;
-          }
-        });
-        
-        // Shuffle unpositioned items into remaining slots
-        const emptySlots = [];
-        for (let i = 0; i < result.length; i++) {
-          if (result[i] === undefined) {
-            emptySlots.push(i);
-          }
-        }
-        
-        const shuffledUnpositioned = shuffleArray(unpositioned);
-        emptySlots.forEach((slot, i) => {
-          if (i < shuffledUnpositioned.length) {
-            result[slot] = shuffledUnpositioned[i];
-          }
-        });
-        
-        setArrangement(result);
-      } else {
-        // No index attributes - use shuffle parameter
-        const initialOrder = shuffle ? shuffleArray(indices) : indices;
-        setArrangement(initialOrder);
-      }
+      const initialOrder = buildInitialArrangement(kids, shuffle);
+      setArrangement(initialOrder);
     }
   }, [arrangement.length, kids.length, shuffle, setArrangement]);
 
   const handleDragStart = (e, index) => {
     if (submitted) return;
-    
+
     setDraggedItem(index);
     draggedIndex.current = index;
     e.dataTransfer.effectAllowed = 'move';
@@ -118,20 +141,20 @@ export default function _SortableInput(props) {
 
   const handleDrop = (e, dropIndex) => {
     e.preventDefault();
-    
+
     if (draggedItem === null || draggedIndex.current === null) return;
-    
+
     const newArrangement = [...arrangement];
     const draggedValue = newArrangement[draggedIndex.current];
-    
+
     // Remove item from current position
     newArrangement.splice(draggedIndex.current, 1);
-    
+
     // Insert at new position
     newArrangement.splice(dropIndex, 0, draggedValue);
-    
+
     setArrangement(newArrangement);
-    
+
     // Clean up
     setDraggedItem(null);
     setDragOverIndex(null);
@@ -154,18 +177,16 @@ export default function _SortableInput(props) {
         {arrangement.map((kidIndex, displayIndex) => {
           const kid = kids[kidIndex];
           if (!kid) return null;
-          
+
           const isDragging = draggedItem === displayIndex;
           const isDragOver = dragOverIndex === displayIndex;
 
-          console.log(kid);
-          // Render child block using render to handle it properly
           const itemContent = render({
             ...props,
             node: kid,
-            idPrefix: `${props.idPrefix || ''}.sortitem.${displayIndex}` 
+            idPrefix: `${props.idPrefix || ''}.sortitem.${displayIndex}`
           });
-          
+
           return (
             <div
               key={kidIndex}
@@ -198,7 +219,7 @@ export default function _SortableInput(props) {
       </div>
 
       <div className="mt-4 text-sm text-gray-600">
-        {submitted 
+        {submitted
           ? 'Submitted'
           : 'Drag items to reorder them, then submit your answer'
         }

@@ -77,11 +77,16 @@ export async function syncContentFromStorage(
 
     } catch (fatalError) {
       // If parseOLX itself fails catastrophically, log it but continue
+      console.error(`\n❌ DETAILED ERROR for ${uri}:`);
+      console.error('Message:', fatalError.message);
+      console.error('Stack trace:', fatalError.stack);
+
       errors.push({
         type: 'file_error',
         file: uri,
         message: `Failed to parse file: ${fatalError.message}`,
-        technical: fatalError
+        technical: fatalError,
+        stack: fatalError.stack
       });
 
       // Store minimal entry so we don't lose track of the file

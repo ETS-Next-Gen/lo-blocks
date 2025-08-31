@@ -1,0 +1,187 @@
+<!-- Comprehensive Sortable Input Demo -->
+<Sequential id="SortableComprehensiveDemo" launchable="true">
+  <Markdown>
+# Sortable Input Component Demo
+
+This sequence demonstrates all features of the sortable input component. Each problem has a clear correct ordering that you need to achieve.
+  </Markdown>
+
+  <!-- Example 1: Quick test with just 3 items -->
+  <CapaProblem id="quick_test">
+    <Markdown>
+## Quick Test - Traffic Light Colors
+
+**Task:** Order these traffic light colors from top to bottom.
+    </Markdown>
+    <SortableGrader id="traffic_grader">
+      <SortableInput dragMode="whole" shuffle="true">
+        <TextBlock index="1">Red - Stop</TextBlock>
+        <TextBlock index="2">Yellow - Caution</TextBlock>
+        <TextBlock index="3">Green - Go</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <!-- Example 2: Whole-item dragging with 4 items -->
+  <CapaProblem id="planets_simple">
+    <Markdown>
+## Basic Sorting - Inner Planets
+
+**Task:** Order these planets from closest to furthest from the Sun.
+
+*Drag anywhere on the item to move it.*
+    </Markdown>
+    <SortableGrader id="planets_grader">
+      <SortableInput dragMode="whole" shuffle="true">
+        <TextBlock index="3">Earth</TextBlock>
+        <TextBlock index="1">Mercury</TextBlock>
+        <TextBlock index="4">Mars</TextBlock>
+        <TextBlock index="2">Venus</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <!-- Example 3: Handle dragging -->
+  <CapaProblem id="handle_demo">
+    <Markdown>
+## Handle-based Dragging - Sizes
+
+**Task:** Order these from smallest to largest. Use the drag handles on the left.
+
+*The handle mode lets you select text in the items while still being able to reorder.*
+    </Markdown>
+    <SortableGrader id="sizes_grader">
+      <SortableInput dragMode="handle" shuffle="true">
+        <TextBlock index="1">Atom</TextBlock>
+        <TextBlock index="2">Molecule</TextBlock>
+        <TextBlock index="3">Cell</TextBlock>
+        <TextBlock index="4">Organ</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <!-- Example 4: Historical events (6 items) -->
+  <CapaProblem id="history">
+    <Markdown>
+## Historical Events
+
+**Task:** Order these events chronologically (earliest to latest).
+    </Markdown>
+    <SortableGrader id="history_grader">
+      <SortableInput dragMode="handle" shuffle="true">
+        <TextBlock index="1">1492 - Columbus reaches the Americas</TextBlock>
+        <TextBlock index="2">1776 - American Independence</TextBlock>
+        <TextBlock index="3">1789 - French Revolution</TextBlock>
+        <TextBlock index="4">1865 - American Civil War ends</TextBlock>
+        <TextBlock index="5">1969 - Moon landing</TextBlock>
+        <TextBlock index="6">1989 - Fall of Berlin Wall</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <!-- Example 5: Multi-line content (6 items) -->
+  <CapaProblem id="scientific_method">
+    <Markdown>
+## Scientific Method Steps
+
+**Task:** Arrange these steps of the scientific method in the correct order.
+    </Markdown>
+    <SortableGrader id="scientific_method_grader">
+      <SortableInput dragMode="handle" shuffle="true">
+        <TextBlock index="1">1. Make an Observation - Observe the world around you and identify something interesting or puzzling that you'd like to understand better. This observation should be specific and measurable.</TextBlock>
+
+        <TextBlock index="2">2. Ask a Question - Formulate a clear, focused question that you want to answer. The question should be testable and specific enough to investigate through experimentation.</TextBlock>
+
+        <TextBlock index="3">3. Form a Hypothesis - Develop a testable prediction that provides a possible answer to your question. A good hypothesis can be tested through controlled experiments.</TextBlock>
+
+        <TextBlock index="4">4. Conduct Experiments - Create a controlled experiment to test your hypothesis. Identify variables, establish a control group, and determine how you'll measure results.</TextBlock>
+
+        <TextBlock index="5">5. Analyze Data - Examine the data collected from your experiments. Determine whether the results support or refute your hypothesis.</TextBlock>
+
+        <TextBlock index="6">6. Communicate Results - Share your findings with others through reports or publications. This allows others to review and build upon your work.</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <!-- Example 6: Two sortables in one problem -->
+  <CapaProblem id="double_sortable">
+    <Markdown>
+## Multiple Sortables - Related Concepts
+
+**Task:** Complete both sorting tasks correctly.
+    </Markdown>
+
+    <Markdown>
+### Part A: Order numbers from smallest to largest
+    </Markdown>
+    <SortableGrader id="numbers_grader">
+      <SortableInput dragMode="whole" shuffle="true">
+        <TextBlock index="1">-5</TextBlock>
+        <TextBlock index="2">0</TextBlock>
+        <TextBlock index="3">7</TextBlock>
+        <TextBlock index="4">42</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+
+    <Markdown>
+### Part B: Order letters alphabetically
+    </Markdown>
+    <SortableGrader id="letters_grader">
+      <SortableInput dragMode="whole" shuffle="true">
+        <TextBlock index="1">Alpha</TextBlock>
+        <TextBlock index="2">Beta</TextBlock>
+        <TextBlock index="3">Gamma</TextBlock>
+        <TextBlock index="4">Delta</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <!-- Example 7: Pre-positioned items -->
+  <CapaProblem id="pre_positioned">
+    <Markdown>
+## Pre-positioned Items - Days of Week
+
+**Task:** Monday and Friday are already positioned. Place the remaining days in order.
+
+*Items with index attributes start at specific positions.*
+    </Markdown>
+    <SortableGrader id="days_grader">
+      <SortableInput dragMode="handle" shuffle="false">
+        <TextBlock index="1">Monday</TextBlock>
+        <TextBlock>Tuesday</TextBlock>
+        <TextBlock>Wednesday</TextBlock>
+        <TextBlock>Thursday</TextBlock>
+        <TextBlock index="5">Friday</TextBlock>
+      </SortableInput>
+    </SortableGrader>
+  </CapaProblem>
+
+  <Markdown>
+---
+
+## Features Summary
+
+This demo showcased:
+
+1. **Drag Modes:**
+   - `dragMode="whole"` - Entire item is draggable
+   - `dragMode="handle"` - Only the handle icon is draggable
+
+2. **Shuffle Control:**
+   - `shuffle="true"` - Randomizes initial order
+   - `shuffle="false"` - Preserves source order
+
+3. **Index Positioning:**
+   - Items with `index` attribute start at specified positions
+   - Items without `index` fill remaining slots
+
+4. **Content Types:**
+   - Simple text blocks
+   - Markdown with formatting and multi-line content
+
+5. **Multiple Configurations:**
+   - Single sortable per problem (most common)
+   - Two sortables in one problem (Example 6)
+   - Various item counts (3-6 items)
+  </Markdown>
+</Sequential>

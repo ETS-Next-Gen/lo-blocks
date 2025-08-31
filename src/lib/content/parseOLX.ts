@@ -37,6 +37,11 @@ const xmlParser = new XMLParser({
   // of XMLParser.
   // preserveTextNodeWhiteSpaces: true,
   trimValues: false,
+
+  // CRITICAL: Prevent automatic type conversion - see parseOLX.test.js for details
+  parseTagValue: false,       // Keep tag text content as strings (not numbers/booleans)
+  parseAttributeValue: false, // Keep attribute values as strings
+
   transformTagName
 });
 

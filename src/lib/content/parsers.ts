@@ -245,9 +245,28 @@ const textFactory = childParser(async function textParser({ rawParsed, postproce
 
   if (postprocess === 'stripIndent') {
     // Extract raw text without trimming so stripIndent can detect indentation properly
-    content = extractTextFromXmlNodes(rawParsed, { preserveWhitespace: true });
+    const extracted = extractTextFromXmlNodes(rawParsed, { preserveWhitespace: true });
+
+    // Handle both string and object returns
+    let textContent = extracted;
+    if (typeof extracted === 'object' && extracted !== null) {
+      if (extracted.type === 'text' && typeof extracted.text === 'string') {
+        textContent = extracted.text;
+      } else {
+        console.error('Unexpected extracted format:', extracted);
+        throw new Error(`extractTextFromXmlNodes returned unexpected format: ${JSON.stringify(extracted).slice(0, 200)}`);
+      }
+    }
+
     const { stripIndent } = await import('@/lib/content/stripIndent');
-    content = stripIndent(content);
+    try {
+      content = stripIndent(textContent);
+    } catch (error) {
+      console.error('stripIndent error for rawParsed:', JSON.stringify(rawParsed, null, 2));
+      console.error('Extracted content type:', typeof textContent);
+      console.error('Extracted content value:', textContent);
+      throw new Error(`Failed to process Markdown content: ${error.message}. Check that Markdown blocks contain only text, not nested elements.`);
+    }
   } else if (postprocess === 'trim' || postprocess === undefined) {
     // Use normal extraction with trimming (default behavior)
     content = extractTextFromXmlNodes(rawParsed).text;
@@ -331,9 +350,9 @@ export function peggyParser(
     let entry;
     try {
       const parsed = peggyParser.parse(text);
-      const processedKids = postprocess({ 
-        type: 'parsed', 
-        parsed, 
+      const processedKids = postprocess({
+        type: 'parsed',
+        parsed,
         ...rest,
         // Pass through context for advanced use cases
         storeEntry,
@@ -341,7 +360,7 @@ export function peggyParser(
         tag,
         attributes
       });
-      
+
       entry = {
         id,
         tag,

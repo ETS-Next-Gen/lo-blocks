@@ -1,0 +1,10 @@
+<Vertical id="SimpleSortableDemo" launchable="true">
+  <SimpleSortable id="SimpleSortableTest">
+Order these planets by distance from the sun:
+===========================================
+1. Mercury
+3. Earth  
+4. Mars
+2. Venus
+  </SimpleSortable>
+</Vertical>

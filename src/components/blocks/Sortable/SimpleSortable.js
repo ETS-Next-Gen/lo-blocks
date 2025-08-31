@@ -11,14 +11,14 @@ import _Noop from '../_Noop';
  */
 function generateSortableComponents({ parsed, storeEntry, id, tag, attributes }) {
   const { prompt, items } = parsed;
-  
+
   // Generate IDs for all components
   const problemId = `${id}_problem`;
-  const graderId = `${id}_grader`;  
+  const graderId = `${id}_grader`;
   const inputId = `${id}_input`;
   const promptId = `${id}_prompt`;
   const itemIds = items.map((_, i) => `${id}_item_${i}`);
-  
+
   // Store prompt block (using Markdown for rich text)
   storeEntry(promptId, {
     id: promptId,
@@ -26,13 +26,13 @@ function generateSortableComponents({ parsed, storeEntry, id, tag, attributes })
     attributes: { id: promptId },
     kids: prompt
   });
-  
+
   // Store item blocks
   items.forEach((item, i) => {
     storeEntry(itemIds[i], {
-      id: itemIds[i], 
+      id: itemIds[i],
       tag: 'Markdown',
-      attributes: { 
+      attributes: {
         id: itemIds[i],
         // Add index attribute if item has explicit ordering
         ...(item.index ? { index: item.index.toString() } : {})
@@ -40,20 +40,20 @@ function generateSortableComponents({ parsed, storeEntry, id, tag, attributes })
       kids: item.content
     });
   });
-  
+
   // Store SortableInput
   storeEntry(inputId, {
     id: inputId,
-    tag: 'SortableInput', 
+    tag: 'SortableInput',
     attributes: { id: inputId },
     kids: itemIds.map(itemId => ({ type: 'block', id: itemId }))
   });
-  
+
   // Store SortableGrader
   storeEntry(graderId, {
     id: graderId,
     tag: 'SortableGrader',
-    attributes: { 
+    attributes: {
       id: graderId,
       targets: inputId
     },
@@ -62,12 +62,12 @@ function generateSortableComponents({ parsed, storeEntry, id, tag, attributes })
       { type: 'block', id: inputId }
     ]
   });
-  
+
   // Store CapaProblem (the main container)
   storeEntry(problemId, {
     id: problemId,
     tag: 'CapaProblem',
-    attributes: { 
+    attributes: {
       id: problemId,
       ...attributes // Pass through any attributes from SimpleSortable
     },
@@ -75,7 +75,7 @@ function generateSortableComponents({ parsed, storeEntry, id, tag, attributes })
       { type: 'block', id: graderId }
     ]
   });
-  
+
   // Return the main problem ID - this becomes the "SimpleSortable"
   return [{ type: 'block', id: problemId }];
 }

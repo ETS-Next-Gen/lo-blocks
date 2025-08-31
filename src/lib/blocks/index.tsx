@@ -16,3 +16,4 @@ export { getAllNodes, getKidsBFS, getKidsDFS, getParents, inferRelatedNodes, get
 export { displayName, htmlId, nodeId, reactKey, reduxId, urlName } from './idResolver';
 export { action, executeNodeActions, grader, input, isAction, isInput } from './actions';
 export { CORRECTNESS } from './correctness';
+export { isInputReadOnly } from './inputInteraction';

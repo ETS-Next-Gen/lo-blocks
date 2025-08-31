@@ -6,8 +6,7 @@ import * as parsers from '@/lib/content/parsers';
 import _SortableInput from './_SortableInput';
 
 export const fields = state.fields([
-  'arrangement',  // Current order of items (array of indices)
-  'submitted'     // Whether student has submitted
+  'arrangement'   // Current order of items (array of indices)
 ]);
 
 const SortableInput = core({
@@ -17,8 +16,7 @@ const SortableInput = core({
   component: _SortableInput,
   fields,
   getValue: (state, id) => ({
-    arrangement: state?.[id]?.arrangement || [],
-    submitted: state?.[id]?.submitted || false
+    arrangement: state?.[id]?.arrangement || []
   })
 });
 

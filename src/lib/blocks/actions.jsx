@@ -20,6 +20,7 @@
 import { inferRelatedNodes, getAllNodes } from './olxdom';
 import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import * as lo_event from 'lo_event';
+import { CORRECTNESS } from './correctness';
 
 // Mix-in to make a block an action
 export function action({ action }) {
@@ -116,16 +117,18 @@ export function grader({ grader, infer = true } = {}) {
       { ...props, ...targetAttributes },
       param
     );
-    console.log(grader(
-      { ...props, ...targetAttributes },
-      param
-    ));
+
+    // Convert boolean correct to CORRECTNESS enum for display
+    const correctness = correct === true ? CORRECTNESS.CORRECT :
+                       correct === false ? CORRECTNESS.INCORRECT :
+                       correct; // In case it's already a CORRECTNESS value
+
     // TODO: Add number of attempts
     // TODO Should we copy:
     // https://edx.readthedocs.io/projects/devdata/en/stable/internal_data_formats/tracking_logs/student_event_types.html#problem-check
     lo_event.logEvent('UPDATE_CORRECT', {
       id: targetId,
-      correct,
+      correct: correctness,
       message,
       answers: values  // Key-value pair?
     });

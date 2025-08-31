@@ -5,6 +5,7 @@ import React, { useState, useRef } from 'react';
 import { useReduxState } from '@/lib/state';
 import { render } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
+import { isInputReadOnly } from '@/lib/blocks';
 
 /**
  * Fisher-Yates shuffle algorithm
@@ -93,7 +94,9 @@ export default function _SortableInput(props) {
 
   // Redux state
   const [arrangement, setArrangement] = useReduxState(props, fields.arrangement, []);
-  const [submitted, setSubmitted] = useReduxState(props, fields.submitted, false);
+
+  // Determine interaction state based on related grader correctness
+  const readOnly = isInputReadOnly(props);
 
   // Drag state
   const [draggedItem, setDraggedItem] = useState(null);
@@ -120,7 +123,7 @@ export default function _SortableInput(props) {
   }, [arrangement.length, kids.length, shuffle, setArrangement]);
 
   const handleDragStart = (e, index) => {
-    if (submitted) return;
+    if (readOnly) return;
 
     setDraggedItem(index);
     draggedIndex.current = index;
@@ -190,7 +193,7 @@ export default function _SortableInput(props) {
           return (
             <div
               key={kidIndex}
-              draggable={!submitted && dragMode === 'whole'}
+              draggable={!readOnly && dragMode === 'whole'}
               onDragStart={(e) => handleDragStart(e, displayIndex)}
               onDragOver={(e) => handleDragOver(e, displayIndex)}
               onDragLeave={handleDragLeave}
@@ -200,11 +203,11 @@ export default function _SortableInput(props) {
                 sortable-item p-3 bg-white border-2 rounded-md cursor-move transition-all
                 ${isDragging ? 'opacity-50' : ''}
                 ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}
-                ${submitted ? 'cursor-default bg-gray-100' : 'hover:border-gray-300'}
+                ${readOnly ? 'cursor-default bg-gray-100' : 'hover:border-gray-300'}
               `}
             >
               <div className="flex items-center gap-3">
-                {dragMode === 'handle' && !submitted && (
+                {dragMode === 'handle' && !readOnly && (
                   <div className="drag-handle cursor-move text-gray-400">
                     ⋮⋮
                   </div>
@@ -219,7 +222,7 @@ export default function _SortableInput(props) {
       </div>
 
       <div className="mt-4 text-sm text-gray-600">
-        {submitted
+        {readOnly
           ? 'Submitted'
           : 'Drag items to reorder them, then submit your answer'
         }

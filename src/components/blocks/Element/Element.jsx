@@ -5,7 +5,7 @@
 import * as parsers from '@/lib/content/parsers';
 import { dev } from '@/lib/blocks';
 import * as state from '@/lib/state';
-import { fieldByName, fieldSelector } from '@/lib/state';
+import { valueSelector } from '@/lib/state';
 import _Element from './_Element';
 
 export const fields = state.fields([]);

@@ -289,3 +289,61 @@ export function componentFieldByName(props, targetId, fieldName) {
 
   return field;
 }
+
+/**
+ * Selector function to get a component's value by ID.
+ * Tries getValue method first, falls back to direct field access.
+ *
+ * @param {Object} props - Component props with idMap and componentMap
+ * @param {Object} state - Redux state
+ * @param {string} id - ID of the component to get value from
+ * @param {any} fallback - Default value if component/value not found
+ * @returns {any} The component's current value
+ */
+export function valueSelector(props, state, id, fallback = '') {
+  const targetNode = props?.idMap?.[id];
+  if (!targetNode) {
+    return fallback;
+  }
+
+  const blueprint = props?.componentMap?.[targetNode.tag];
+  if (!blueprint) {
+    return fallback;
+  }
+
+  // Try getValue first (for computed values like wordcount)
+  if (blueprint.getValue) {
+    try {
+      return blueprint.getValue(
+        state?.application_state?.component || {},
+        id,
+        targetNode.attributes,
+        props.idMap
+      );
+    } catch (e) {
+      // Fall through to field access on error
+      console.warn(`getValue failed for ${id}: ${e.message}`);
+    }
+  }
+
+  // Fall back to direct field access using the 'value' field
+  const valueField = fieldByName('value');
+  if (!valueField) {
+    console.warn(`Field 'value' not registered in system`);
+    return fallback;
+  }
+
+  return fieldSelector(state, { ...props, id }, valueField, { fallback });
+}
+
+/**
+ * React hook to get a component's value by ID with automatic re-rendering.
+ *
+ * @param {Object} props - Component props with idMap and componentMap
+ * @param {string} id - ID of the component to get value from
+ * @param {any} fallback - Default value if component/value not found
+ * @returns {any} The component's current value
+ */
+export function useValue(props, id, fallback = '') {
+  return useSelector((state) => valueSelector(props, state, id, fallback));
+}

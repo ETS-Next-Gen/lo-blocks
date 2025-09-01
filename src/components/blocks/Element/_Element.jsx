@@ -3,7 +3,7 @@
 'use client';
 
 import React from 'react';
-import { useFieldSelector, fieldByName } from '@/lib/state';
+import { useValue } from '@/lib/state';
 import { DisplayError } from '@/lib/util/debug';
 
 function _Element(props) {
@@ -16,18 +16,8 @@ function _Element(props) {
     return <DisplayError name="Element" message="No field ID specified" data={{props}} />;
   }
 
-  // Get the field info for the 'value' field (standard field name for inputs)
-  const valueField = fieldByName('value');
-  
-  if (!valueField) {
-    return <DisplayError name="Element" message="Field 'value' not registered in system" data={{referencedId}} />;
-  }
-
-  // Get the value from the referenced component's 'value' field
-  const fieldValue = useFieldSelector(props, valueField, { 
-    id: referencedId, 
-    fallback: '' 
-  });
+  // Get the value from the referenced component using the new useValue hook
+  const fieldValue = useValue(props, referencedId, '');
 
   if (String(visible) === 'false' || !visible) {
     // Still subscribe to value but render nothing

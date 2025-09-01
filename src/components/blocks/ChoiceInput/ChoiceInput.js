@@ -1,6 +1,7 @@
 // src/components/blocks/ChoiceInput/ChoiceInput.js
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
+import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _Noop from '../_Noop';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
@@ -13,8 +14,8 @@ const ChoiceInput = core({
   description: 'Multiple choice input collecting student selections from Key/Distractor options',
   component: _Noop,
   fields,
-  getValue: (reduxState, id, props = {}) => {
-    const value = reduxState?.[id]?.value ?? '';
+  getValue: (props, state, id) => {
+    const value = fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' });
     const ids = inferRelatedNodes(props, {
       selector: n => n.blueprint.name === 'Key' || n.blueprint.name === 'Distractor',
       infer: ['kids'],

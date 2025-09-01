@@ -2,6 +2,7 @@
 
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
+import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _SortableInput from './_SortableInput';
 
@@ -16,7 +17,7 @@ const SortableInput = core({
   component: _SortableInput,
   fields,
   getValue: (props, state, id) => ({
-    arrangement: state?.application_state?.component?.[id]?.arrangement || []
+    arrangement: fieldSelector(state, { ...props, id }, fieldByName('arrangement'), { fallback: [] })
   })
 });
 

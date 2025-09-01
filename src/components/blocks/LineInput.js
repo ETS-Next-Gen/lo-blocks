@@ -1,6 +1,7 @@
 // src/components/blocks/LineInput.js
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
+import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _LineInput from './_LineInput';
 
@@ -12,7 +13,7 @@ const LineInput = core({
   description: 'Single-line text input field for student responses',
   component: _LineInput,
   fields,
-  getValue: (props, state, id) => state?.application_state?.component?.[id]?.value ?? '',
+  getValue: (props, state, id) => fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' }),
 });
 
 export default LineInput;

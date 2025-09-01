@@ -1,6 +1,7 @@
 // src/components/blocks/TextArea.js
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
+import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _TextArea from './_TextArea';
 
@@ -11,7 +12,7 @@ const TextArea = core({
   description: 'Multi-line text input field for longer student responses',
   component: _TextArea,
   fields: fields,
-  getValue: (props, state, id) => state?.application_state?.component?.[id]?.value ?? '',
+  getValue: (props, state, id) => fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' }),
 });
 
 export default TextArea;

@@ -1,6 +1,7 @@
 // src/components/blocks/NumberInput.js
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
+import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
 import _NumberInput from './_NumberInput';
 
@@ -15,7 +16,7 @@ const NumberInput = core({
   // TODO: Figure out this signature. In the generic, we'll probably need
   // more than this. It might be dependent on the component spec, etc.
   getValue: (props, state, id) => {
-    const v = state?.application_state?.component?.[id]?.value;
+    const v = fieldSelector(state, { ...props, id }, fieldByName('value'));
     return v === undefined ? undefined : parseFloat(v);
   }
 });

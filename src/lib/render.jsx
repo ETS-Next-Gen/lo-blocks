@@ -136,6 +136,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
           kids={ kids }
           idMap={ idMap }
           blueprint={ componentMap[tag].blueprint }
+          locals={ componentMap[tag].locals }
           fields={ componentMap[tag].blueprint?.fields?.fieldInfoByField }
           nodeInfo={ childNodeInfo }
           componentMap={ componentMap }

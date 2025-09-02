@@ -57,6 +57,7 @@ function createBlock(config: BlockBlueprint): Block {
     reducers: config.reducers ?? [],
     getValue: config.getValue,
     fields: parsed?.fields?.fieldInfoByField as FieldInfoByField ?? {},
+    locals: config.locals,
 
     OLXName: olxName,
     description: parsed.description,
@@ -70,5 +71,5 @@ function createBlock(config: BlockBlueprint): Block {
 }
 
 export const blocks = (namespace: string) =>
-  (config: Omit<BlockBlueprint, 'namespace'>) =>
-    createBlock({ ...config, namespace });
+  (config: Omit<BlockBlueprint, 'namespace'>, locals?: any) =>
+    createBlock({ ...config, namespace, locals });

@@ -111,6 +111,7 @@ export const BlockBlueprintSchema = z.object({
   reducers: z.array(z.function()).optional(),
   fields: ReduxFieldsReturn.optional(),
   getValue: z.function().optional(),
+  locals: z.record(z.string(), z.any()).optional(),
   extraDebug: z.custom<React.ComponentType<any>>().optional(),
   description: z.string().optional(),
 }).strict();
@@ -129,6 +130,7 @@ export interface Block {
   staticKids?: Function;
   reducers: Function[];
   getValue?: Function;
+  locals?: Record<string, any>;
   fields: FieldInfoByField;
   OLXName: OLXTag;
   description?: string;

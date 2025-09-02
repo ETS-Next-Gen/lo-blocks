@@ -73,15 +73,15 @@ Items are displayed in random order but graded against XML order:
 ```
 
 ### Controlled Display Order
-Use `index` attributes to specify initial display positions:
+Use `initialPosition` attributes to specify initial display positions:
 
 ```xml
 <SortableInput>
   <!-- XML order is still the correct answer -->
-  <TextBlock index="3">Mercury</TextBlock>  <!-- Display 3rd -->
-  <TextBlock index="1">Venus</TextBlock>    <!-- Display 1st -->
-  <TextBlock index="4">Earth</TextBlock>    <!-- Display 4th -->
-  <TextBlock index="2">Mars</TextBlock>     <!-- Display 2nd -->
+  <TextBlock initialPosition="3">Mercury</TextBlock>  <!-- Display 3rd -->
+  <TextBlock initialPosition="1">Venus</TextBlock>    <!-- Display 1st -->
+  <TextBlock initialPosition="4">Earth</TextBlock>    <!-- Display 4th -->
+  <TextBlock initialPosition="2">Mars</TextBlock>     <!-- Display 2nd -->
 </SortableInput>
 ```
 
@@ -91,7 +91,7 @@ Mix indexed and unindexed items for flexible authoring:
 ```xml
 <SortableInput>
   <!-- Java always shows first as a hint -->
-  <TextBlock index="1">Java (1995)</TextBlock>
+  <TextBlock initialPosition="1">Java (1995)</TextBlock>
   <!-- Others are shuffled into remaining positions -->
   <TextBlock>C++ (1985)</TextBlock>
   <TextBlock>Python (1991)</TextBlock>
@@ -157,14 +157,14 @@ Order these web technologies by creation date:
 
 ### Display vs. Logic Separation
 - **Logic** (grading): Based on XML order
-- **Display** (initial arrangement): Controlled by `index` attributes or shuffle
+- **Display** (initial arrangement): Controlled by `initialPosition` attributes or shuffle
 - **State** (current arrangement): Array of indices `[0,1,2,3]`
 
 This separation allows flexible presentation without affecting grading logic.
 
 ### Authoring Workflow
 1. **Write items in correct order** in XML
-2. **Add index attributes** if you want specific initial display
+2. **Add initialPosition attributes** if you want specific initial display
 3. **Choose grading algorithm** based on pedagogical needs
 4. **Test with different arrangements** to verify grading
 
@@ -191,7 +191,7 @@ AJAX (2005)
     <TextBlock>Order these planets by distance from the sun:</TextBlock>
     <SortableInput>
       <!-- Mercury always shown first as a hint -->
-      <TextBlock index="1">Mercury</TextBlock>
+      <TextBlock initialPosition="1">Mercury</TextBlock>
       <!-- Others shuffled -->
       <TextBlock>Venus</TextBlock>
       <TextBlock>Earth</TextBlock>
@@ -266,8 +266,8 @@ This would use templating engines (Handlebars/Mustache) for cleaner, more mainta
 - Check that all items are properly nested in SortableInput
 
 **Display order not working**  
-- Ensure `index` attributes are 1-based (not 0-based)
-- Verify no duplicate index values
+- Ensure `initialPosition` attributes are 1-based (not 0-based)
+- Verify no duplicate initialPosition values
 
 **SimpleSortable not parsing**
 - Check separator line has adequate `=` characters  

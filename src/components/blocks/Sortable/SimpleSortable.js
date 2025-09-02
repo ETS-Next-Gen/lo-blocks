@@ -34,8 +34,8 @@ function generateSortableComponents({ parsed, storeEntry, id, tag, attributes })
       tag: 'Markdown',
       attributes: {
         id: itemIds[i],
-        // Add index attribute if item has explicit ordering
-        ...(item.index ? { index: item.index.toString() } : {})
+        // Add initialPosition attribute if item has explicit ordering
+        ...(item.initialPosition ? { initialPosition: item.initialPosition.toString() } : {})
       },
       kids: item.content
     });

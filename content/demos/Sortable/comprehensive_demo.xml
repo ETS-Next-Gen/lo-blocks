@@ -14,10 +14,10 @@ This sequence demonstrates all features of the sortable input component. Each pr
 **Task:** Order these traffic light colors from top to bottom.
     </Markdown>
     <SortableGrader id="traffic_grader">
-      <SortableInput dragMode="whole" shuffle="true">
-        <TextBlock index="1">Red - Stop</TextBlock>
-        <TextBlock index="2">Yellow - Caution</TextBlock>
-        <TextBlock index="3">Green - Go</TextBlock>
+      <SortableInput dragMode="whole">
+        <TextBlock initialPosition="1">Red - Stop</TextBlock>
+        <TextBlock initialPosition="2">Yellow - Caution</TextBlock>
+        <TextBlock initialPosition="3">Green - Go</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>
@@ -32,11 +32,11 @@ This sequence demonstrates all features of the sortable input component. Each pr
 *Drag anywhere on the item to move it.*
     </Markdown>
     <SortableGrader id="planets_grader">
-      <SortableInput dragMode="whole" shuffle="true">
-        <TextBlock index="3">Earth</TextBlock>
-        <TextBlock index="1">Mercury</TextBlock>
-        <TextBlock index="4">Mars</TextBlock>
-        <TextBlock index="2">Venus</TextBlock>
+      <SortableInput dragMode="whole">
+        <TextBlock initialPosition="2">Mercury</TextBlock>
+        <TextBlock initialPosition="4">Venus</TextBlock>
+        <TextBlock initialPosition="1">Earth</TextBlock>
+        <TextBlock initialPosition="3">Mars</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>
@@ -51,11 +51,11 @@ This sequence demonstrates all features of the sortable input component. Each pr
 *The handle mode lets you select text in the items while still being able to reorder.*
     </Markdown>
     <SortableGrader id="sizes_grader">
-      <SortableInput dragMode="handle" shuffle="true">
-        <TextBlock index="1">Atom</TextBlock>
-        <TextBlock index="2">Molecule</TextBlock>
-        <TextBlock index="3">Cell</TextBlock>
-        <TextBlock index="4">Organ</TextBlock>
+      <SortableInput dragMode="handle">
+        <TextBlock>Atom</TextBlock>
+        <TextBlock>Molecule</TextBlock>
+        <TextBlock initialPosition="2">Cell</TextBlock>
+        <TextBlock>Organ</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>
@@ -68,13 +68,13 @@ This sequence demonstrates all features of the sortable input component. Each pr
 **Task:** Order these events chronologically (earliest to latest).
     </Markdown>
     <SortableGrader id="history_grader">
-      <SortableInput dragMode="handle" shuffle="true">
-        <TextBlock index="1">1492 - Columbus reaches the Americas</TextBlock>
-        <TextBlock index="2">1776 - American Independence</TextBlock>
-        <TextBlock index="3">1789 - French Revolution</TextBlock>
-        <TextBlock index="4">1865 - American Civil War ends</TextBlock>
-        <TextBlock index="5">1969 - Moon landing</TextBlock>
-        <TextBlock index="6">1989 - Fall of Berlin Wall</TextBlock>
+      <SortableInput dragMode="handle">
+        <TextBlock>1492 - Columbus reaches the Americas</TextBlock>
+        <TextBlock initialPosition="2">1776 - American Independence</TextBlock>
+        <TextBlock>1789 - French Revolution</TextBlock>
+        <TextBlock>1865 - American Civil War ends</TextBlock>
+        <TextBlock>1969 - Moon landing</TextBlock>
+        <TextBlock initialPosition="1">1989 - Fall of Berlin Wall</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>
@@ -87,18 +87,18 @@ This sequence demonstrates all features of the sortable input component. Each pr
 **Task:** Arrange these steps of the scientific method in the correct order.
     </Markdown>
     <SortableGrader id="scientific_method_grader">
-      <SortableInput dragMode="handle" shuffle="true">
-        <TextBlock index="1">1. Make an Observation - Observe the world around you and identify something interesting or puzzling that you'd like to understand better. This observation should be specific and measurable.</TextBlock>
+      <SortableInput dragMode="handle">
+        <TextBlock initialPosition="1">1. Make an Observation - Observe the world around you and identify something interesting or puzzling that you'd like to understand better. This observation should be specific and measurable.</TextBlock>
 
-        <TextBlock index="2">2. Ask a Question - Formulate a clear, focused question that you want to answer. The question should be testable and specific enough to investigate through experimentation.</TextBlock>
+        <TextBlock initialPosition="2">2. Ask a Question - Formulate a clear, focused question that you want to answer. The question should be testable and specific enough to investigate through experimentation.</TextBlock>
 
-        <TextBlock index="3">3. Form a Hypothesis - Develop a testable prediction that provides a possible answer to your question. A good hypothesis can be tested through controlled experiments.</TextBlock>
+        <TextBlock initialPosition="3">3. Form a Hypothesis - Develop a testable prediction that provides a possible answer to your question. A good hypothesis can be tested through controlled experiments.</TextBlock>
 
-        <TextBlock index="4">4. Conduct Experiments - Create a controlled experiment to test your hypothesis. Identify variables, establish a control group, and determine how you'll measure results.</TextBlock>
+        <TextBlock initialPosition="4">4. Conduct Experiments - Create a controlled experiment to test your hypothesis. Identify variables, establish a control group, and determine how you'll measure results.</TextBlock>
 
-        <TextBlock index="5">5. Analyze Data - Examine the data collected from your experiments. Determine whether the results support or refute your hypothesis.</TextBlock>
+        <TextBlock initialPosition="5">5. Analyze Data - Examine the data collected from your experiments. Determine whether the results support or refute your hypothesis.</TextBlock>
 
-        <TextBlock index="6">6. Communicate Results - Share your findings with others through reports or publications. This allows others to review and build upon your work.</TextBlock>
+        <TextBlock initialPosition="6">6. Communicate Results - Share your findings with others through reports or publications. This allows others to review and build upon your work.</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>
@@ -112,14 +112,14 @@ This sequence demonstrates all features of the sortable input component. Each pr
     </Markdown>
 
     <Markdown>
-### Part A: Order numbers from smallest to largest
+### Part A: Order numbers from smallest to largest THIS IS PARTIALLY BROKEN
     </Markdown>
     <SortableGrader id="numbers_grader">
-      <SortableInput dragMode="whole" shuffle="true">
-        <TextBlock index="1">-5</TextBlock>
-        <TextBlock index="2">0</TextBlock>
-        <TextBlock index="3">7</TextBlock>
-        <TextBlock index="4">42</TextBlock>
+      <SortableInput dragMode="whole">
+        <TextBlock initialPosition="3">-5</TextBlock>
+        <TextBlock>0</TextBlock>
+        <TextBlock>7</TextBlock>
+        <TextBlock initialPosition="1">42</TextBlock>
       </SortableInput>
     </SortableGrader>
 
@@ -127,11 +127,11 @@ This sequence demonstrates all features of the sortable input component. Each pr
 ### Part B: Order letters alphabetically
     </Markdown>
     <SortableGrader id="letters_grader">
-      <SortableInput dragMode="whole" shuffle="true">
-        <TextBlock index="1">Alpha</TextBlock>
-        <TextBlock index="2">Beta</TextBlock>
-        <TextBlock index="3">Gamma</TextBlock>
-        <TextBlock index="4">Delta</TextBlock>
+      <SortableInput dragMode="whole">
+        <TextBlock initialPosition="4">Alpha</TextBlock>
+        <TextBlock initialPosition="3">Beta</TextBlock>
+        <TextBlock initialPosition="2">Gamma</TextBlock>
+        <TextBlock initialPosition="1">Delta</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>
@@ -147,11 +147,11 @@ This sequence demonstrates all features of the sortable input component. Each pr
     </Markdown>
     <SortableGrader id="days_grader">
       <SortableInput dragMode="handle" shuffle="false">
-        <TextBlock index="1">Monday</TextBlock>
+        <TextBlock initialPosition="1">Monday</TextBlock>
         <TextBlock>Tuesday</TextBlock>
         <TextBlock>Wednesday</TextBlock>
         <TextBlock>Thursday</TextBlock>
-        <TextBlock index="5">Friday</TextBlock>
+        <TextBlock initialPosition="5">Friday</TextBlock>
       </SortableInput>
     </SortableGrader>
   </CapaProblem>

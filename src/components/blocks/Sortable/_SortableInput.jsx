@@ -22,16 +22,16 @@ function shuffleArray(array) {
 }
 
 /**
- * Extract display positions from kids' index attributes
- * @param {Array} kids - Array of kid elements with optional index attributes
- * @returns {Object} - { positioned: items with index, unpositioned: items without }
+ * Extract display positions from kids' initialPosition attributes
+ * @param {Array} kids - Array of kid elements with optional initialPosition attributes
+ * @returns {Object} - { positioned: items with initialPosition, unpositioned: items without }
  */
 function extractDisplayPositions(kids) {
   const positioned = [];
   const unpositioned = [];
 
   kids.forEach((kid, i) => {
-    const index = kid?.attributes?.index;
+    const index = kid?.attributes?.initialPosition;
     if (index !== undefined) {
       const position = parseInt(index, 10) - 1; // Convert to 0-based
       positioned.push({ kidIndex: i, position });
@@ -44,25 +44,26 @@ function extractDisplayPositions(kids) {
 }
 
 /**
- * Build initial arrangement based on index attributes and shuffle parameter
+ * Build initial arrangement based on initialPosition attributes and shuffle parameter
  * @param {Array} kids - Array of kid elements
  * @param {boolean} shuffle - Whether to shuffle unpositioned items
  * @returns {Array} - Initial arrangement of indices
  */
-function buildInitialArrangement(kids, shuffle) {
+function buildInitialArrangement({ kids, idMap, shuffle }) {
   const indices = Array.from({ length: kids.length }, (_, i) => i);
-  const hasIndexAttributes = kids.some(kid => kid?.attributes?.index);
+  const updatedKids = kids.map(kid => idMap?.[kid.id]);
+  const hasInitialPositionAttributes = updatedKids.some(kid => kid?.attributes?.initialPosition);
 
-  if (!hasIndexAttributes) {
-    // No index attributes - use shuffle parameter
+  if (!hasInitialPositionAttributes) {
+    // No initialPosition attributes - use shuffle parameter
     return shuffle ? shuffleArray(indices) : indices;
   }
 
-  // Build arrangement based on index attributes
-  const { positioned, unpositioned } = extractDisplayPositions(kids);
+  // Build arrangement based on initialPosition attributes
+  const { positioned, unpositioned } = extractDisplayPositions(updatedKids);
   const result = new Array(kids.length);
 
-  // Place items with index attributes at specified positions
+  // Place items with initialPosition attributes at specified positions
   positioned.forEach(({ kidIndex, position }) => {
     if (position >= 0 && position < kids.length) {
       result[position] = kidIndex;
@@ -117,7 +118,7 @@ export default function _SortableInput(props) {
   // Initialize arrangement if empty
   React.useEffect(() => {
     if (arrangement.length === 0 && kids.length > 0) {
-      const initialOrder = buildInitialArrangement(kids, shuffle);
+      const initialOrder = buildInitialArrangement(props);
       setArrangement(initialOrder);
     }
   }, [arrangement.length, kids.length, shuffle, setArrangement]);

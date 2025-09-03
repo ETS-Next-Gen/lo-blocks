@@ -8,6 +8,8 @@ Introduction
 
 Annie: Hey, sorry I'm late. I was talking to my roommate about a problem. [id=start]
 
+psych_sba_sidebar -> bedtime_problem_introduction
+
 JJ: What's going on? Is it something you can tell us?
 
 Annie: Oh, yeah, it's not a secret. She's got a babysitting gig for some extra cash,
@@ -47,10 +49,6 @@ psych_sba_sidebar -> student_suggestion
 
 Annie: Haha, we are all over the place with our ideas!
 
-Lin: It looks like the choices are between using behavioral techniques, like we're learning about in class,
-or doing nothing. My suggestion was to do nothing, but now I'm not sure. I'm going to ask the AI
-assistant if there's evidence for that.
-
 # [Results/feedback from group - no activity, just text]
 You: Tell him you'll give him 50 cents if he goes to bed on time. Hey, 50 cents is a lot of money to a 6-year-old!
 
@@ -58,6 +56,16 @@ You: Say that you won't play any games with him ever again unless he goes to sle
 
 You: I'm with the "do nothing" crowd. She shouldn't do anything at all.
 If he stays up, he stays up. That's on him. He'll be so tired the next day, he'll probably never do it again!
+
+JJ: We really do have different approaches! Why don't we rank these from best to worst and see what we think?
+
+psych_sba_sidebar -> brainstorm_sorting
+
+--- wait brainstorm_sorting ---
+
+Lin: Interesting rankings! It looks like the choices are between using behavioral techniques, like we're learning about in class,
+or doing nothing. My suggestion was to do nothing, but now I'm not sure. I'm going to ask the AI
+assistant if there's evidence for that.
 
 Understanding Reinforcement
 ---------------------------

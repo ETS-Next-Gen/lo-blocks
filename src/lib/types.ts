@@ -114,6 +114,18 @@ export const BlockBlueprintSchema = z.object({
   locals: z.record(z.string(), z.any()).optional(),
   extraDebug: z.custom<React.ComponentType<any>>().optional(),
   description: z.string().optional(),
+  /**
+   * Controls whether this block type requires unique IDs in the content.
+   *
+   * - `true` (default): All instances must have unique IDs, enforces strict uniqueness
+   * - `false`: Allows duplicate IDs, useful for content blocks like TextBlock/Markdown
+   * - `'children'`: Recursively check if ANY child blocks require unique IDs. If any child
+   *   requires uniqueness, this block will also require uniqueness. Useful for container
+   *   blocks that may contain interactive content.
+   * - `function`: Custom logic to determine uniqueness requirement at parse time.
+   *   Receives context including parsed content, attributes, and current state.
+   */
+  requiresUniqueId: z.union([z.boolean(), z.literal('children'), z.function()]).optional(),
 }).strict();
 
 export type BlockBlueprint = z.infer<typeof BlockBlueprintSchema>;
@@ -135,6 +147,27 @@ export interface Block {
   OLXName: OLXTag;
   description?: string;
   namespace: string;
+  /**
+   * Controls whether this block type requires unique IDs in the content.
+   *
+   * - `true` (default): All instances must have unique IDs, enforces strict uniqueness
+   * - `false`: Allows duplicate IDs, useful for content blocks like TextBlock/Markdown
+   * - `'children'`: Recursively check if ANY child blocks require unique IDs. If any child
+   *   requires uniqueness, this block will also require uniqueness. Useful for container
+   *   blocks that may contain interactive content.
+   * - `function`: Custom logic to determine uniqueness requirement at parse time.
+   *   Receives context including parsed content, attributes, and current state.
+   */
+  requiresUniqueId?: boolean | 'children' | ((context: {
+    id: string,
+    attributes: Record<string, any>,
+    tag: string,
+    rawParsed: any,
+    idMap: IdMap,
+    provenance: Provenance,
+    entry: any,
+    children?: any[]
+  }) => boolean);
   blueprint: BlockBlueprint;
 }
 

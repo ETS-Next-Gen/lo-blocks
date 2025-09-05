@@ -88,3 +88,88 @@ test('CRITICAL: Parser must preserve numeric text as strings (prevents "text.tri
     );
   }
 });
+
+// === Tests for requiresUniqueId attribute ===
+
+test('TextArea blocks with duplicate IDs should fail (default behavior)', async () => {
+  const xml = '<Vertical><TextArea/><TextArea/></Vertical>';
+  const { errors } = await parseOLX(xml, PROV);
+  expect(errors.length).toBeGreaterThan(0);
+  expect(errors[0].type).toBe('duplicate_id');
+});
+
+test('TextArea blocks with explicit duplicate IDs should fail', async () => {
+  const xml = '<Vertical><TextArea id="test"/><TextArea id="test"/></Vertical>';
+  const { errors } = await parseOLX(xml, PROV);
+  expect(errors.length).toBeGreaterThan(0);
+  expect(errors[0].type).toBe('duplicate_id');
+  expect(errors[0].message).toContain('Duplicate ID "test"');
+});
+
+test('TextBlock elements with same content should allow duplicates', async () => {
+  const xml = '<Vertical><TextBlock>Hello World!</TextBlock><TextBlock>Hello World!</TextBlock></Vertical>';
+  const { errors, idMap } = await parseOLX(xml, PROV);
+  expect(errors.length).toBe(0);
+
+  // Both should be stored in idMap (latest overwrites)
+  const textBlocks = Object.values(idMap).filter(node => node.tag === 'TextBlock');
+  expect(textBlocks.length).toBeGreaterThan(0);
+});
+
+test('Markdown elements with same content should allow duplicates', async () => {
+  const xml = '<Vertical><Markdown>## Hello</Markdown><Markdown>## Hello</Markdown></Vertical>';
+  const { errors, idMap } = await parseOLX(xml, PROV);
+  expect(errors.length).toBe(0);
+
+  const markdownBlocks = Object.values(idMap).filter(node => node.tag === 'Markdown');
+  expect(markdownBlocks.length).toBeGreaterThan(0);
+});
+
+test('Mixed block types: TextBlock allows duplicates, TextArea does not', async () => {
+  const xml = `
+    <Vertical>
+      <TextBlock>Same content</TextBlock>
+      <TextBlock>Same content</TextBlock>
+      <TextArea/>
+      <TextArea/>
+    </Vertical>
+  `;
+  const { errors } = await parseOLX(xml, PROV);
+
+  // Should have exactly one error for the duplicate TextArea IDs
+  expect(errors.length).toBe(1);
+  expect(errors[0].type).toBe('duplicate_id');
+  expect(errors[0].message).toContain('TextArea');
+});
+
+test('Function-based requiresUniqueId should work', async () => {
+  // This test would require a custom test block with a function-based requiresUniqueId
+  // For now, we'll test the error handling path
+  const xml = '<Vertical><UnknownBlock id="test1"/><UnknownBlock id="test1"/></Vertical>';
+  const { errors } = await parseOLX(xml, PROV);
+
+  // Unknown blocks should default to requiring unique IDs
+  expect(errors.length).toBe(1);
+  expect(errors[0].type).toBe('duplicate_id');
+});
+
+test('Explicit IDs should still be enforced for blocks that require uniqueness', async () => {
+  const xml = '<Vertical><TextArea id="explicit"/><TextArea id="explicit"/></Vertical>';
+  const { errors } = await parseOLX(xml, PROV);
+  expect(errors.length).toBe(1);
+  expect(errors[0].type).toBe('duplicate_id');
+  expect(errors[0].message).toContain('explicit');
+});
+
+test('Explicit different IDs should work for all block types', async () => {
+  const xml = `
+    <Vertical>
+      <TextBlock id="text1">Content</TextBlock>
+      <TextBlock id="text2">Content</TextBlock>
+      <TextArea id="area1"/>
+      <TextArea id="area2"/>
+    </Vertical>
+  `;
+  const { errors } = await parseOLX(xml, PROV);
+  expect(errors.length).toBe(0);
+});

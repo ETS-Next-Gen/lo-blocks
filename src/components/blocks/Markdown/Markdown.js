@@ -8,7 +8,8 @@ const Markdown = dev({
   ...parsers.text({ postprocess: 'stripIndent' }),
   name: 'Markdown',
   component: _Markdown,
-  description: 'Render Markdown formatted text.'
+  description: 'Render Markdown formatted text.',
+  requiresUniqueId: false
 });
 
 export default Markdown;

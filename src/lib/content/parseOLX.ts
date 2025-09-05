@@ -45,6 +45,63 @@ const xmlParser = new XMLParser({
   transformTagName
 });
 
+/**
+ * Determines if a block type requires unique IDs based on its configuration.
+ *
+ * @param Component - The block component (may be undefined for unknown components)
+ * @param tag - The XML tag name
+ * @param storeId - The ID being checked
+ * @param entry - The entry being stored
+ * @param idMap - The current ID map
+ * @param provenance - File/location information
+ * @returns boolean indicating if unique IDs are required
+ */
+function shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, provenance) {
+  if (!Component) {
+    // Default behavior for unknown components: require unique IDs
+    return true;
+  }
+
+  const requiresUniqueId = Component.requiresUniqueId;
+
+  if (requiresUniqueId === undefined) {
+    // Default behavior: require unique IDs (backward compatibility)
+    return true;
+  } else if (typeof requiresUniqueId === 'boolean') {
+    return requiresUniqueId;
+  } else if (requiresUniqueId === 'children') {
+    // TODO: Implement 'children' mode
+    //
+    // This mode should recursively check if ANY child blocks require unique IDs.
+    // Implementation would:
+    // 1. Parse/examine the child nodes of this block
+    // 2. For each child, get its Component and check its requiresUniqueId setting
+    // 3. If ANY child requires unique IDs, return true for this block too
+    // 4. Otherwise return false
+    //
+    // Use case example: A Markdown block with embedded interactive elements
+    // - Basic Markdown blocks can have duplicate IDs
+    // - But if Markdown contains interactive widgets, those need unique IDs
+    // - So the container Markdown would inherit the uniqueness requirement
+    //
+    // This enables context-sensitive ID validation based on actual content.
+    throw new Error(`requiresUniqueId: 'children' mode is not yet implemented for component ${tag}`);
+  } else if (typeof requiresUniqueId === 'function') {
+    return requiresUniqueId({
+      id: storeId,
+      attributes: entry.attributes,
+      tag: entry.tag,
+      rawParsed: entry.rawParsed,
+      idMap,
+      provenance,
+      entry,
+      children: entry.kids
+    });
+  } else {
+    throw new Error(`Invalid requiresUniqueId value for component ${tag}: expected boolean, 'children', or function but got ${typeof requiresUniqueId}`);
+  }
+}
+
 export async function parseOLX(
   xml,
   provenance: Provenance,
@@ -105,6 +162,15 @@ export async function parseOLX(
       parseNode,
       storeEntry: (storeId, entry) => {
         if (idMap[storeId]) {
+          const requiresUnique = shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, provenance);
+
+          if (!requiresUnique) {
+            // Allow duplicate IDs for this block type - but still store in idMap
+            // We'll overwrite the previous entry to keep the latest one
+            idMap[storeId] = entry;
+            return;
+          }
+
           // Get detailed information about both the existing and duplicate entries
           const existingEntry = idMap[storeId];
           const existingXml = existingEntry.rawParsed ? JSON.stringify(existingEntry.rawParsed, null, 2) : 'N/A';

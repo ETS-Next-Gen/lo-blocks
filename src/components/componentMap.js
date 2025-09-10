@@ -3,8 +3,12 @@ import React from 'react';
 
 import * as BlockRegistry from './blockRegistry.js';
 import createStubBlock from '@/components/blocks/StubBlock';
+import { createAllHtmlBlocks } from '@/components/blocks/createHtmlBlock';
 
-export const COMPONENT_MAP = { ...BlockRegistry };
+export const COMPONENT_MAP = {
+  ...BlockRegistry,
+  ...createAllHtmlBlocks()
+};
 
 // We add dummy development components here.
 [
@@ -13,6 +17,10 @@ export const COMPONENT_MAP = { ...BlockRegistry };
 ].forEach(name => {
   COMPONENT_MAP[name] = createStubBlock(name, 'org.mitros.dev');
 });
+
+// Add new architecture components for testing
+import CapaProblemNew from '@/components/blocks/CapaProblem/CapaProblemNew';
+COMPONENT_MAP['CapaProblemNew'] = CapaProblemNew;
 
 // We will validate it here, looking for common error(s).
 function assertValidComponent(component, name) {

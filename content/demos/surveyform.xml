@@ -1,0 +1,15 @@
+<!-- content/demos/surveyform.xml -->
+<Vertical id="survey_demo" launchable="true">
+  <SurveyForm id="psychology_survey" allowResubmit="true">
+    <Markdown>## Psychology Survey</Markdown>
+    <Markdown>What do YOU think Annie should do?</Markdown>
+    <TextArea id="demo_initial_suggestion" placeholder="Share your strategy (2-3 sentences)..."/>
+
+    <Markdown>How confident are you in this approach?</Markdown>
+    <ChoiceInput id="confidence">
+      <Key>Very confident</Key>
+      <Key>Somewhat confident</Key>
+      <Key>Not confident</Key>
+    </ChoiceInput>
+  </SurveyForm>
+</Vertical>

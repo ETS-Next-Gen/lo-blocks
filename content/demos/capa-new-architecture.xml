@@ -1,0 +1,42 @@
+<!-- content/demos/capa-new-architecture.xml -->
+<Vertical id="CapaNewArchitectureDemo" launchable="true">
+  <Sequential id="NewArchitectureTest" title="New CapaProblem Architecture Test">
+    
+    <Vertical id="TestNewCapaProblem">
+      <H2>New CapaProblem Architecture Test</H2>
+      
+      <P>This tests the new CapaProblem architecture with clean parser separation:</P>
+      
+      <!-- Test mixed HTML and Learning Observer blocks -->
+      <CapaProblemNew id="test_problem">
+        <NumericalGrader answer="100" tolerance="5">
+          <p>Calculate: What is 95 + 5? Answer: <ComplexInput/></p>
+          <div><strong>Chrome indicators should appear next to the input.</strong></div>
+        </NumericalGrader>
+      </CapaProblemNew>
+      
+      <Hr/>
+      
+      <P><Strong>Expected behavior:</Strong></P>
+      <Ul>
+        <Li>HTML elements (p, div, strong, em) render as normal HTML</Li>
+        <Li>Learning Observer blocks (LineInput, NumericalGrader) use their proper parsers</Li>
+        <Li>Chrome indicators automatically created for inputs</Li>
+        <Li>Educational logic separated into locals functions</Li>
+      </Ul>
+      
+    </Vertical>
+    
+    <Vertical id="CompareWithOldApproach">
+      <H2>Compare with HTML Blocks Approach</H2>
+      
+      <P>This uses HTML elements as Learning Observer blocks:</P>
+      
+      <P>Here we use <B>bold</B> and <I>italic</I> as separate blocks with div wrappers.</P>
+      
+      <P>Notice the difference in DOM structure and hydration behavior.</P>
+      
+    </Vertical>
+
+  </Sequential>
+</Vertical>

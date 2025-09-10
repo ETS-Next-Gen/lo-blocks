@@ -1,0 +1,174 @@
+<!-- content/demos/html-elements-demo.xml -->
+<Vertical id="HtmlElementsDemo" launchable="true">
+  <Sequential id="HtmlElementsSequence" title="HTML Elements Showcase">
+    
+    <!-- Step 1: Text Formatting -->
+    <Vertical id="TextFormattingDemo">
+      <H1>Text Formatting Elements</H1>
+      
+      <P>This demonstration showcases various HTML text formatting elements available in Learning Observer blocks:</P>
+      
+      <P>
+        You can make text <B>bold</B>, <I>italic</I>, <U>underlined</U>, or <Strong>strongly emphasized</Strong>. 
+        You can also use <Em>emphasis</Em>, make text <Small>smaller</Small>, or <Mark>highlight</Mark> important parts.
+      </P>
+      
+      <P>For code snippets, use <Code>inline code</Code> or larger code blocks:</P>
+      
+      <Pre>function example() {
+  return "This is preformatted text";
+}</Pre>
+      
+      <P>Mathematical expressions can use <Sub>subscript</Sub> and <Sup>superscript</Sup> formatting like H<Sub>2</Sub>O or E = mc<Sup>2</Sup>.</P>
+    </Vertical>
+
+    <!-- Step 2: Headings and Structure -->
+    <Vertical id="HeadingsDemo">
+      <H1>Heading Level 1</H1>
+      <H2>Heading Level 2</H2>
+      <H3>Heading Level 3</H3>
+      <H4>Heading Level 4</H4>
+      <H5>Heading Level 5</H5>
+      <H6>Heading Level 6</H6>
+      
+      <Hr />
+      
+      <P>Notice how headings create a clear hierarchy of information. The horizontal rule above separates different sections.</P>
+      
+      <Section>
+        <Header>
+          <H2>This is a Section with a Header</H2>
+        </Header>
+        
+        <Article>
+          <H3>Article Within Section</H3>
+          <P>This demonstrates semantic HTML structure using section, header, article, and other organizational elements.</P>
+        </Article>
+        
+        <Footer>
+          <Small>This is a footer element</Small>
+        </Footer>
+      </Section>
+    </Vertical>
+
+    <!-- Step 3: Lists -->
+    <Vertical id="ListsDemo">
+      <H2>Lists and Organization</H2>
+      
+      <P>Here are different types of lists:</P>
+      
+      <H3>Unordered List</H3>
+      <Ul>
+        <Li>First item</Li>
+        <Li>Second item with <Em>emphasis</Em></Li>
+        <Li>Third item</Li>
+      </Ul>
+      
+      <H3>Ordered List</H3>
+      <Ol start="5">
+        <Li>Starting at number 5</Li>
+        <Li>Sequential numbering</Li>
+        <Li>Continues automatically</Li>
+      </Ol>
+      
+      <H3>Definition List</H3>
+      <Dl>
+        <Dt><Strong>HTML</Strong></Dt>
+        <Dd>HyperText Markup Language - the standard markup language for web pages</Dd>
+        
+        <Dt><Strong>CSS</Strong></Dt>
+        <Dd>Cascading Style Sheets - describes the presentation of HTML documents</Dd>
+        
+        <Dt><Strong>Learning Observer</Strong></Dt>
+        <Dd>An interactive educational platform that combines HTML blocks with advanced features</Dd>
+      </Dl>
+    </Vertical>
+
+    <!-- Step 4: Tables -->
+    <Vertical id="TablesDemo">
+      <H2>Tables for Data</H2>
+      
+      <P>Tables help organize data in rows and columns:</P>
+      
+      <Table border="1" cellpadding="8">
+        <Caption>Sample Course Schedule</Caption>
+        <Thead>
+          <Tr>
+            <Th scope="col">Week</Th>
+            <Th scope="col">Topic</Th>
+            <Th scope="col">Activities</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          <Tr>
+            <Td>1</Td>
+            <Td>Introduction to HTML</Td>
+            <Td>Reading, basic exercises</Td>
+          </Tr>
+          <Tr>
+            <Td>2</Td>
+            <Td>Text Formatting</Td>
+            <Td>Practice with <B>bold</B>, <I>italic</I>, and other formatting</Td>
+          </Tr>
+          <Tr>
+            <Td>3-4</Td>
+            <Td colspan="2">Advanced Topics (spans multiple columns)</Td>
+          </Tr>
+        </Tbody>
+        <Tfoot>
+          <Tr>
+            <Td colspan="3"><Em>Schedule subject to change</Em></Td>
+          </Tr>
+        </Tfoot>
+      </Table>
+    </Vertical>
+
+    <!-- Step 5: Links and Media -->
+    <Vertical id="LinksMediaDemo">
+      <H2>Links and Media</H2>
+      
+      <P>You can create <A href="https://example.com" target="_blank">external links</A> that open in new windows.</P>
+      
+      <P>Images can be embedded with proper accessibility:</P>
+      <Img src="/placeholder-image.jpg" alt="A placeholder image demonstrating the Img element" width="300" height="200" loading="lazy" />
+      
+      <P><Small>Note: The image above may not display if the placeholder file doesn't exist, but it demonstrates the proper structure.</Small></P>
+    </Vertical>
+
+    <!-- Step 6: Quotations -->
+    <Vertical id="QuotationsDemo">
+      <H2>Quotations and Citations</H2>
+      
+      <P>For short inline quotes, use the <Q cite="https://example.com/quote">Q element for quoted text</Q> which automatically adds quotation marks.</P>
+      
+      <Blockquote cite="https://example.com/wisdom">
+        <P>This is a longer blockquote that demonstrates how to present extended quotations. It stands apart from the regular text and can include multiple paragraphs.</P>
+        <P>— <Cite>Famous Author</Cite></P>
+      </Blockquote>
+    </Vertical>
+
+    <!-- Step 7: Summary -->
+    <Vertical id="SummaryDemo">
+      <H2>Summary</H2>
+      
+      <P>This demonstration covered the key HTML elements available as Learning Observer blocks:</P>
+      
+      <Ul>
+        <Li><Strong>Text formatting:</Strong> B, I, U, Strong, Em, Small, Mark, Code, Pre, Sub, Sup</Li>
+        <Li><Strong>Structure:</Strong> H1-H6, P, Div, Span, Section, Article, Header, Footer, Main, Nav, Aside</Li>
+        <Li><Strong>Lists:</Strong> Ul, Ol, Li, Dl, Dt, Dd</Li>
+        <Li><Strong>Tables:</Strong> Table, Thead, Tbody, Tfoot, Tr, Th, Td, Caption</Li>
+        <Li><Strong>Links and media:</Strong> A, Img</Li>
+        <Li><Strong>Quotations:</Strong> Blockquote, Q, Cite</Li>
+        <Li><Strong>Other:</Strong> Hr, Br (line break)</Li>
+      </Ul>
+      
+      <P>Each element supports its appropriate HTML attributes and integrates seamlessly with Learning Observer's educational features.</P>
+      
+      <Hr />
+      
+      <P><Em>End of HTML Elements Demonstration</Em></P>
+    </Vertical>
+
+  </Sequential>
+</Vertical>

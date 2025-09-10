@@ -1,0 +1,138 @@
+We would like to make a function which creates HTML blocks like:
+  <B> => <b>{childen}</b>
+Etc. for common HTML elements.
+
+This can follow the design pattern of createStubBlock (see also src/components/componentMap.js). We would need to extend this so that the system knows which attributes to add. For example <Td> should probably include colspan and rowspan.
+
+For now, we'd just like to include **common** HTML elements and attributes; the goal isn't to replicate all of HTML.
+
+Do read the docs first, so you know what's going on!
+
+
+
+-------------
+
+
+-------------
+
+We would like to have a redux storage.
+
+We would like to have a github storage
+
+We would like to have storage overlays
+
+------------
+
+Navigation pane components should show the full heirarchy from graph
+
+In the navigation for the component editor, the components view is flat. It should be an expanding tree; the hierarchy is a DAG. You can grab the DAG with the graph API.
+
+It should start at the launchables, but from there, I should be able to expand into subcomponents. 
+
+Ideally, we'd use the same control as in the files navigation view, but starting closed instead of open.
+
+----------
+Can you create a <List> block? It should have the following syntax:
+
+<List id="graphicOrganizerArguments" items=3 minItems=1 maxItems=10>
+  <Argument/>
+</List>
+
+And this should render as:
+
+<>
+<Argument id="graphicOrganizerArguments_1"/>
+<Argument id="graphicOrganizerArguments_2"/>
+<Argument id="graphicOrganizerArguments_3"/>
+[+] [-]
+</>
+
+Where the plus and minus add and remove arguments.
+---------
+In the preview view, can you move debug to go from being managed in the URL (debug=true) to being managed by redux? Notice redux gives helpers for managing settings. Ideally, we'd have a debug toggle on top of the page as a control if we're logged in as a developer (which is 100% of the time right now, but it will go away once we have accounts).
+----------
+In the codebase, we should not be using useState, ever, but have all state managed by redux. Can you find all places we have useState, and either use the functions in react, or suggest how we do this?
+----------
+useComponentState/ReduxState/etc. poorly named. Have usage, etc.
+----------
+We would like to be able to support multiple choice questions. In Open edX, this was:
+
+<problem>
+  <choiceresponse>
+    <label>Question or prompt text</label>
+    <description>Information about how to answer the question</description>
+    <checkboxgroup>
+      <choice correct="false">Answer option A (incorrect)</choice>
+      <choice correct="true">Answer option B (correct)</choice>
+      <choice correct="false">Answer option C (incorrect)</choice>
+    </checkboxgroup>
+  <solution>
+    <div class="detailed-solution">
+      <p>Optional header for the explanation or solution</p>
+      <p>Optional explanation or solution text</p>
+    </div>
+  </solution>
+  </choiceresponse>
+  <demandhint>
+    <hint>Hint 1</hint>
+    <hint>Hint 2</hint>
+  </demandhint>
+</problem>
+
+In LON-CAPA:
+
+<radiobuttonresponse direction="vertical" max="10" randomize="yes">
+    <foilgroup>
+        <foil location="random" value="true" name="foil1">
+            <startouttext />Option 1<endouttext />
+        </foil>
+        <foil location="random" value="false" name="foil2">
+            <startouttext />Option 2<endouttext />
+        </foil>
+        <foil location="random" value="false" name="foil3">
+            <startouttext />Option 3<endouttext />
+        </foil>
+        <foil location="random" value="false" name="foil4">
+            <startouttext />Option 4<endouttext />
+        </foil>
+    </foilgroup>
+</radiobuttonresponse>
+
+Perhaps we will use terminology here correctly, though:
+
+<MultipleChoice> <!-- SelectedResponseGrader? I think this is simpler, but it's still a grader -->
+   <Stem> What is the second letter of the alphabet?
+   <Alternatives>
+      <Distractor> Answer option A (incorrect) </Distractor>
+      <Key> Answer option B (correct) </Key>
+      <Distractor> Answer option C (incorrect) </Distractor>
+   </Alternatives>
+</MultipleChoice>
+
+I'd make <Alternatives> optional. This should be valid too:
+
+<MultipleChoice> <!-- SelectedResponseGrader? I think this is simpler, but it's still a grader -->
+   <Stem> What is the second letter of the alphabet?
+   <Distractor> Answer option A (incorrect) </Distractor>
+   <Key> Answer option B (correct) </Key>
+   <Distractor> Answer option C (incorrect) </Distractor>
+</MultipleChoice>
+
+---------
+
+Can you wire up the chat in the edit view so that I can talk to an LLM? There's an LLM pass-through API already.
+
+---------
+
+Can you please holistically change the term for the block definition from 'Spec' to 'Blueprint'?
+
+After that, can you holistically refactor all of the blocks to have:
+
+1) A blueprint file (Block.js), ending with a .js or .ts extension
+2) A component file (_Block.jsx), ending with a .jsx or .tsx extension, with the React component?
+
+Right now, a few are still in the old format of one file.
+
+Please be sure to update the documentation as well.
+
+---------

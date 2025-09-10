@@ -413,3 +413,85 @@ export function peggyParser(
 
   return { parser, staticKids: () => [] };
 }
+
+// === Mixed Content Parser ===
+//
+// Parser for content that mixes Learning Observer blocks with HTML elements.
+// This is useful for educational content like CapaProblem where you need:
+// - HTML elements for formatting (p, div, etc.) -> become {type: 'html'} nodes
+// - Learning Observer blocks with their proper parsers applied
+// - Standard ID assignment and relationship tracking
+
+/**
+ * Creates a parser that handles both Learning Observer blocks and HTML elements.
+ * - LO blocks get their proper parsers applied and standard ID assignment
+ * - HTML elements become {type: 'html'} nodes for inline rendering
+ * - Maintains clean separation between render tree and educational relationships
+ */
+export const blocksWithHtml = childParser(async function blocksWithHtmlParser({ 
+  rawKids, 
+  parseNode, 
+  id, 
+  storeEntry,
+  componentMap,
+  provenance 
+}) {
+  const results = [];
+  
+  for (const child of rawKids) {
+    if (!child || typeof child !== 'object') continue;
+    
+    const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
+    if (!tag) continue;
+    
+    const attributes = child[':@'] ?? {};
+    const kids = child[tag];
+    
+    // Check if this is a Learning Observer block
+    if (componentMap && componentMap[tag]) {
+      // Apply the block's proper parser via parseNode
+      const blockResult = await parseNode(child);
+      if (blockResult?.id) {
+        results.push({ type: 'block', id: blockResult.id });
+      }
+    } else {
+      // Treat as HTML element - recursively parse children
+      const childKids = Array.isArray(kids) 
+        ? await Promise.all(kids.map(async (kidNode) => {
+            // Recursively parse child nodes (which may be blocks or HTML)
+            return await blocksWithHtmlParser({ 
+              rawKids: [kidNode], 
+              parseNode, 
+              id, 
+              storeEntry, 
+              componentMap, 
+              provenance 
+            });
+          })).then(results => results.flat())
+        : [];
+      
+      results.push({
+        type: 'html',
+        tag,
+        attributes,
+        id: attributes.id,
+        kids: childKids
+      });
+    }
+  }
+  
+  return results;
+});
+
+// Static kids for blocksWithHtml - collect IDs from both blocks and HTML nodes
+blocksWithHtml.staticKids = (entry) => {
+  const collectIds = (nodes) => {
+    return nodes.flatMap(n => {
+      if (!n) return [];
+      if (n.type === 'block' && n.id) return [n.id];
+      if (n.type === 'html') return collectIds(n.kids || []);
+      return [];
+    });
+  };
+  return collectIds(Array.isArray(entry.kids) ? entry.kids : []);
+};

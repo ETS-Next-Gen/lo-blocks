@@ -1,0 +1,166 @@
+<!-- content/demos/interdisciplinary-sba-navigator.xml -->
+<SplitPanel id="interdisciplinary_sba_navigator" title="Interdisciplinary SBA with Navigator" launchable="true">
+  
+  <!-- Left Panel: Team and Document Navigators -->
+  <LeftPane>
+    <Vertical id="navigation_panels">
+      
+      <!-- Team Navigator Section -->
+      <TextBlock>
+        ### Your Research Team
+        Explore your team members' backgrounds and expertise to plan your interdisciplinary approach.
+      </TextBlock>
+      
+      <Navigator id="team_nav" 
+                 title="Comm360 Team" 
+                 preview="TeamPreview" 
+                 detail="TeamDetail"
+                 searchable="true">
+- id: ty
+  name: Ty
+  role: Intern Teammate
+  bio: Data analysis and research specialist
+  experience: 6 months at Comm360
+  skills: [Data Analysis, Research, Program Evaluation]
+
+- id: peggy
+  name: Peggy
+  role: Intern Teammate
+  bio: Community outreach and stakeholder engagement expert
+  experience: 4 months at Comm360
+  skills: [Community Outreach, Communication, Project Management]
+
+- id: lacy
+  name: Lacy
+  role: Intern Teammate
+  bio: Program development and implementation strategist
+  experience: 5 months at Comm360
+  skills: [Program Development, Strategic Planning, Implementation]
+
+- id: lianne
+  name: Lianne Park
+  role: Supervisor/Mentor
+  bio: Director of multiple programs, presents to PDE committee
+  experience: 5 years at Comm360
+  skills: [Program Management, Leadership, Strategic Planning]
+
+- id: anne
+  name: Anne Hastings
+  role: Chief Executive Officer
+  bio: CEO making ultimate decisions about programs and resources
+  experience: 8+ years at Comm360
+  skills: [Executive Leadership, Strategic Decision Making]
+      </Navigator>
+      
+      <!-- Document Navigator Section -->
+      <TextBlock>
+        ### Research Literature
+        Browse interdisciplinary research on high school dropout to build your evidence base.
+      </TextBlock>
+      
+      <Navigator id="literature_nav" 
+                 title="Research Documents" 
+                 preview="DefaultPreview" 
+                 detail="DefaultDetail"
+                 searchable="true">
+- id: psych_study
+  title: Motivation and Dropout Risk
+  subtitle: Psychology • 2023
+  description: Study of psychological factors affecting student retention and academic motivation
+  details:
+    discipline: Psychology
+    sampleSize: 847 students
+    keyFindings: [Self-efficacy predicts retention, Peer support crucial, Identity formation matters]
+
+- id: socio_study
+  title: Social Determinants of Education
+  subtitle: Sociology • 2022  
+  description: Analysis of family, community, and socioeconomic factors in educational outcomes
+  details:
+    discipline: Sociology
+    sampleSize: 1200 families
+    keyFindings: [Income strongly correlates with completion, Single parents face challenges, Community resources matter]
+
+- id: econ_analysis
+  title: Cost-Benefit of Prevention Programs
+  subtitle: Economics • 2023
+  description: Economic analysis of dropout prevention interventions and their ROI
+  details:
+    discipline: Economics
+    roi: $7 per $1 invested
+    keyFindings: [Early intervention most cost-effective, Vocational programs promising, Long-term benefits substantial]
+      </Navigator>
+      
+    </Vertical>
+  </LeftPane>
+  
+  <!-- Right Panel: SBA Tasks and Analysis -->
+  <RightPane>
+    <Vertical id="sba_activities">
+      
+      <TextBlock>
+        ## Interdisciplinary Dropout Analysis Project
+        
+        You're leading a team to analyze high school dropout causes using an interdisciplinary approach.
+        Use the team and literature navigators to inform your analysis.
+      </TextBlock>
+      
+      <!-- Step 1: Problem Definition -->
+      <TextBlock>
+        ### Step 1: Define Research Question
+        Based on your initial review, what specific aspect of high school dropout will you investigate?
+      </TextBlock>
+      
+      <TextArea id="research_question" 
+                placeholder="Define your specific research question about high school dropout..." />
+      
+      <!-- Step 2: Team Strategy -->
+      <TextBlock>
+        ### Step 2: Team Member Assignments
+        
+        **Currently exploring team member:** 
+        <Ref target="team_nav" field="selectedItem" fallback="Select a team member to see their expertise" />
+        
+        How will you leverage each team member's skills for this project?
+      </TextBlock>
+      
+      <TextArea id="team_strategy" 
+                placeholder="Outline how you'll use each team member's expertise..." />
+      
+      <!-- Step 3: Literature Analysis -->
+      <TextBlock>
+        ### Step 3: Disciplinary Insights
+        
+        **Currently reviewing document:** 
+        <Ref target="literature_nav" field="selectedItem" fallback="Select a research document to analyze" />
+        
+        What are the key insights from each discipline? Where do they converge or conflict?
+      </TextBlock>
+      
+      <TextArea id="disciplinary_analysis" 
+                placeholder="Analyze insights from different disciplines..." />
+      
+      <!-- Step 4: Synthesis -->
+      <TextBlock>
+        ### Step 4: Interdisciplinary Synthesis
+        
+        How do the different disciplinary perspectives combine to provide a more complete understanding than any single discipline could offer?
+      </TextBlock>
+      
+      <TextArea id="synthesis" 
+                placeholder="Synthesize insights across disciplines..." />
+      
+      <!-- Step 5: Recommendations -->
+      <TextBlock>
+        ### Step 5: Recommendations for PDE Committee
+        
+        Based on your interdisciplinary analysis, what recommendations will Lianne present to the Program Development & Evaluation committee?
+      </TextBlock>
+      
+      <TextArea id="recommendations" 
+                placeholder="Draft your evidence-based recommendations..." />
+      
+    </Vertical>
+  </RightPane>
+  
+</SplitPanel>

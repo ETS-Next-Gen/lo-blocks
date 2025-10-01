@@ -1,0 +1,14 @@
+<!-- Interdisciplinary Studies SBA: High School Dropout Analysis Demo -->
+<SplitPanel id="interdisciplinary_sba_demo" title="Interdisciplinary Studies SBA - High School Dropout Analysis" launchable="true">
+
+  <!-- Left Panel: Dialogue Conversation -->
+  <LeftPane>
+    <Chat id="interdisciplinary_chat" src="../sba/interdisciplinary_sba_dialogue.chatpeg" height="600px" />
+  </LeftPane>
+
+  <!-- Right Panel: Activities reference -->
+  <RightPane>
+    <UseHistory id="interdisciplinary_sba_sidebar" initial="orientation" />
+  </RightPane>
+
+</SplitPanel>

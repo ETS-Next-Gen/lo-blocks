@@ -1,0 +1,130 @@
+# Interdisciplinary SBA Resource Catalog
+# Extracted from: /home/pmitros/projects/play/sba/sba/src/app/content/interdisciplinary_sba/texts/
+
+resources:
+  research_studies:
+    - file: research_study_adhd_dropout.md
+      title: "Is ADHD a Risk Factor for High School Dropout? A Controlled Study"
+      authors:
+        - Ronna Fried
+        - Carter Petty
+        - Stephen V. Faraone
+        - Laran L. Hyder
+        - Helen Day
+        - Joseph Biederman
+      journal: "Journal of Attention Disorders"
+      year: 2016
+      volume: 20
+      issue: 5
+      pages: "383-389"
+      type: research_study
+      discipline: psychology
+      focus: "Examines ADHD as a risk factor for grade retention and high school dropout, controlling for IQ, learning disorders, and social class. Finds 28% of ADHD students repeated grades vs 7% of controls, with females at higher risk."
+      
+    - file: research_study_employment_dropout.md
+      title: "Is Adolescent Employment Still a Risk Factor for High School Dropout?"
+      authors:
+        - Jeremy Staff
+        - Alyssa M. Yetter
+        - Kelsey Cundiff
+        - Nayan Ramirez
+        - Mike Vuolo
+        - Jeylan T. Mortimer
+      journal: "Journal of Research on Adolescence"
+      year: 2019
+      volume: 30
+      issue: 2
+      pages: "406-422"
+      type: research_study
+      discipline: sociology
+      focus: "Examines whether intensive work (>20 hours/week) during high school increases dropout risk. Using 2009 longitudinal data, finds intensive workers have 44% higher dropout chance and lower GPAs."
+      
+    - file: research_study_marijuana_dropout.md
+      title: "Marijuana Use and High School Dropout: The Influence of Unobservables"
+      authors:
+        - Daniel F. McCaffrey
+        - Rosalie Liccardo Pacula
+        - Bing Han
+        - Phyllis Ellickson
+      journal: "Health Economics"
+      year: 2010
+      volume: 19
+      pages: "1281-1299"
+      type: research_study
+      discipline: health_economics
+      focus: "Uses propensity score methods to examine marijuana use and dropout relationship. Finds association largely explained by pre-existing differences and peer influences rather than cognitive effects."
+      
+    - file: research_study_rural_urban_dropout.md
+      title: "Rural and Urban High School Dropout Rates: Are They Different?"
+      authors:
+        - Jeffrey L. Jordan
+        - Genti Kostandini
+        - Elton Mykerezi
+      journal: "Journal of Research in Rural Education"
+      year: 2012
+      volume: 27
+      issue: 12
+      pages: "1-21"
+      type: research_study
+      discipline: education
+      focus: "Compares dropout rates in rural vs urban areas using NLSY data from 1979 and 1997. Finds similar graduation rates across settings, with family characteristics as main determinants rather than geography."
+
+  policy_documents:
+    - file: policy_brief_dropout_crisis.md
+      title: "Urgent Focus on High School Dropout Rates"
+      authors: []
+      year: null
+      type: policy_brief
+      discipline: education_policy
+      focus: "Executive summary highlighting national dropout crisis, economic consequences for dropouts, and recommendations for early intervention, alternative pathways, and community partnerships."
+
+  primary_sources:
+    - file: focus_group_silent_epidemic_excerpts.md
+      title: "The Silent Epidemic: Perspectives of High School Dropouts"
+      authors:
+        - Civic Enterprises
+        - Peter D. Hart Research Associates
+      organization: "Bill & Melinda Gates Foundation"
+      year: 2006
+      month: March
+      type: primary_source
+      document_type: "Focus group data and student survey"
+      url: "https://docs.gatesfoundation.org/documents/thesilentepidemic3-06final.pdf"
+      discipline: mixed
+      focus: "Student perspectives on dropout. Key findings: 47% said classes not interesting, 69% not motivated but 70% confident they could have graduated, 32% had to work, 26% became parents. Most dropouts believe they could have succeeded with proper support."
+
+summary:
+  total_resources: 6
+  research_studies: 4
+  policy_documents: 1
+  primary_sources: 1
+  
+  disciplines_covered:
+    - psychology
+    - sociology
+    - health_economics
+    - education
+    - education_policy
+    
+  key_themes:
+    - "ADHD and learning disabilities as risk factors"
+    - "Employment and economic pressures"
+    - "Substance use and peer influences"
+    - "Rural vs urban comparisons"
+    - "Student perspectives and motivation"
+    - "Family characteristics and social class"
+    - "School engagement and academic preparation"
+
+extraction_metadata:
+  source_location: "/home/pmitros/projects/play/sba/sba/src/app/content/interdisciplinary_sba/texts/"
+  output_location: "/home/pmitros/projects/play/sba/sba/interdisciplinary_sba_extracted/"
+  extraction_date: "2025-09-30"
+  source_files:
+    - summary1.js
+    - summary2.js
+    - summary3.js
+    - summary4.js
+    - summary5.js
+    - source1.js
+    - source1_p2.js
+    - source1_intro.js

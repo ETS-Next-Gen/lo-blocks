@@ -1,0 +1,1656 @@
+================================================================================
+INTERDISCIPLINARY SBA - COMPLETE FLOW DOCUMENTATION
+================================================================================
+
+This document provides a comprehensive extraction of all dialogue, text content,
+questions, and interaction flow from the Interdisciplinary Studies SBA (Version 2).
+
+The assessment consists of 95 steps split across two main files:
+- Steps 1-57: interdisciplinary_studies_v2_part1/page.js
+- Steps 58-95: interdisciplinary_studies_v2_part3/page.js
+
+================================================================================
+STEP 1: Orientation
+================================================================================
+Scene: Orientation text component
+OnScreen: N/A (single screen)
+
+Content:
+- Heading: "Orientation"
+- Text: "Hi. This is the module on interdisciplinary reasoning for EDUC 3100 that I spoke about during one of our classes."
+- Text: "It should take you about an hour to complete, and you can break it up over several days if you'd like. However, please make sure you finish it by end of Sunday, April 13, 2025."
+- Text: "In this module, you'll complete a simulated project in which you'll apply what you've learned in class about interdisciplinary analysis and the broad model of interdisciplinary research. The module contains everything you need to complete the project."
+- Text: "There are instructions on each screen to help you navigate and give your answers. There are also a few links embedded in the text. You can click them for additional information, but that's optional."
+- Text: "Remember that I will be seeing these results, so please take it seriously and do your best work. I think you'll enjoy it."
+- Text (bold): "Click the Next button on the screen to start."
+
+Image: Omer.png
+
+================================================================================
+STEP 2: Introduction
+================================================================================
+Scene: Introduction text component
+OnScreen: N/A (single screen)
+
+Content:
+- Heading: "Introduction"
+- Text: "Imagine that as part of your degree requirements, you are completing an internship at a local nonprofit organization called Community 360, or Comm360 for short."
+- Text: "The mission of Comm360 is to address community-based needs and issues through responsive programming in multiple areas such as:"
+  - Education and Training
+  - Health and Wellness
+  - Family and Youth Services
+  - Community Building and Advocacy
+- Text: "A community needs survey conducted by Comm360 identified the high rate of students dropping out of high school in the area as a serious issue. You have been asked to work with other interns to investigate the causes of high school dropout to better understand the problem so that Comm360's services can be developed to address the problem."
+
+Images: nonprofit.png, wordcloud.png
+
+================================================================================
+STEP 3: Team Members + Prologue
+================================================================================
+Scene: TeamMembers with Prologue text component
+OnScreen: N/A (single screen)
+
+Team Members Display:
+- Banner: "Intern Group Members"
+- Ty (TeamMemberOne.jpg)
+- Peggy (TeamMemberTwo.jpg)
+- Lacy (TeamMemberThree.jpg)
+- Supervisor/Mentor: Lianne Park (ProjectLeader.jpg)
+- CEO of Comm360: Ann Hastings (ProgramDirector.jpg)
+
+Prologue Content:
+- Heading: "Introduction"
+- Text: "Your intern teammates are Ty, Peggy, and Lacy."
+- Text: "The team is responsible for helping each other identify key concepts, review and learn from readings, and organize information to develop a report about what causes young people to dropout of high school."
+- Text: "Lianne Park is your Supervisor/Mentor at Comm360. She's been there for five years and directs multiple programs. She will present your findings to the Program Development & Evaluation (PDE) committee for review."
+- Text: "Lianne reports to the Chief Executive Officer (CEO), Anne Hastings. Ms. Hastings makes the ultimate decisions about programs and resources."
+
+================================================================================
+STEP 4: Task List
+================================================================================
+Scene: TeamMembers with TaskList text component
+OnScreen: N/A (single screen)
+
+Content:
+- Heading: "Introduction"
+- Text: "In the next 45-60 minutes, you will work with your teammates to complete the following tasks:"
+  1. Brainstorm causes for high school dropout.
+  2. Review community focus group data.
+  3. Reflect: Is this an Interdisciplinary Problem?
+  4. Review the literature.
+  5. Develop a problem statement that justifies an interdisciplinary approach.
+  6. Synthesize results into a presentation for the PDE Committee.
+
+================================================================================
+SCENE 1: Task Set 1 - Brainstorm
+================================================================================
+
+STEP 5: Scene 1, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Lianne: "Hey, team. We're glad you're here at Comm360 to help us work on this problem."
+- Lianne: "When someone drops out of high school and never gets a diploma or a GED, it has negative consequences, as you know."
+- Lianne: "Why don't each of you start by reviewing what you know about the causes of people dropout of high school?"
+- Lianne: "It may be from personal experiences of people you know or know of."
+- Lianne: "When you're done, we'll put all the ideas together as a way to start looking into research about the causes of dropping out."
+- Lianne: "By the way, you can call me Lianne. We're pretty informal here."
+
+STEP 6: Scene 1, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [same as above, continues to display]
+- Lacy: "Thanks, Lianne. I know some old classmates who left high school before graduating, but I didn't exactly think it was my place to ask them why they dropped out."
+
+STEP 7: Scene 1, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [continues to display]
+- Lacy: [continues to display]
+- Ty: "Me too. Maybe we should each take a few minutes to think of different reasons or causes of dropping out of high school."
+- Ty: "When we're done, we can combine them and then evaluate which might be most valuable for conducting research into the issue, like Lianne suggested."
+- Ty: "I'm just not sure how to go about it."
+
+STEP 8: Scene 1, OnScreen 4
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [continues to display]
+- Lacy: [continues to display]
+- Ty: [continues to display]
+- Peggy: "I have an idea for that. Let's write single sentences for each cause. I'll start. I had a friend who was in a car accident freshman year of high school. She had broken bones, trauma, and couldn't even leave her house for almost two months."
+- Peggy: "She fell so far behind that by the time she got back, she just couldn't figure out how to catch up."
+
+================================================================================
+SCENE 2: Task Set 1 - Brainstorm (continued)
+================================================================================
+
+STEP 9: Scene 2, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Ty: "How could we put that into one sentence?"
+
+STEP 10: Scene 2, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Ty: [continues to display]
+- Lacy: "How about..."
+- Lacy: "Students who have illnesses that make it hard for them to keep up with schoolwork."
+
+STEP 11: Scene 2, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Ty: [continues to display]
+- Lacy: [continues to display]
+- Peggy: "That works for me. Let's see if each of us can come up with at least two different causes for dropping out of high school."
+- Peggy: "Lianne, what do you think?"
+
+================================================================================
+SCENE 3: Task Set 1 - Brainstorm (continued)
+================================================================================
+
+STEP 12: Scene 3, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: "That's a good plan, but keep in mind, not all causes start with students or their families."
+
+STEP 13: Scene 3, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [continues to display]
+- Lacy: "What do you mean?"
+
+STEP 14: Scene 3, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [continues to display]
+- Lacy: [continues to display]
+- Lianne: "Well, for example, there are cases where schools, like in rural communities, can't accommodate students with certain physical or mental disabilities. In those cases, families simply have no reasonable option for allowing their child to continue to graduation."
+- Lianne: "This is an example of a structural cause, not one situated in the individual?"
+- Lianne: "Keep an open mind about possible causes because our programs can work with multiple stakeholders -- like schools and community groups as well as families and students."
+
+================================================================================
+SCENE 4: Task Set 1 - Brainstorm (Constructed Response Items)
+================================================================================
+
+STEP 15: Scene 4, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Ty: "Ah, I get it. So, why don't we each write one reason that is more like a structural cause and one that is focused more on the individual?"
+
+STEP 16: Scene 4, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Ty: [continues to display]
+- Peggy: "That's a good idea. I'll try it even though I'm not quite sure I get the difference yet."
+- Peggy: "So let's see if we can each write two causes."
+
+STEP 17: Scene 4, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Ty: [continues to display]
+- Peggy: [continues to display]
+
+Item Display (right side):
+- Stem: "Why Do Students Drop Out of High School?"
+- Directions: [blank]
+- You: Constructed Response Input
+  - Stem: "Type a cause that focuses on an individual's choice."
+  - Variable ID: interdisciplinary_sba.cause_internal
+  - Type: LO_TextOrSpeechInput
+  - Class: medium-input-short
+
+STEP 18: Scene 4, OnScreen 4
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Ty: [continues to display]
+- Peggy: [continues to display]
+
+Items Display:
+- Stem: "Why Do Students Drop Out of High School?"
+- Directions: "(You must describe one internal and one structural cause before you can go on.)"
+
+Item 1:
+- You: Constructed Response Input
+  - Stem: "Type a cause that focuses on an individual's choice."
+  - Variable ID: interdisciplinary_sba.cause_internal
+  - Type: LO_TextOrSpeechInput
+  - Class: medium-input-short
+
+Item 2:
+- You: Constructed Response Input
+  - Stem: "Type a structural cause"
+  - Variable ID: interdisciplinary_sba.cause_structural
+  - Type: LO_TextOrSpeechInput
+  - Class: medium-input-short
+
+Advance Rule: Both responses must have minimum length of 10 characters
+
+================================================================================
+SCENE 5: Task Set 1 - Brainstorm (Review Responses)
+================================================================================
+
+STEP 19: Scene 5, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Lacy: "Here are all of our reasons, Lianne. What do you think?"
+
+Display (right side):
+- Subheading: "Why Do Students Drop Out of High School?"
+- List of causes (in content box):
+  - Some school systems can't accommodate students with physical or other kinds of disabilities, so the students stop going to school.
+  - If a student feels they need to earn money right away to help their family, they might drop out to get a full time job.
+  - [Student's response from interdisciplinary_sba.cause_internal]
+  - Schools are forced to use curricula that students don't see as relevant to them and their goals.
+  - A student's environment may increase their likelihood of dropping out if they live in an area affected by gang activity, neighborhood instability, and limited support systems, as seen in some urban communities.
+  - [Student's response from interdisciplinary_sba.cause_structural]
+  - Conditions like depression, anxiety, or ADHD can interfere with a student's ability to get good grades and remain engaged in school.
+
+STEP 20: Scene 5, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 1: Brainstorm"
+
+Dialogue:
+- Lacy: [continues to display]
+- Lianne: "This is a good list. It reflects a lot of what we heard in a focus group we conducted after we got the results of our community needs survey. We spoke to various stakeholders -- students and their families, teachers, and other community members."
+- Lianne: "Now let's move on to the next task. I'd like you to take a look at part of the transcript from that focus group to extract additional reasons because this is an extremely complex problem, as you've already identified, with many causes."
+
+Display: [same list continues to display]
+
+================================================================================
+SCENE 6: Task Set 2 - Review Community Focus Group Data (Highlights Part 1)
+================================================================================
+
+STEP 21: Scene 6, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: "Read this part of the transcript before you go on."
+
+Content (right side):
+Focus Group Transcript (Part 1):
+
+Interviewer: Thank you for participating in this focus group and thank you for providing your consent to have this meeting recorded. Let's begin. Our community needs survey identified high school dropout rates as an issue of concern. The purpose of this focus group is to discuss causes of dropping out of high school. Why do you think students in our community dropout of high school?
+
+Participant 1: I'll start. My kids all graduated from high school. Whenever they complained or they felt like quitting, we kept on them to keep at it. Luckily, so did their friends. Everybody around them just wouldn't let them quit. While they did not get along with all their teachers, they had some FANTASTIC teachers who supported them. So, we all helped them to stick it out.
+
+Participant 2: Those are some good friends to have! I'm not always sure what influence my daughter's friends are having on her - good or bad.
+
+Interviewer 1: Thank you for sharing your experiences. But for now, I'd like us to focus on the causes leading to students dropping out. Later, we can discuss the kinds of actions and support that can help them to persist to graduation.
+
+Participant 3: I have an experience to share. My daughter's best friend has dyslexia and was falling behind in all her classes. Her grades were awful. And she wasn't getting the help that she needed from the school to catch up. When my daughter was a sophomore, her friend dropped out because she couldn't cope.
+
+Participant 1: That probably wasn't easy for your daughter or her friend.
+
+Participant 3: Yes, my daughter was really upset. She knew her friend since elementary school. Thankfully, her friend was able to get tutoring at a community center that helped her improve her reading and she eventually got her GED.
+
+Participant 2: If our schools had more tutoring or mentorship programs, we might be able to help our kids before they drop out, instead of after it is too late.
+
+Interviewer: Thanks for that suggestion, but if you don't mind holding off on those kinds of ideas until we get to that part of the focus group, I'll bring that up again for more discussion.
+
+Participant 2: Oh, sure. No problem.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.focus_group_pt1
+- Group ID: screen22_highlights
+- Type: LO_SentenceHighlightsPassageFrame
+- Editable: false
+- Keys Highlighted: false
+- Directions: "Click on sentences to highlight them. (You must highlight text that describes a cause for high school dropout before you can go on.)"
+
+STEP 22: Scene 6, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: "Highlight any reasons that our participants gave for students dropping out of high school."
+
+Content: [Same focus group transcript Part 1 as above]
+
+Item Details:
+- Variable ID: interdisciplinary_sba.focus_group_pt1
+- Group ID: screen22_highlights
+- Type: LO_SentenceHighlightsPassageFrame
+- Editable: TRUE
+- Keys Highlighted: false
+- Directions: "Click on sentences to highlight them. (You must highlight text that describes a cause for high school dropout before you can go on.)"
+
+Advance Rule: Must have highlighted text (screen22_highlights must have highlighted content)
+
+STEP 23: Scene 6, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [continues from OnScreen 1]
+
+Content:
+Focus Group Transcript (Part 2):
+
+Participant 4: Here's something - kind of big picture, but I know some parents who still believe that graduating from high school isn't as important or as high a priority as supporting the family.
+
+Interviewer: Can you tell us more about that?
+
+Participant 4: Well, I know this because of some of my neighbors. One of my son's friend's parents had steady, good paying jobs for years working in their family's restaurant. Another family has a small business and expect their kids to take it over. These parents did not have or need high school degrees to get those jobs. They want their children to follow in their footsteps. So, whether it is to work in the family business or just to take care of an elder family member instead of going to school, they tell me that's more important for their children to help out than getting a high school diploma.
+
+Interviewer: Thank you. The values and beliefs of families can be complicated influences on their children.
+
+Participant 5: I don't know if this is appropriate, but I do know that behavioral and especially legal issues can lead to dropping out.
+
+Interviewer: Can you tell us more about that?
+
+Participant 5: I work in a community legal office. And, well, sometimes I am called in to represent young people who get in trouble with the law or arrested. It could be getting caught shoplifting or something more serious like ...well, you can imagine. Whether they are eventually found guilty or innocent, it can have an impact on completing school to graduation. The entire experience with the legal system can take time and resources, creating stress on the youth and families. Then, the youth faces the social pressures in school from friends, classmates, and teachers, even when they are trying to be supportive. And in some schools with no-tolerance policies, once school administrators find out about the allegations, the student may be expelled. A young adult may feel trapped and dropping out may seem like the best option.
+
+Participant 3: Mmmmm, yeah, I can see that.
+
+Interviewer: Are there any other comments on the causes? [interviewer pause] OK, let's move on to the next part of the focus group.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.focus_group_pt2
+- Group ID: screen24_highlights
+- Type: LO_SentenceHighlightsPassageFrame
+- Editable: false
+- Keys Highlighted: false
+
+STEP 24: Scene 6, OnScreen 4
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: "Highlight any reasons that our participants gave for students dropping out of high school."
+
+Content: [Same focus group transcript Part 2 as above]
+
+Item Details:
+- Variable ID: interdisciplinary_sba.focus_group_pt2
+- Group ID: screen24_highlights
+- Type: LO_SentenceHighlightsPassageFrame
+- Editable: TRUE
+- Keys Highlighted: false
+- Directions: "Click on sentences to highlight them. (You must highlight text that describes a cause for high school dropout before you can go on.)"
+
+Advance Rule: Must have highlighted text (screen24_highlights must have highlighted content)
+
+STEP 25: Scene 6, OnScreen 5
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Ty: "I hope we get to work on focus groups here because that was really interesting. Here's what I highlighted."
+
+Content: [Both focus group transcript parts with keys/correct answers highlighted]
+
+Item Details:
+- Both highlight components displayed
+- Editable: false
+- Keys Highlighted: TRUE (shows correct answers)
+
+================================================================================
+SCENE 7: Task Set 2 - Multiple Selection & Explanation
+================================================================================
+
+STEP 26: Scene 7, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lacy: "I studied focus groups in my research methods class last year. We analyzed lots of transcripts. Ty, I'm taking your highlights and combining them with the reasons we already came up with. I re-worded some of them, but I think I've captured everything."
+- Lacy: "Here are all the reasons either we or the participants gave for dropping out of high school."
+
+Content (right side):
+- Subheading: "Your Choices:"
+- Multiple selection checkbox list (not yet displayed in full)
+
+Item Details:
+- Variable ID: interdisciplinary_sba.reasons
+- Type: LO_Checkbox_MultipleSelectionMultipleChoice
+- Editable: false
+- Show Keys: false
+- Show Checks: false
+- Show Unchecked: false
+
+STEP 27: Scene 7, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lacy: [continues from OnScreen 1]
+- Lacy: "Good work. This list reflects what we've heard in the community about this issue."
+- Lacy: "Now we need to turn our attention to the research. I think we should focus on a subset of these reasons."
+- Lacy (Stem): "Which ones would you select to research?"
+
+Content (right side):
+- Subheading: "Your Choices:"
+- Multiple Selection Checkboxes (12 options):
+  1. Some school systems can't accommodate students with physical or other kinds of disabilities, so the students stop going to school.
+  2. If a student feels they need to earn money right away to help their family, they might drop out to get a full time job.
+  3. [Student's cause_internal response]
+  4. Schools are forced to use curricula that students don't see as relevant to them and their goals.
+  5. A student's environment may increase their likelihood of dropping out if they live in an area affected by gang activity, neighborhood instability, and limited support systems, as seen in some urban communities.
+  6. [Student's cause_structural response]
+  7. Conditions like depression, anxiety, or ADHD can interfere with a student's ability to get good grades and remain engaged in school.
+  8. Some school systems can't accommodate students with physical or other kinds of disabilities, so the students stop going to school.
+  9. Students who don't have family, friends, or teachers to help and encourage them might not want to stay in school.
+  10. Negative peer influences can encourage behavior like skipping school and dropping out.
+  11. In some cultures, other responsibilities might be more important than finishing high school.
+  12. Students who get into legal trouble might find it difficult to keep going to school or be expelled by school policy.
+
+- Directions: "(Pick at least 3 but no more than 5.)"
+
+Item Details:
+- Variable ID: interdisciplinary_sba.reasons
+- Type: LO_Checkbox_MultipleSelectionMultipleChoice
+- Editable: TRUE
+- Targeted Variables: interdisciplinary_sba.reasons.1 through interdisciplinary_sba.reasons.12
+
+Advance Rule: Must select at least 3 (numGT: 2) and no more than 5 (numLT: 6)
+
+STEP 28: Scene 7, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: "I agree with you on some of your choices. Why did you select that set?"
+
+Content (right side):
+- Subheading: "Your Choices:"
+- [Same checkbox list with student's selections shown]
+
+Item Details:
+- Editable: false
+- Show Checks: TRUE (displays which items were selected)
+
+STEP 29: Scene 7, OnScreen 4
+--------------------------------------------------------------------------------
+Heading: "Task Set 2: Review Community Focus Group Data"
+Subheading: "Why Do Students Drop Out of High School?"
+
+Dialogue:
+- Lianne: [continues to display]
+
+Content (right side):
+- [Same checkbox list with selections shown]
+- Constructed Response:
+  - Stem: "Why did you select these choices? Type your answer below."
+  - Directions: "(You must provide an answer before you can go on.)"
+  - Variable ID: interdisciplinary_sba.reason_explanation
+  - Type: LO_TextOrSpeechInput
+  - Class: wide-input
+
+Advance Rule: Response must have minimum length of 10 characters
+
+================================================================================
+SCENE 8: Task Set 3 - Reflect: Is this an Interdisciplinary Problem?
+================================================================================
+
+STEP 30: Scene 8, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 3: Reflect: Is this an Interdisciplinary Problem?"
+
+Dialogue:
+- Lianne: "I appreciate the thoughtfulness you've shown on this issue, both as individuals and as a team."
+- Lianne: "I reviewed the reasons you put together with Ms. Hastings. We agree that this subset of causes are appropriate for us to consider as an organization to build programmatic outreach/solutions:"
+  - If a student feels they need to earn money right away to help their family, they might drop out to get a full time job.
+  - Conditions like depression, anxiety, or ADHD can interfere with a student's ability to get good grades and remain engaged in school.
+  - A student's environment may increase their likelihood of dropping out if they live in an area affected by gang activity, neighborhood instability, and limited support systems, as seen in some urban communities.
+  - Lack of school funding means fewer resources and support for students, making historically underserved students more likely to drop out.
+
+STEP 31: Scene 8, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Ty: "This list cuts across a lot of different subjects. I'm looking forward to seeing what kind of research we'll find for each of them."
+
+STEP 32: Scene 8, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Ty: [continues to display]
+- Lianne: "Yes, and we'll move into the research phase of this work shortly, but first I'd like us to discuss our approach. At Comm360, we typically use an interdisciplinary approach, the one developed by Repko et al, in 2019. In the past, this approach has allowed us to combine insights to come to a holistic solution for the issue we're tackling."
+- Lianne: "So we'll need to determine if the problem of people dropping out of high school is the kind of problem that is appropriate for interdisciplinary research."
+
+STEP 33: Scene 8, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Ty: [continues to display]
+- Lianne: [continues to display]
+- Peggy: "Ah, I think all of us are familiar with Broad Model from Repko from Professor Ari."
+- Peggy: "Based on the Broad Model, we need to look at the causes on the list and see if they map to different disciplines."
+
+STEP 34: Scene 8, OnScreen 5
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Ty: [continues to display]
+- Lianne: [continues to display]
+- Peggy: [continues to display]
+- Ty: "And we should identify the disciplines we think would give us the most insights into the problem and possible solutions."
+- Ty: "Let's do it."
+
+================================================================================
+STEP 35: Repko's Broad Model
+================================================================================
+Scene: BroadModel text component
+OnScreen: N/A (single screen)
+
+Content:
+Heading: "Repko's Broad Model of the Interdisciplinary Research Process (IRP)"
+
+Figure 10.5: The Broad Model of the Interdisciplinary Process (Entry-Level Version)
+- STEP 1: Define the problem or state the research question
+- STEP 2: Justify using an interdisciplinary approach
+- STEP 3: Identify relevant disciplines
+- STEP 4: Conduct a literature search
+- STEP 5: Critically analyze the disciplinary insights into the problem and identify their sources of conflict
+- STEP 6: Reflect on how the interdisciplinary process has enlarged your understanding of the problem
+
+================================================================================
+SCENE 9: Task Set 3 - Discipline Classification Table
+================================================================================
+
+STEP 36: Scene 9, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 3: Reflect: Is this an Interdisciplinary Problem?"
+
+Dialogue:
+- Peggy: "Let's figure out which disciplines are likely to give us the most insights into the problem and possible solutions. How about each of us select all the disciplines (in row) that we think apply for each of the causes listed? I think it is ok if we check as many boxes in a row as we think apply. Then, we can sum up our responses to see if they align and if we think this is a interdisciplinary problem."
+
+Content:
+Table: Causes vs. Disciplines
+- Directions: "You must classify each statement as belonging to at least one discipline before you go on."
+- Overall Stem: "Select each discipline that applies."
+
+Rows (Causes):
+A. If a student feels they need to earn money right away to help their family, they might drop out to get a full-time job.
+B. Conditions like depression, anxiety, or ADHD can interfere with a student's ability to get good grades and remain engaged in school.
+C. A student's environment may increase their likelihood of dropping out if they live in an area affected by gang activity, neighborhood instability, and limited support systems, as seen in some urban communities.
+D. Lack of school funding means fewer resources and support for students, making historically underserved students more likely to drop out.
+
+Columns (Disciplines):
+- Psychology
+- Biology
+- Health Sciences
+- Sociology
+- Economics
+- Political Science
+
+Item Details:
+- Variable ID: interdisciplinary_sba.reasons
+- Row IDs: interdisciplinary_sba.reasons.A, .B, .C, .D
+- Type: LO_Table_Of_Checkbox_Questions
+- Editable: TRUE
+- Show Keys: false
+
+Answer Keys:
+- Row A: Sociology (true), Economics (true)
+- Row B: Psychology (true)
+- Row C: Sociology (true)
+- Row D: Economics (true)
+
+Advance Rule: Each row must have at least one selection (all 4 row IDs must have numGT: 0)
+
+STEP 37: Scene 9, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 3: Reflect: Is this an Interdisciplinary Problem?"
+
+Dialogue:
+- Peggy: "Ok, I summed up our responses and this shows any category that got more than one vote. We didn't always agree on each discipline, but overall we all seem to see how different disciplines might investigate the problem."
+
+Content:
+[Same table with answer keys/correct responses shown]
+
+Item Details:
+- Editable: false
+- Show Keys: TRUE (displays correct answers)
+
+================================================================================
+SCENE 10: Task Set 3 - Discussion & Transition to Literature
+================================================================================
+
+STEP 38: Scene 10, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 3: Reflect: Is this an Interdisciplinary Problem?"
+
+Dialogue:
+- Lacy: "I agree. Our analysis supports what you were saying, Ty. These causes cut across a lot of subjects."
+
+STEP 39: Scene 10, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: [continues to display]
+- Ty: "It seems like an interdisciplinary approach makes sense in this case."
+
+STEP 40: Scene 10, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: [continues to display]
+- Ty: [continues to display]
+- Peggy: "I also agree. It's a really complex problem, so the Repko approach should help Comm360 study it from a lot of different angles."
+
+STEP 41: Scene 10, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: [continues to display]
+- Ty: [continues to display]
+- Peggy: [continues to display]
+- Lianne: "We all agree that taking an interdisciplinary approach will work to study a complex problem like young people dropping out of school."
+- Lianne: "Let's dig in a bit now and get more information about some of the causes. We should be able to locate studies from some of the disciplines we have identified that address different parts of the problem."
+
+STEP 42: Scene 10, OnScreen 5
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: [continues to display]
+- Ty: [continues to display]
+- Peggy: [continues to display]
+- Lianne: [continues to display]
+- Ty: "I'm already on it ... I took a few key words from one of the causes and did a search. This study looks promising. Take a look."
+
+================================================================================
+SCENE 11: Task Set 4 - Review Literature (Source 1: ADHD Study)
+================================================================================
+
+STEP 43: Scene 11, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Ty: "Here it is."
+
+Content (right side):
+Research Study Summary:
+
+Title: Is ADHD a Risk Factor for High School Dropout? A Controlled Study
+Authors: Ronna Fried, Carter Petty, Stephen V. Faraone, Laran L. Hyder, Helen Day, and Joseph Biederman
+Journal: Journal of Attention Disorders
+Publication Year: 2016, Volume: 20, Issue: 5, Pages: 383-389
+
+Abstract: This study examines whether ADHD increases the likelihood of grade retention and high school dropout, even when accounting for IQ, learning disorders, and social class. The study involved 404 individuals with ADHD and 349 controls. Results showed that 28% of those with ADHD repeated a grade compared to 7% of controls. Social class and IQ were significant predictors of dropout or grade retention, with females with ADHD at higher risk than males. Early identification and intervention for ADHD are crucial to prevent these negative educational outcomes.
+
+Introduction: Each year, many students in the U.S. fail to graduate high school on time, leading to negative life outcomes. Grade retention is also a significant predictor of high school dropout. Identifying psychological risk factors, such as ADHD, is important for intervention efforts.
+
+Background: ADHD is consistently linked to educational deficits, including school failure, poor grades, and grade retention. Previous studies have shown that ADHD increases the risk of dropping out of high school.
+
+Method: The study used data from three large case-control studies at Massachusetts General Hospital. Participants included boys and girls with and without ADHD, as well as adults. Psychiatric interviews, socioeconomic status measures, and IQ tests were conducted.
+
+Results: Participants with ADHD were significantly more likely to repeat a grade or drop out of high school compared to controls. Females with ADHD had a higher risk of grade retention/dropout than males. Social class and IQ were also significant predictors.
+
+Discussion: ADHD is a significant risk factor for grade retention and high school dropout, independent of other factors like IQ and social class. Early identification and intervention are critical to mitigate these risks. The study highlights the importance of addressing ADHD to improve educational outcomes.
+
+Conclusion: ADHD significantly contributes to grade retention and high school dropout. Early screening and intervention can help prevent these negative outcomes, benefiting individuals, families, and society.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.1
+- Group ID: screen30_highlights
+- Type: LO_SentenceHighlightsPassageFrame (word-level highlighting)
+- Editable: false
+- Keys Highlighted: false
+
+STEP 44: Scene 11, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: "This does look promising. Which discipline--or maybe disciplines--are represented in this study? I mean, which ones are the most relevant, if we have these to choose from?"
+  - Health sciences
+  - Biology
+  - Psychology
+  - Sociology
+  - Economics
+  - Political science
+
+Content: [Same research study displayed]
+
+STEP 45: Scene 11, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: [continues to display]
+- Peggy: "I think it's Psychology. There are some clues and jargon in the summary."
+
+Content: [Same research study displayed]
+
+STEP 46: Scene 11, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: [continues to display]
+- Peggy: [continues to display]
+- Ty: "Can you show us?"
+
+Content: [Same research study displayed]
+
+STEP 47: Scene 11, OnScreen 5
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: "So I highlighted the clues and jargon that makes me think this study is in the Psychology field. Attention, learning disorders, and IQ are all concepts that psychologist typically study."
+- Peggy: "Plus there's a heavy focus on early identification and intervention, especially by educational psychologists."
+- Peggy: "A big clue was also 'psychological risk factors.'"
+
+Content: [Same research study with answer key highlights shown]
+
+Item Details:
+- Editable: false
+- Keys Highlighted: TRUE (shows correct disciplinary clue words)
+
+================================================================================
+SCENE 12: Task Set 4 - Review Literature (Source 2: Employment Study)
+================================================================================
+
+STEP 48: Scene 12, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: "I used the search term method and found another study. This one is on employment. Take a look."
+
+Content (right side):
+Research Study Summary:
+
+Title: Is Adolescent Employment Still a Risk Factor for High School Dropout?
+Authors: Jeremy Staff, Alyssa M. Yetter, Kelsey Cundiff, Nayan Ramirez, Mike Vuolo, Jeylan T. Mortimer
+Journal: Journal of Research on Adolescence
+Publication Year: 2019, Volume: 30, Issue: 2, Pages: 406-422
+
+Abstract: This study examines whether working long hours during high school is still a risk factor for dropping out. Using data from the High School Longitudinal Study of 2009, the authors found that intensive work (more than 20 hours per week) is still linked to higher dropout rates and lower grades. Despite fewer teens working long hours today, disadvantaged youth are still overrepresented among those who work intensively and drop out.
+
+Introduction: Understanding why students choose to drop out is critical for finding ways to support students' decision to stay in school. There has been some speculation that students feel economic pressures that lead them to decide to drop out of school. In fact, past research has shown that working long hours during high school increases the risk of dropping out. This study revisits this issue using recent data, considering changes in the labor market and educational landscape.
+
+Method: The study uses data from the High School Longitudinal Study of 2009, which surveyed ninth graders in 2009 and followed them through high school. The sample includes 25,210 students, with data on their employment, academic performance, and family background.
+
+Results:
+* Employment Trends: Only 11% of students worked more than 20 hours per week during the school year.
+* Dropout Rates: Intensive workers had a 44% higher chance of dropping out compared to non-workers, even after controlling for other factors.
+* Grades: Intensive workers had significantly lower GPAs compared to non-workers and moderate workers.
+
+Discussion: Intensive work during high school remains a risk factor for poor academic outcomes and dropout. This strongly suggests that there is an economic cause of dropping out. This clearly suggests students drop out for economic reasons. However, it also implies broad societal impact. There are students who decide to drop out in order to support their and their families' financial well-being. The study suggests that schools should provide more support and flexibility for students who need to work long hours.
+
+Conclusion: Despite changes in the labor market, working long hours during high school is still associated with higher dropout rates and lower academic performance. Policies should address the needs of working students to help them stay in school and succeed academically.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.2
+- Group ID: screen48_highlights
+- Type: LO_SentenceHighlightsPassageFrame (word-level highlighting)
+- Editable: false
+- Keys Highlighted: false
+
+STEP 49: Scene 12, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "See if you can find the clue words that indicate which discipline(s) are relevant in this study."
+- Lianne: "(Click on words to highlight them; make sure you scroll down to the bottom to read the whole summary.)"
+
+Content: [Same employment study displayed]
+
+Item Details:
+- Editable: TRUE
+- Keys Highlighted: false
+- Directions: "Click to highlight any words that provide disciplinary cues."
+
+Advance Rule: Must have highlighted text (screen48_highlights must have highlighted content)
+
+STEP 50: Scene 12, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "So which discipline(s) do you think is represented in this study?"
+
+Content (right side):
+Multiple Selection Checkboxes:
+- Health Sciences
+- Biology
+- Psychology
+- Sociology
+- Economics
+- Political Science
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.2.classification
+- Type: LO_Checkbox_MultipleSelectionMultipleChoice
+- Editable: true
+- Targeted Variables: interdisciplinary_sba.source.2.classification.discipline.1 through .6
+
+Advance Rule: Must have at least one selection and must have highlighted text
+
+STEP 51: Scene 12, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display with checkbox selections]
+
+Content (right side):
+- [Same checkbox list displayed]
+- Constructed Response:
+  - Stem: "How are the clues you picked representative of the disciplines you picked? Can you explain?"
+  - Variable ID: interdisciplinary_sba.source.2.classification.explanation
+  - Type: LO_TextOrSpeechInput
+  - Class: wide-input
+
+Advance Rule: Must have checkbox selections AND response with minimum length of 10 characters
+
+================================================================================
+SCENE 13: Task Set 4 - Review Literature (Source 3: Rural/Urban Study)
+================================================================================
+
+STEP 52: Scene 13, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Lacy: "I think it makes sense to use this highlighting method for other studies we find. Like this one..."
+
+Content (right side):
+Research Study Summary:
+
+Title: Rural and Urban High School Dropout Rates: Are They Different?
+Authors: Jeffrey L. Jordan, Genti Kostandini, Elton Mykerezi
+Journal: Journal of Research in Rural Education
+Publication Year: 2012, Volume: 27, Issue: 12, Pages: 1-21
+
+Abstract: This study examines high school dropout rates in rural and urban areas, using data from the National Longitudinal Survey of Youth (NLSY) from 1979 and 1997. The findings suggest that high school graduation rates are similar across rural and urban areas, with a slight decline in graduation rates over time. Key determinants of graduation include gender, family assets, presence of biological parents, and maternal attributes, which influence graduation similarly across both rural and urban areas.
+
+Introduction: A prevalent perception is that school dropout is an urban problem. However, it is unclear whether or not school dropout rates are different in urban and rural environments. The study explores the importance of high school graduation for economic and social outcomes. It investigates whether rural and urban areas differ in high school dropout rates and the factors influencing these rates, considering recent changes in rural-urban boundaries and socioeconomic conditions.
+
+Method: The study uses geocoded data from the NLSY79 and NLSY97, applying a methodology that corrects for biases in graduation rates. It defines graduates according to Heckman and LaFontaine (2010), excluding GED recipients and including military and prison populations. The analysis includes probit models to estimate dropout risks and examines changes over time.
+
+Results:
+1) Dropout Rates: Graduation rates are similar across rural and urban areas, with a 3 percentage point decline from the 1980s to the 2000s. Rural areas experienced a smaller increase in dropout rates compared to urban areas.
+2) Determinants: Key factors influencing graduation include gender, family assets, presence of biological parents, and maternal education. These factors have similar effects across rural and urban areas. Peer characteristics, such as gang involvement and drug use, also influence dropout rates, with some differences between urban and rural areas.
+
+Discussion: The study highlights that family characteristics are more predictive of graduation than geographic attributes. Differences in dropout rates between rural and urban areas are small and narrowing. The findings suggest that policies should focus on family support and peer influences to reduce dropout rates.
+
+Conclusion: High school dropout rates are similar across rural and urban areas, with family characteristics being the main determinants of graduation. The study emphasizes the importance of addressing family and peer influences to improve graduation rates and reduce dropouts.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.3
+- Group ID: screen52_highlights
+- Type: LO_SentenceHighlightsPassageFrame (word-level highlighting)
+- Editable: true
+- Keys Highlighted: false
+- Directions: "Click to highlight any words that provide disciplinary cues."
+
+Advance Rule: Must have highlighted text (screen52_highlights must have highlighted content)
+
+STEP 53: Scene 13, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "So which discipline(s) do you think is represented in this study?"
+
+Content (right side):
+Multiple Selection Checkboxes:
+- Health Sciences
+- Biology
+- Psychology
+- Sociology
+- Economics
+- Political Science
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.3.classification
+- Type: LO_Checkbox_MultipleSelectionMultipleChoice
+- Editable: true
+- Targeted Variables: interdisciplinary_sba.source.3.classification.discipline.1 through .6
+
+NOTE: Step 53 is duplicated in the code (appears twice as step 53)
+
+STEP 54: Scene 13, OnScreen 3 (appears to be skipped in step numbering)
+--------------------------------------------------------------------------------
+[This screen is in the code but step number jumps to 55]
+
+Content:
+- [Checkbox display continues]
+- Constructed Response:
+  - Stem: "How are the clues you picked representative of the disciplines you picked? Can you explain?"
+  - Variable ID: interdisciplinary_sba.source.3.classification.explanation
+  - Type: LO_TextOrSpeechInput
+  - Class: wide-input
+
+================================================================================
+SCENE 14: Task Set 4 - Review Literature (Source 4: School Funding Study)
+================================================================================
+
+STEP 55: Scene 14, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Ty: "I'm going to add this study to the ones we should review."
+
+Content (right side):
+Research Study Summary:
+
+Title: Examining School Funding Inequity and Impact on African American High School Dropouts
+Author: Michelle Janette Williams
+Dissertation Institution: Walden University
+Publication Year: 2023
+
+Abstract: This quantitative study examines the association between school funding inequity and the dropout rates of African American students. While previous research has explored factors such as peer pressure and socioeconomic status, this study specifically focuses on how inadequate school funding impacts dropout rates. Using equity theory as the theoretical framework, the study analyzes publicly available archival data from 2015-2020 from the State of Delaware's Department of Education. A Pearson correlation analysis conducted through SPSS identified a relationship between lower school funding and higher dropout rates among African American students in the Red Clay School District. The findings suggest that inadequate school funding contributes to dropout rates, reinforcing the need for policy reforms to improve resource allocation in high-poverty schools.
+
+Introduction: Educational inequity remains a persistent issue, disproportionately affecting low-income and minority students. While policies such as Title I and the Every Student Succeeds Act (ESSA) have attempted to close funding gaps, disparities continue to exist. African American students are particularly vulnerable to resource inequities, leading to higher dropout rates and long-term socioeconomic disadvantages.
+
+Background: School funding in the U. S. is primarily determined by local property taxes, leading to significant disparities in educational resources. Research suggests that African American students in underfunded schools face increased dropout risks due to fewer academic and support services. The study explores whether the timing of dropout (9th-12th grade) correlates with school funding levels in the Red Clay School District in Delaware.
+
+Method:
+Study Design: Quantitative correlational analysis
+Data Source: Publicly available archival data from 2015-2020 (Delaware Department of Education)
+Variables:
+- Independent Variable: Per-pupil school funding
+- Dependent Variable: Grade level at which African American students dropped out (9th-12th grade)
+Statistical Analysis: Pearson correlation in SPSS to measure the association between school funding levels and dropout rates
+
+Results: The study identified a significant correlation between lower school funding and higher dropout rates. African American students in lower-funded schools were more likely to drop out earlier (9th-10th grade) compared to students in better-funded schools. The equity theory framework suggests that students in underfunded schools experience resource inequities that discourage persistence in education.
+
+Discussion: The findings reinforce existing research on educational inequity and suggest that higher per-pupil funding is associated with improved student retention. The study highlights the need for funding reforms, such as weighted student funding models, to better allocate resources to high-need schools.
+
+Conclusion: School funding inequities contribute to higher dropout rates among African American students. Addressing these disparities through policy changes and increased investment in low-income schools could improve educational outcomes and reduce dropout rates. The study provides empirical evidence to support advocacy efforts for school finance reform.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.4
+- Group ID: screen55_highlights
+- Type: LO_SentenceHighlightsPassageFrame (word-level highlighting)
+- Editable: true
+- Keys Highlighted: false
+- Directions: "Click to highlight any words that provide disciplinary cues."
+
+Advance Rule: Must have highlighted text (screen55_highlights must have highlighted content)
+
+STEP 56: Scene 14, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "So which discipline(s) do you think is represented in this study?"
+
+Content (right side):
+Multiple Selection Checkboxes:
+- Health Sciences
+- Biology
+- Psychology
+- Sociology
+- Economics
+- Political Science
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.4.classification
+- Type: LO_Checkbox_MultipleSelectionMultipleChoice
+- Editable: true
+- Targeted Variables: interdisciplinary_sba.source.4.classification.discipline.1 through .6
+
+Advance Rule: Must have at least one selection (numGT: 0)
+
+STEP 57: Scene 14, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display with checkbox selections]
+
+Content (right side):
+- [Same checkbox list displayed]
+- Constructed Response:
+  - Stem: "How are the clues you picked representative of the disciplines you picked? Can you explain?"
+  - Variable ID: interdisciplinary_sba.source.4.classification.explanation
+  - Type: LO_TextOrSpeechInput
+  - Class: wide-input
+
+Advance Rule: Must have checkbox selections AND response with minimum length of 10 characters
+
+================================================================================
+PART 3 BEGINS - STEPS 58-95
+================================================================================
+
+================================================================================
+SCENE 15: Task Set 5 - Develop a Problem Statement (Introduction)
+================================================================================
+
+STEP 58: Scene 15, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 5: Develop a Problem Statement."
+
+Dialogue:
+- Lianne: "You've done good work so far. Let's recap where we are. We've found studies that address different parts of the high school dropout problem, including Psychology, Sociology, Economics & Political science"
+- Lianne: "This confirms that this is a complex problem with parts studied by different disciplines."
+
+STEP 59: Scene 15, OnScreen 2
+--------------------------------------------------------------------------------
+Heading: "Task Set 5: Develop a Problem Statement."
+
+Dialogue:
+- Lianne: [continues to display]
+- Lacy: "And if I'm remembering Repko correctly, now we need to see if this an important and as yet unresolved issue. That's also an important criterion for a problem to qualify for interdisciplinary study."
+
+STEP 60: Scene 15, OnScreen 3
+--------------------------------------------------------------------------------
+Heading: "Task Set 5: Develop a Problem Statement."
+
+Dialogue:
+- Lianne: [continues to display]
+- Lacy: [continues to display]
+- Ty: "Then let's see if we can find any sources that address that criterion."
+
+Note: Right side displays "Hello World" (placeholder content)
+
+================================================================================
+SCENE 16: Task Set 5 - Importance Criterion (Source 5)
+================================================================================
+
+STEP 61: Scene 16, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: "I think this source will help us."
+
+Content (right side):
+Research Source:
+
+Title: Trends in High School Dropout and Completion Rates in the United States: 2019
+URL: https://nces.ed.gov/pubsearch
+Author: National Center for Education Statistics (NCES)
+Publication Year: 2020
+
+Executive Summary:
+High school dropout remains a persistent issue with long-term consequences. According to the National Center for Education Statistics (NCES), in 2017, approximately 523,000 individuals aged 15 to 24 dropped out of high school, contributing to a national dropout rate of 4.7%. Despite improvements over the decades, disparities persist, particularly among certain demographic groups.
+
+The Ongoing Issue:
+While dropout rates have declined significantly from 14.1% in 1977 to 5.4% in 2017, they continue to disproportionately impact historically underserved populations. The dropout rate for Hispanic students (6.5%) was higher than for White students (3.9%), reflecting ongoing disparities in educational attainment. Furthermore, students with disabilities and those from low-income backgrounds remain at higher risk of dropping out.
+
+Impact of High School Dropout:
+Dropping out of high school has significant repercussions for individuals, society, and the national economy. Dropouts earn considerably less over their lifetime, with median annual earnings of $26,000 compared to $32,000 for high school graduates. They also face higher unemployment rates and reduced access to stable employment opportunities. Dropouts are disproportionately represented in the criminal justice system, with higher incarceration rates and increased reliance on public assistance programs, placing financial strain on social services. A less-educated workforce weakens national economic growth and productivity. The cumulative loss of tax revenue and increased public spending on welfare and correctional facilities highlight the broader economic burden of high dropout rates.
+
+Recommendations:
+To address the persistent issue of high school dropouts, a multi-faceted approach is essential:
+1. Early Intervention: Implementing targeted programs to identify and support at-risk students through academic mentorship and social services.
+2. Alternative Education Pathways: Expanding vocational training, apprenticeships, and GED programs to accommodate diverse learning needs.
+3. Community and Policy Support: Strengthening collaborations between schools, families, and community organizations to create inclusive educational environments.
+
+Conclusion:
+Although dropout rates have declined, they remain a critical issue requiring ongoing attention. Continued efforts from educators, policymakers, and community stakeholders are necessary to ensure equitable access to education and long-term success for all students. Addressing the root causes of high school dropout will enhance individual opportunities, strengthen societal structures, and boost the national economy.
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.5.importance
+- Group ID: screen62_highlights
+- Type: LO_SentenceHighlightsPassageFrame
+- Stem: "How do we know this problem is important?"
+- Directions: "Click to highlight any sentences or clauses that tell us whether, how, or why this problem is important"
+- Editable: false
+- Keys Highlighted: false
+- Selected Shown: false
+- Unselected Shown: false
+
+STEP 62: Scene 16, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "This would be a good time to use the highlighting method to look for information in the text that speaks to the importance of this problem."
+
+Content: [Same NCES source displayed]
+
+Item Details:
+- Editable: TRUE
+- Keys Highlighted: false
+- Selected Shown: false
+- Unselected Shown: false
+
+Advance Rule: Must have highlighted text (screen62_highlights must have highlighted content)
+
+STEP 63: Scene 16, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Here is the text you highlighted"
+
+Content:
+- [Same NCES source with student's highlights shown]
+- Constructed Response:
+  - Stem: "How does the text you selected speak to the importance of the issue?"
+  - Variable ID: interdisciplinary_sba.source.5.importance.explanation
+  - Type: LO_TextOrSpeechInput
+  - Class: wide-input
+
+Item Details:
+- Editable: false
+- Keys Highlighted: false
+- Selected Shown: TRUE (shows only highlighted text)
+- Unselected Shown: false
+
+Advance Rule: Must have highlighted text AND response with minimum length of 10 characters
+
+================================================================================
+SCENE 17: Task Set 5 - Unresolved Criterion (Source 5 continued)
+================================================================================
+
+STEP 64: Scene 17, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Now we should focus on whether the text source helps us know if the problem is not yet resolved. Let's use the highlighting method."
+
+Content (right side):
+[Same NCES source text as Scene 16]
+
+Item Details:
+- Variable ID: interdisciplinary_sba.source.5.unresolved
+- Group ID: screen66_highlights
+- Type: LO_SentenceHighlightsPassageFrame
+- Stem: "How do we know the problem is unresolved?"
+- Directions: "Click to highlight any sentences or clauses that tell us whether, how, or why this problem is not yet resolved?"
+- Editable: TRUE
+- Keys Highlighted: false
+- Selected Shown: false
+- Unselected Shown: false
+
+Advance Rule: Must have highlighted text (screen66_highlights must have highlighted content)
+
+STEP 65: Scene 17, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Here is the text you highlighted"
+
+Content: [Same NCES source with student's highlights shown]
+
+Item Details:
+- Editable: false
+- Keys Highlighted: false
+- Selected Shown: TRUE (shows only highlighted text)
+- Unselected Shown: false
+
+STEP 66: Scene 17, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+
+Content:
+- [Same highlighted text display]
+- Constructed Response:
+  - Stem: "How does the text you selected speak to its being an unresolved problem?"
+  - Variable ID: interdisciplinary_sba.source.5.unresolved.explanation
+  - Type: LO_TextOrSpeechInput
+  - Class: wide-input
+
+Item Details:
+- Selected Shown: TRUE
+- Unselected Shown: false
+
+Advance Rule: Must have highlighted text AND response with minimum length of 10 characters
+
+================================================================================
+SCENE 18: Task Set 5 - Avoiding Disciplinary Bias
+================================================================================
+
+STEP 67: Scene 18, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: "I've put together a sentence that explains why dropping out of high school is an important and unresolved problem. Maybe we can polish it up and use it as a part of our problem statement."
+
+Content (right side, in content box):
+Significance of the problem:
+"Higher school dropout rates can increase crime as education often provides structure and opportunity, reducing the likelihood of criminal activities, thus suggesting vocational education can be pivotal as it offers practical skills training, presents clear job opportunities, and keeps students engaged and less likely to drop out."
+
+STEP 68: Scene 18, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: [continues to display]
+- Lacy: "That doesn't sound right. It focuses too much on crime and vocational education. We should rewrite it so that it more accurately reflects what we've learned so far."
+
+Content: [Same problematic statement displayed]
+
+STEP 69: Scene 18, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: [continues to display]
+- Lacy: [continues to display]
+- Lianne: "Good catch, Lacy. We need to avoid disciplinary or personal bias so that we can develop a comprehensive understanding of the causes of this problem without privileging any personal or disciplinary views over others. According to Repko et al. (2019) this is one of the criteria for doing interdisciplinary research."
+- Lianne: "Can you correct and revise this sentence based on the source texts we reviewed?"
+
+Content: [Same problematic statement displayed]
+
+================================================================================
+SCENE 19: Task Set 5 - Revising Problem Statement
+================================================================================
+
+STEP 70: Scene 19, OnScreen 1
+--------------------------------------------------------------------------------
+Content (left side, in small font content box):
+Stem: "Correct and revise this original problem statement sentence..."
+Original Statement: "Higher school dropout rates can increase crime as education often provides structure and opportunity, reducing the likelihood of criminal activities, thus suggesting vocational education can be pivotal as it offers practical skills training, presents clear job opportunities, and keeps students engaged and less likely to drop out."
+
+STEP 71: Scene 19, OnScreen 2
+--------------------------------------------------------------------------------
+Content (left side):
+[Original problematic statement continues to display]
+
+Content (additional left side box):
+Stem: "Based on this source text... (excerpt from source text)"
+
+Impact of High School Dropout:
+"Dropping out of high school has lasting consequences. Dropouts face higher unemployment and earn significantly less--about $375,000 less over a lifetime than graduates. (elevatetheusa.org) They are also more likely to rely on public assistance, contributing to cycles of poverty."
+
+"Dropouts are overrepresented in the criminal justice system, with about 75% of crimes committed by those without a high school diploma. (Do Something) This places financial strain on law enforcement and social services. At a national level, a less educated workforce weakens the economy. The government spends between $1.7 and $2.3 million per dropout over their lifetime due to lost tax revenue and social service costs. (elevatetheusa.org)"
+
+STEP 72: Scene 19, OnScreen 3
+--------------------------------------------------------------------------------
+Content:
+[Both text boxes continue to display]
+
+Constructed Response (bottom):
+- Stem: "Write your revision in the box."
+- Variable ID: interdisciplinary_sba.problem_statement.revised
+- Type: LO_TextOrSpeechInput
+
+Advance Rule: Response must have minimum length of 10 characters
+
+================================================================================
+SCENE 20: Task Set 5 - Review Revision
+================================================================================
+
+STEP 73: Scene 20, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: "I can see that my sentence needed to be fixed. Thanks for the suggested revision -- I'll take it into account!"
+
+Content (right side):
+Significance of the Problem:
+[Displays student's revised response from interdisciplinary_sba.problem_statement.revised]
+
+STEP 74: Scene 20, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Peggy: [continues to display]
+- Lianne: "OK, as we move closer to developing a problem statement, let's pull together all of the information we've gathered. Take some time to review everything, and then we'll start figuring out how to write the problem statement."
+
+Content (right side):
+[Student's revised significance statement continues to display]
+
+================================================================================
+SCENE 21: Task Set 5 - Problem Statement Criteria
+================================================================================
+
+STEP 75: Scene 21, OnScreen 1
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "At this point in our interdisciplinary process, we need to develop a problem statement on the causes of high school dropout. We will use Repko et al.'s (2019) criteria for writing and effective problem statement."
+
+Content (right side, in shaded content box):
+A successful problem statement:
+- answers the "so what" question by explaining why the topic is important to society.
+- shows that the problem to be researched is a good candidate for an interdisciplinary study (i.e., open-ended, that is, not yet solved, and too complex for a single discipline to solve);
+- avoids disciplinary and personal bias so no personal or disciplinary insights are privileged;
+- states the focus of the study clearly and concisely;
+- defines the scope of the study by narrowing its focus to the part of the topic that will be studied.
+
+STEP 76: Scene 21, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Peggy: "We have already described why high school dropout is an important problem (Criterion #1) and talked about its complexity (Criterion #2). We also talked about importance of avoiding personal or disciplinary biases in the interdisciplinary research process (Criterion #3)."
+
+Content: [Criteria list continues to display]
+
+STEP 77: Scene 21, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Peggy: [continues to display]
+- Lianne: "That is right. As for Criteria #4-5, we need to tie the focus (#4) and scope (#5) criteria to what our nonprofit can do considering our priorities and capacity."
+
+Content: [Criteria list continues to display]
+
+STEP 78: Scene 21, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Peggy: [continues to display]
+- Lianne: [continues to display]
+- Ty: "That makes sense. Can you remind us what the nonprofit's priorities are?"
+
+Content: [Criteria list continues to display]
+
+STEP 79: Scene 21, OnScreen 5
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Sure. The mission of Comm360 is to address community-based needs and issues through responsive programming in four priority areas:"
+
+Priority Areas:
+- Education and Training: Programs designed to equip individuals with knowledge and skills for academic and career success. Examples: After-School Tutoring, GED Prep, Workforce Readiness.
+- Health and Wellness: Initiatives focused on physical and mental well-being, providing accessible healthcare and wellness support. Examples: Community Health Screenings, Mental Health Counseling, Nutrition Programs.
+- Family and Youth Services: Support services aimed at strengthening families and empowering youth through mentorship and essential resources. Examples: Parenting Workshops, Youth Leadership, Conflict Resolution Training.
+- Community Building and Advocacy: Efforts to foster civic engagement, policy awareness, and community development through inclusive initiatives. Examples: voter education, neighborhood revitalization, diversity workshops including advocating for changes in school curriculum and instruction, and equitable school funding.
+
+Lianne: "Now we can review how the causes we identified earlier map onto these priority areas of our nonprofit?"
+
+================================================================================
+SCENE 22: Task Set 5 - Mapping Causes to Priority Areas & Final Problem Statement
+================================================================================
+
+STEP 80: Scene 22, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 5: Develop a Problem Statement"
+
+Dialogue:
+- Peggy: "Please make your choices in the table below."
+- Peggy: "You may find that all or none of the choices apply to a specific cause. Feel free to check all that apply but be ready to explain how you see the cause can be the basis for your choices. I'll need those explanations to bring to the Committee."
+
+Content (right side):
+My Notes:
+Table: Causes vs. Priority Areas
+
+Overall Stem: "Which causes of high school drop out align with each service area?"
+Directions: "For each cause, check the box or boxes (or none) for the appropriate priority area."
+
+Rows (Causes):
+A. If a student feels they need to earn money right away to help their family, they might drop out to get a full-time job.
+B. Conditions like depression, anxiety, or ADHD can interfere with a student's ability to get good grades and remain engaged in school.
+C. A student's environment may increase their likelihood of dropping out if they live in an area affected by gang activity, neighborhood instability, and limited support systems, as seen in some urban communities.
+D. Lack of school funding means fewer resources and support for students, making historically underserved students more likely to drop out.
+
+Columns (Priority Areas):
+- Education and Training
+- Health and Wellness
+- Family and Youth Services
+- Community Building and Advocacy
+
+Item Details:
+- Variable ID: interdisciplinary_sba.problem_areas
+- Row IDs: interdisciplinary_sba.priority.A, .B, .C, .D
+- Type: LO_Table_Of_Checkbox_Questions
+- Editable: TRUE
+- Show Keys: false
+
+Answer Keys:
+- Row A: Family and Youth Services (true)
+- Row B: Health and Wellness (true)
+- Row C: Community Building and Advocacy (true)
+- Row D: Community Building and Advocacy (true)
+
+Advance Rule: Each row must have at least one selection (all 4 row IDs must have numGT: 0)
+
+STEP 81: Scene 22, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Can you explain why you think these causes are aligned these Comm 360s priority areas?"
+
+Content:
+[Same table with student's selections shown]
+
+Item Details:
+- Editable: false
+- Show Checks: TRUE (displays selected items)
+
+STEP 82: Scene 22, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+
+Content:
+[Same table with selections shown]
+
+Constructed Response:
+- Stem: "Write your explanation in the box."
+- Variable ID: interdisciplinary_sba.priority.explanation
+- Type: LO_TextOrSpeechInput
+- Class: medium-input
+
+Advance Rule: Response must have minimum length of 10 characters
+
+STEP 83: Scene 22, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "These look great! Looks like the causes fall in with three of our priority areas: Family and Youth Services; Health and Wellness; and Community Building and Advocacy."
+
+Content (right side):
+My Notes:
+[Table with answer keys shown]
+
+Item Details:
+- Show Keys: TRUE (displays correct answers)
+
+STEP 84: Scene 22, OnScreen 5
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Lianne: "However, I talked to Ms. Hastings and we agreed that we have capacity only to address the Health and Wellness priority by providing programming and services around depression, anxiety, or ADHD so they don't interfere with students' ability to get good grades and remain in school."
+
+Content:
+My Notes:
+[Table with answer keys shown]
+
+STEP 85: Scene 22, OnScreen 6
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Great! We're going to focus on:"
+
+Content:
+My Notes:
+- Our Focus (section header)
+- [Table with Row B (Health & Wellness row) and Column 2 (Health & Wellness column) selected/highlighted]
+
+Item Details:
+- Show Keys: TRUE
+- Select Rows: [1] (highlights row B, which is index 1)
+- Select Columns: [1] (highlights column 2, which is index 1)
+
+STEP 86: Scene 22, OnScreen 7
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues to display]
+- Lianne: "We know that Psychology offers relevant insights on this cause and we can consult Psychology in building Health and Wellness programming and services to address this cause. What other disciplines do you think would offer useful insights that we should consult?"
+
+Content:
+My Notes:
+- [Table with row/column highlighting continues]
+
+STEP 87: Scene 22, OnScreen 8
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues from OnScreen 7]
+
+Content:
+My Notes:
+- [Table continues to display with highlighting]
+- Other Relevant Disciplines:
+
+Multiple Selection Checkboxes:
+- Health Sciences
+- Biology
+- Sociology
+- Economics
+- Political Science
+
+(Note: Psychology is not in the list because it's already established as the primary discipline)
+
+Item Details:
+- Variable ID: interdisciplinary_sba.additional_disciplines
+- Type: LO_Checkbox_MultipleSelectionMultipleChoice
+- Editable: true
+- Show Checks: false (on this screen)
+- Show Unchecked: false
+- Targeted Variables: interdisciplinary_sba.priority.discipline.1, .2, .4, .5, .6
+
+Advance Rule: Must select at least one additional discipline (numGT: 0)
+
+STEP 88: Scene 22, OnScreen 9
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues from OnScreen 7]
+
+Content:
+My Notes:
+- [Table continues to display with highlighting]
+- Other Relevant Disciplines:
+  [Checkboxes with selections shown]
+
+Constructed Response:
+- Stem: "Explain how those disciplines will help address this cause and matching services."
+- Variable ID: interdisciplinary_sba.additional_disciplines.explanation
+- Type: LO_TextOrSpeechInput
+- Class: wide-input
+
+Item Details:
+- Show Checks: TRUE (displays selected disciplines)
+
+Advance Rule: Must have discipline selections AND response with minimum length of 10 characters
+
+STEP 89: Scene 22, OnScreen 10
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: "Ok, now we are ready to write our problem statement. Let's first review the information we have covered."
+
+Content:
+My Notes (complete compilation):
+- Significance of the Problem:
+  [Displays interdisciplinary_sba.problem_statement.revised]
+- Our Focus:
+  [Table showing focus on Health & Wellness / ADHD cause]
+- Other Relevant Disciplines:
+  [Displays selected disciplines with checks]
+- Why these disciplines are relevant:
+  [Displays interdisciplinary_sba.additional_disciplines.explanation]
+
+STEP 90: Scene 22, OnScreen 11
+--------------------------------------------------------------------------------
+Dialogue:
+- Lianne: [continues from OnScreen 10]
+
+Content (right side):
+[Complete My Notes section continues to display]
+
+Content (bottom):
+Constructed Response (large text box):
+- Stem: "Use your notes to help you write your problem statement. You can copy and paste from your notes. You don't have to use all of your notes; you can choose which notes to use or add additional information. When you are done, click next."
+- Variable ID: interdisciplinary_sba.full_problem_statement
+- Type: LO_TextOrSpeechInput
+- Class: mega-input
+
+Advance Rule: Response must have minimum length of 10 characters
+
+================================================================================
+SCENE 23: Task Set 5 - Conclusion & Wrap-up
+================================================================================
+
+STEP 91: Scene 23, OnScreen 1
+--------------------------------------------------------------------------------
+Heading: "Task Set 5: Develop a Problem Statement"
+
+Dialogue:
+- Anne Hastings: "I just wanted to stop by to thank you all personally for your work on this issue for us."
+- Anne Hastings: "The Committee has agreed that we should go forward and resource a Health and Wellness program to help stem some of the causes of students dropping out of school."
+- Anne Hastings: "Thank you all very much!"
+
+STEP 92: Scene 23, OnScreen 2
+--------------------------------------------------------------------------------
+Dialogue:
+- Anne Hastings: [continues to display]
+- Lianne: "I want to thank you as well."
+- Lianne: "You make a great team. And I hope you've learned something as part of this internship."
+- Lianne: "When you graduate, please consider applying for a position here. Or we'll be happy to provide a recommendation."
+
+STEP 93: Scene 23, OnScreen 3
+--------------------------------------------------------------------------------
+Dialogue:
+- Anne Hastings: [continues to display]
+- Lianne: [continues to display]
+- Lacy: "Thank you. I know that I learned a great deal."
+
+STEP 94: Scene 23, OnScreen 4
+--------------------------------------------------------------------------------
+Dialogue:
+- Anne Hastings: [continues to display]
+- Lianne: [continues to display]
+- Lacy: [continues to display]
+- Ty: "Me too. It was a challenge applying what we learned in class to a real problem, but rewarding to know we could be of help."
+
+STEP 95: Scene 23, OnScreen 5
+--------------------------------------------------------------------------------
+Dialogue:
+- Anne Hastings: [continues to display]
+- Lianne: [continues to display]
+- Lacy: [continues to display]
+- Ty: [continues to display]
+- Peggy: "I also want to thank you for giving us this opportunity."
+- Peggy: "Lianne, you were a great mentor and I'd recommend this internship to any of my fellow students."
+
+Final Item:
+Checkbox:
+- Label: "I have finished, too."
+- Variable ID: interdisciplinary_sba.form_finished
+- Type: LO_Checkbox
+- Targeted Variable: form_finished
+- Targeted Checked Value: 1
+- Targeted Not Checked Value: 0
+
+================================================================================
+SUMMARY OF ALL VARIABLES/ITEMS USED
+================================================================================
+
+Constructed Response Items:
+1. interdisciplinary_sba.cause_internal (Step 18, min length: 10)
+2. interdisciplinary_sba.cause_structural (Step 18, min length: 10)
+3. interdisciplinary_sba.reason_explanation (Step 29, min length: 10)
+4. interdisciplinary_sba.source.2.classification.explanation (Step 51, min length: 10)
+5. interdisciplinary_sba.source.3.classification.explanation (Step 54, min length: 10)
+6. interdisciplinary_sba.source.4.classification.explanation (Step 57, min length: 10)
+7. interdisciplinary_sba.source.5.importance.explanation (Step 63, min length: 10)
+8. interdisciplinary_sba.source.5.unresolved.explanation (Step 66, min length: 10)
+9. interdisciplinary_sba.problem_statement.revised (Step 72, min length: 10)
+10. interdisciplinary_sba.priority.explanation (Step 82, min length: 10)
+11. interdisciplinary_sba.additional_disciplines.explanation (Step 88, min length: 10)
+12. interdisciplinary_sba.full_problem_statement (Step 90, min length: 10)
+
+Highlight Items:
+1. interdisciplinary_sba.focus_group_pt1 (Steps 21-22, group_id: screen22_highlights)
+2. interdisciplinary_sba.focus_group_pt2 (Steps 23-24, group_id: screen24_highlights)
+3. interdisciplinary_sba.source.1 (Steps 43-47, group_id: screen30_highlights)
+4. interdisciplinary_sba.source.2 (Steps 48-49, group_id: screen48_highlights)
+5. interdisciplinary_sba.source.3 (Step 52, group_id: screen52_highlights)
+6. interdisciplinary_sba.source.4 (Step 55, group_id: screen55_highlights)
+7. interdisciplinary_sba.source.5.importance (Steps 61-63, group_id: screen62_highlights)
+8. interdisciplinary_sba.source.5.unresolved (Steps 64-66, group_id: screen66_highlights)
+
+Multiple Selection Checkboxes:
+1. interdisciplinary_sba.reasons (Steps 27-29, 12 options, select 3-5)
+   - Creates variables: interdisciplinary_sba.reasons.1 through .12
+2. interdisciplinary_sba.source.2.classification (Steps 50-51, 6 disciplines)
+   - Creates variables: interdisciplinary_sba.source.2.classification.discipline.1 through .6
+3. interdisciplinary_sba.source.3.classification (Steps 52-54, 6 disciplines)
+   - Creates variables: interdisciplinary_sba.source.3.classification.discipline.1 through .6
+4. interdisciplinary_sba.source.4.classification (Steps 56-57, 6 disciplines)
+   - Creates variables: interdisciplinary_sba.source.4.classification.discipline.1 through .6
+5. interdisciplinary_sba.additional_disciplines (Steps 87-89, 5 disciplines)
+   - Creates variables: interdisciplinary_sba.priority.discipline.1, .2, .4, .5, .6
+
+Tables (Multiple Selection):
+1. interdisciplinary_sba.reasons (Step 36, 4 causes x 6 disciplines)
+   - Row IDs: interdisciplinary_sba.reasons.A, .B, .C, .D
+2. interdisciplinary_sba.problem_areas (Steps 80-85, 4 causes x 4 priority areas)
+   - Row IDs: interdisciplinary_sba.priority.A, .B, .C, .D
+
+Single Checkbox:
+1. interdisciplinary_sba.form_finished (Step 95)
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================

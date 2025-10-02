@@ -8,7 +8,7 @@ Due Date: Sunday, April 13, 2025
 Orientation [id=orientation]
 -----------
 
-interdisciplinary_sba_sidebar -> gsu_prof_image
+interdisciplinary_sba_sidebar -> interdisciplinary_gsu_prof_image
 
 Omer: Hi. This is the module on interdisciplinary reasoning for EDUC 3100 that I spoke about during one of our classes.
 
@@ -35,24 +35,24 @@ Teammate: I read that a community needs survey identified high school dropout ra
 
 You: Right. We've been asked to investigate the causes of high school dropout so Comm360 can develop services to address the problem. This sounds like it'll be challenging work.
 
-Teammate: Before we dive in, we should probably figure out who's on our team. Want to check out who we'll be working with?
+Teammate: Before we dive in, we should probably figure out who's on our team. There should be a team directory around here somewhere. Want to explore it and see who we'll be working with?
 
 --- pause ---
 
-team_exploration -> team_members
+interdisciplinary_sba_sidebar -> interdisciplinary_team_members
 
 Meet the Team [id=team_intro]
 -------------
 
-Teammate: Okay, so it looks like our intern teammates are Ty, Peggy, and Lacy.
+Teammate: Great! So from the directory, it looks like our intern teammates are Ty, Peggy, and Lacy.
 
 You: And we'll all be working together to identify key concepts, review readings, and organize information for a report about what causes young people to drop out of high school.
 
-Teammate: Our supervisor is Lianne Park. She's been at Comm360 for five years and directs multiple programs. She'll present our findings to the Program Development and Evaluation committee.
+Teammate: Our supervisor is Lianne Park. I saw she's been at Comm360 for five years and directs multiple programs. She'll present our findings to the Program Development and Evaluation committee.
 
 You: And she reports to Anne Hastings, the CEO, who makes the ultimate decisions about programs and resources.
 
-Teammate: Let's see what Lianne has for us to work on.
+Teammate: Now that we know the team, let's see what Lianne has for us to work on.
 
 --- pause ---
 

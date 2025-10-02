@@ -1,5 +1,14 @@
 // src/components/blocks/Navigator.js
-import { core } from '@/lib/blocks';
+
+/*
+  This is a PROTOTYPE block which shows a menu of items on the left, and allows you to see one.
+
+  Lots of issues. Major one is the children should be blocks.
+
+  However, for UX prototyping / product work, this is fine for now.
+ */
+
+import { dev } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
@@ -11,7 +20,7 @@ export const fields = state.fields([
   'viewMode'          // Optional view mode state
 ]);
 
-const Navigator = core({
+const Navigator = dev({
   ...parsers.text(),
   name: 'Navigator',
   description: 'Generic two-pane navigator with configurable preview and detail components',

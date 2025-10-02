@@ -1,6 +1,6 @@
 <Vertical id="interdisciplinary_activities" launchable="true">
   <!-- Opening screen -->
-  <Markdown id="orientation">
+  <Markdown id="interdisciplinary_orientation">
 ## Welcome to the Interdisciplinary Studies Module
 
 In this simulated internship at Community 360, you'll apply interdisciplinary analysis to understand the complex issue of high school dropout rates in the community.
@@ -8,5 +8,60 @@ In this simulated internship at Community 360, you'll apply interdisciplinary an
 Working with supervisor Lianne Park and your intern teammates, you'll investigate causes, review research from multiple disciplines, and develop evidence-based recommendations.
   </Markdown>
   <!-- GSU professor image -->
-  <Image id="gsu_prof_image" src="images/GSU_prof.png" alt="Professor at Georgia State University" />
+  <Image id="interdisciplinary_gsu_prof_image" src="images/GSU_prof.png" alt="Professor at Georgia State University" />
+
+  <!-- Team directory navigator -->
+  <Vertical id="interdisciplinary_team_members">
+    <Markdown id="team_directory_intro">
+## Comm360 Team Directory
+
+Explore the team directory to learn about your colleagues for this project. Click on each person to see their role, experience, and skills.
+    </Markdown>
+
+    <Navigator id="interdisciplinary_team_navigator"
+               title="Comm360 Team"
+               preview="TeamPreview"
+               detail="TeamDetail">
+- id: ty
+  name: Ty
+  role: Intern Teammate
+  photo: /team/ty.jpg
+  bio: Intern at Comm360 focusing on program evaluation and data analysis.
+  experience: 6 months at Comm360
+  skills: [Data Analysis, Research, Program Evaluation]
+
+- id: peggy
+  name: Peggy
+  role: Intern Teammate
+  photo: /team/peggy.jpg
+  bio: Intern specializing in community outreach and stakeholder engagement.
+  experience: 4 months at Comm360
+  skills: [Community Outreach, Communication, Project Management]
+
+- id: lacy
+  name: Lacy
+  role: Intern Teammate
+  photo: /team/lacy.jpg
+  bio: Intern with focus on program development and implementation strategies.
+  experience: 5 months at Comm360
+  skills: [Program Development, Strategic Planning, Implementation]
+
+- id: lianne
+  name: Lianne Park
+  role: Supervisor/Mentor
+  photo: /team/lianne.jpg
+  bio: Director of multiple programs at Comm360 with extensive experience in program evaluation and development. Presents findings to the PDE committee.
+  experience: 5 years at Comm360
+  skills: [Program Management, Leadership, Strategic Planning, Evaluation]
+
+- id: anne
+  name: Anne Hastings
+  role: Chief Executive Officer
+  photo: /team/anne.jpg
+  bio: CEO of Comm360, making ultimate decisions about programs and resources. Reports to the board of directors.
+  experience: 8 years at Comm360, 15+ years leadership experience
+  skills: [Executive Leadership, Strategic Decision Making, Resource Management, Organizational Development]
+    </Navigator>
+  </Vertical>
+
 </Vertical>

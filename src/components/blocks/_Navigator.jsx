@@ -2,8 +2,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import NextImage from 'next/image';
 import { useReduxState } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
+import { resolveImagePath } from '@/lib/util';
 
 // Default preview component for list items
 function DefaultPreview({ item, isSelected, onClick }) {
@@ -98,21 +100,20 @@ const COMPONENT_REGISTRY = {
       }`}
     >
       <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
           {item.photo ? (
-            <img
-              src={item.photo}
+            <NextImage
+              src={resolveImagePath(item.photo)}
               alt={item.name}
-              className="w-10 h-10 rounded-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
+              width={40}
+              height={40}
+              className="rounded-full object-cover"
             />
-          ) : null}
-          <span className="text-gray-600 font-medium text-sm" style={{display: item.photo ? 'none' : 'flex'}}>
-            {item.name.split(' ').map(n => n[0]).join('')}
-          </span>
+          ) : (
+            <span className="text-gray-600 font-medium text-sm">
+              {item.name.split(' ').map(n => n[0]).join('')}
+            </span>
+          )}
         </div>
         <div className="flex-1">
           <div className="font-medium text-gray-900">{item.name}</div>
@@ -134,21 +135,20 @@ const COMPONENT_REGISTRY = {
     return (
       <div className="p-6">
         <div className="flex items-start space-x-4 mb-6">
-          <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
             {item.photo ? (
-              <img
-                src={item.photo}
+              <NextImage
+                src={resolveImagePath(item.photo)}
                 alt={item.name}
-                className="w-16 h-16 rounded-full object-cover"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
+                width={64}
+                height={64}
+                className="rounded-full object-cover"
               />
-            ) : null}
-            <span className="text-gray-600 font-medium" style={{display: item.photo ? 'none' : 'flex'}}>
-              {item.name.split(' ').map(n => n[0]).join('')}
-            </span>
+            ) : (
+              <span className="text-gray-600 font-medium">
+                {item.name.split(' ').map(n => n[0]).join('')}
+              </span>
+            )}
           </div>
 
           <div className="flex-1">

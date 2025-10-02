@@ -18,7 +18,7 @@ const DEFAULT_TEAM = [
   },
   {
     id: 'peggy',
-    name: 'Peggy', 
+    name: 'Peggy',
     role: 'Intern Teammate',
     photo: '/team/peggy.jpg',
     bio: 'Intern specializing in community outreach and stakeholder engagement.',
@@ -28,7 +28,7 @@ const DEFAULT_TEAM = [
   {
     id: 'lacy',
     name: 'Lacy',
-    role: 'Intern Teammate', 
+    role: 'Intern Teammate',
     photo: '/team/lacy.jpg',
     bio: 'Intern with focus on program development and implementation strategies.',
     experience: '5 months at Comm360',
@@ -56,7 +56,7 @@ const DEFAULT_TEAM = [
 
 function _TeamDirectory(props) {
   const { fields, teamData = DEFAULT_TEAM, title = "Team Directory" } = props;
-  
+
   const [selectedMember, setSelectedMember] = useReduxState(props, fields.selectedMember, null);
   const [viewMode, setViewMode] = useReduxState(props, fields.viewMode, 'grid');
 
@@ -76,7 +76,7 @@ function _TeamDirectory(props) {
     <div className="team-directory p-4 border rounded-lg bg-white">
       {/* Render any child content */}
       {renderCompiledKids(props)}
-      
+
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">{title}</h3>
         <div className="flex gap-2">
@@ -157,7 +157,7 @@ function _TeamDirectory(props) {
                 {selectedMemberData.name.split(' ').map(n => n[0]).join('')}
               </span>
             </div>
-            
+
             <div className="flex-1">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -175,13 +175,13 @@ function _TeamDirectory(props) {
                   ×
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <h5 className="font-medium text-gray-900 mb-2">Background</h5>
                   <p className="text-gray-700">{selectedMemberData.bio}</p>
                 </div>
-                
+
                 <div>
                   <h5 className="font-medium text-gray-900 mb-2">Key Skills</h5>
                   <div className="flex flex-wrap gap-2">
@@ -200,7 +200,7 @@ function _TeamDirectory(props) {
           </div>
         </div>
       )}
-      
+
       {viewMode === 'detail' && !selectedMemberData && (
         <div className="text-center py-8 text-gray-500">
           Select a team member to view their details

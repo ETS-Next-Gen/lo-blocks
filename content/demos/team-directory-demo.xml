@@ -2,7 +2,7 @@
 <Vertical id="team_directory_demo" title="Team Directory Demo" launchable="true">
   <TextBlock>
     ## Team Directory Component Demo
-    
+
     This demonstrates the new TeamDirectory block with the Comm360 team members.
     Click on team members to see their details and explore the team structure.
   </TextBlock>
@@ -11,19 +11,19 @@
 
   <TextBlock>
     ## How to Use
-    
+
     - **Grid View**: See all team members at a glance
     - **Detail View**: Click on any member to see their full profile
     - **Navigation**: Use the view toggle buttons or click members directly
-    
+
     This component can be customized with different team data for various SBAs.
   </TextBlock>
 
   <TextBlock>
     ### Team Hierarchy
-    
+
     - **CEO**: Anne Hastings (makes ultimate decisions)
-    - **Supervisor/Mentor**: Lianne Park (presents to PDE committee)  
+    - **Supervisor/Mentor**: Lianne Park (presents to PDE committee)
     - **Intern Teammates**: Ty, Peggy, and Lacy
   </TextBlock>
 </Vertical>

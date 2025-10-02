@@ -44,18 +44,18 @@ function DefaultDetail({ item, onClose }) {
           ×
         </button>
       </div>
-      
+
       {item.subtitle && (
         <p className="text-lg text-blue-600 font-medium mb-3">{item.subtitle}</p>
       )}
-      
+
       {item.description && (
         <div className="mb-4">
           <h3 className="font-medium text-gray-900 mb-2">Description</h3>
           <p className="text-gray-700">{item.description}</p>
         </div>
       )}
-      
+
       {item.details && Object.keys(item.details).length > 0 && (
         <div className="space-y-3">
           {Object.entries(item.details).map(([key, value]) => (
@@ -121,7 +121,7 @@ const COMPONENT_REGISTRY = {
       </div>
     </div>
   ),
-  
+
   TeamDetail: ({ item, onClose }) => {
     if (!item) {
       return (
@@ -150,7 +150,7 @@ const COMPONENT_REGISTRY = {
               {item.name.split(' ').map(n => n[0]).join('')}
             </span>
           </div>
-          
+
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <div>
@@ -167,14 +167,14 @@ const COMPONENT_REGISTRY = {
             </div>
           </div>
         </div>
-        
+
         {item.bio && (
           <div className="mb-4">
             <h3 className="font-medium text-gray-900 mb-2">Background</h3>
             <p className="text-gray-700">{item.bio}</p>
           </div>
         )}
-        
+
         {item.skills && item.skills.length > 0 && (
           <div>
             <h3 className="font-medium text-gray-900 mb-2">Key Skills</h3>
@@ -196,22 +196,22 @@ const COMPONENT_REGISTRY = {
 };
 
 function _Navigator(props) {
-  const { 
-    fields, 
-    kids, 
+  const {
+    fields,
+    kids,
     title = "Navigator",
     preview = "DefaultPreview",
     detail = "DefaultDetail",
     searchable = true
   } = props;
-  
+
   const [selectedItem, setSelectedItem] = useReduxState(props, fields.selectedItem, null);
   const [searchQuery, setSearchQuery] = useReduxState(props, fields.searchQuery, '');
-  
+
   // Parse YAML data from text content
   const items = useMemo(() => {
     if (!kids) return [];
-    
+
     try {
       // Get text content from kids object (parsed by text parser)
       let yamlText = '';
@@ -223,30 +223,30 @@ function _Navigator(props) {
         // If it's an object with no text property, it might be parsed content
         return Array.isArray(kids) ? kids : [];
       }
-      
+
       if (!yamlText || typeof yamlText !== 'string') return [];
-      
+
       // Simple YAML parsing for our use case
       // Split into items by lines starting with '- '
       const itemBlocks = yamlText.split(/\n(?=- )/).filter(block => block.trim());
-      
+
       return itemBlocks.map((block, index) => {
         const lines = block.split('\n').map(line => line.trim()).filter(line => line);
         const item = { id: `item_${index}` };
-        
+
         lines.forEach(line => {
           if (line.startsWith('- ')) line = line.substring(2);
-          
+
           const colonIndex = line.indexOf(':');
           if (colonIndex > 0) {
             const key = line.substring(0, colonIndex).trim();
             let value = line.substring(colonIndex + 1).trim();
-            
+
             // Handle arrays (simple comma-separated values in brackets)
             if (value.startsWith('[') && value.endsWith(']')) {
               value = value.slice(1, -1).split(',').map(v => v.trim().replace(/['"]/g, ''));
             }
-            
+
             // Handle nested objects (simple key-value pairs with dots)
             if (key.includes('.')) {
               const [mainKey, subKey] = key.split('.');
@@ -257,7 +257,7 @@ function _Navigator(props) {
             }
           }
         });
-        
+
         return item;
       });
     } catch (error) {
@@ -269,9 +269,9 @@ function _Navigator(props) {
   // Filter items based on search query
   const filteredItems = useMemo(() => {
     if (!searchQuery.trim()) return items;
-    
+
     const query = searchQuery.toLowerCase();
-    return items.filter(item => 
+    return items.filter(item =>
       (item.name && item.name.toLowerCase().includes(query)) ||
       (item.title && item.title.toLowerCase().includes(query)) ||
       (item.role && item.role.toLowerCase().includes(query)) ||
@@ -280,7 +280,7 @@ function _Navigator(props) {
   }, [items, searchQuery]);
 
   const selectedItemData = items.find(item => item.id === selectedItem);
-  
+
   const PreviewComponent = COMPONENT_REGISTRY[preview] || COMPONENT_REGISTRY.DefaultPreview;
   const DetailComponent = COMPONENT_REGISTRY[detail] || COMPONENT_REGISTRY.DefaultDetail;
 
@@ -294,10 +294,10 @@ function _Navigator(props) {
 
   return (
     <div className="navigator-component border rounded-lg bg-white overflow-hidden">
-      {/* Only render child content if kids is an array (compiled blocks) 
+      {/* Only render child content if kids is an array (compiled blocks)
           Skip rendering if kids is text content (used for YAML data) */}
       {Array.isArray(props.kids) && renderCompiledKids(props)}
-      
+
       <div className="flex h-96">
         {/* Left Panel - Item List */}
         <div className="w-1/3 border-r bg-gray-50 flex flex-col">
@@ -313,7 +313,7 @@ function _Navigator(props) {
               />
             )}
           </div>
-          
+
           <div className="flex-1 overflow-y-auto">
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
@@ -331,7 +331,7 @@ function _Navigator(props) {
             )}
           </div>
         </div>
-        
+
         {/* Right Panel - Detail View */}
         <div className="flex-1 bg-white">
           <DetailComponent

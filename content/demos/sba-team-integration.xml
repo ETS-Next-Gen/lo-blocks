@@ -1,58 +1,58 @@
 <!-- content/demos/sba-team-integration.xml -->
 <SplitPanel id="sba_with_team" title="SBA with Team Integration" launchable="true">
-  
+
   <!-- Left Panel: Main SBA Content -->
   <LeftPane>
     <Vertical id="sba_content">
       <TextBlock>
         ## Program Evaluation Project
-        
+
         You're working with the Comm360 team to evaluate a new community outreach program.
         Your task is to analyze the data and prepare recommendations for the Program Development & Evaluation (PDE) committee.
       </TextBlock>
-      
-      <TextArea id="initial_analysis" 
+
+      <TextArea id="initial_analysis"
                 placeholder="What are your initial thoughts about the program data you've reviewed?..." />
-      
+
       <TextBlock>
         ## Discussion Questions
-        
+
         Based on your analysis and team member expertise:
         1. What evaluation metrics should we prioritize?
         2. Which team members should lead different aspects of the evaluation?
         3. How should we structure our presentation to the PDE committee?
       </TextBlock>
-      
-      <TextArea id="team_strategy" 
+
+      <TextArea id="team_strategy"
                 placeholder="Outline your team strategy and member assignments..." />
-                
+
       <TextBlock>
         ### Selected Team Member Insights
-        
-        **Currently selected team member:** 
+
+        **Currently selected team member:**
       </TextBlock>
-      
+
       <!-- Reference the team directory selection -->
       <Ref target="team_directory" field="selectedMember" fallback="None selected" />
-      
+
       <TextBlock>
         Use the team directory to explore each member's background and skills to inform your strategy.
       </TextBlock>
     </Vertical>
   </LeftPane>
-  
+
   <!-- Right Panel: Team Directory -->
   <RightPane>
     <TeamDirectory id="team_directory" title="Your Team" />
-    
+
     <TextBlock>
       ### Quick Reference
-      
+
       **Reporting Structure:**
       - Team reports to Lianne Park
-      - Lianne presents to PDE committee  
+      - Lianne presents to PDE committee
       - PDE reports to CEO Anne Hastings
     </TextBlock>
   </RightPane>
-  
+
 </SplitPanel>

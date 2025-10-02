@@ -2,14 +2,14 @@
 <Vertical id="navigator_team_demo" title="Navigator Team Demo" launchable="true">
   <TextBlock>
     ## Team Navigator Demo
-    
+
     This demonstrates the new Navigator component with the Comm360 team.
     The left panel shows a searchable list of team members, click to see details on the right.
   </TextBlock>
 
-  <Navigator id="team_navigator" 
-             title="Comm360 Team" 
-             preview="TeamPreview" 
+  <Navigator id="team_navigator"
+             title="Comm360 Team"
+             preview="TeamPreview"
              detail="TeamDetail">
 - id: ty
   name: Ty
@@ -54,7 +54,7 @@
 
   <TextBlock>
     ## Key Features
-    
+
     - **Two-pane layout**: List on left, details on right
     - **Search functionality**: Filter team members by name or role
     - **Click to explore**: Encourages active learning through interaction

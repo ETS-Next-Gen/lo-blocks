@@ -2,13 +2,13 @@
 <Vertical id="navigator_documents_demo" title="Document Navigator Demo" launchable="true">
   <TextBlock>
     ## Document Navigator Demo
-    
+
     This shows how the Navigator component can be used for any type of content - here with research documents for an interdisciplinary study on high school dropout.
   </TextBlock>
 
-  <Navigator id="document_navigator" 
-             title="Research Documents" 
-             preview="DefaultPreview" 
+  <Navigator id="document_navigator"
+             title="Research Documents"
+             preview="DefaultPreview"
              detail="DefaultDetail">
 - id: psych_motivation
   title: Psychological Factors in School Dropout
@@ -61,13 +61,13 @@
 
   <TextBlock>
     ## Interdisciplinary Analysis
-    
+
     **Selected Document Insights:**
     <Ref target="document_navigator" field="selectedItem" fallback="Select a document to see its key insights" />
-    
+
     Use this navigator to explore research from different disciplines and identify:
     - **Convergent findings**: Where disciplines agree
-    - **Conflicting perspectives**: Where disciplines disagree  
+    - **Conflicting perspectives**: Where disciplines disagree
     - **Complementary insights**: How findings from different fields combine
     - **Research gaps**: What questions remain unanswered
   </TextBlock>

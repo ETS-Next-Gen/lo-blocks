@@ -381,6 +381,7 @@ function _Navigator(props) {
           <DetailComponent
             item={selectedItemData}
             onClose={handleCloseDetail}
+            {...props}
           />
         </div>
       </div>

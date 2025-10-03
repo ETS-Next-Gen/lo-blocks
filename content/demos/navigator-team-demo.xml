@@ -9,8 +9,8 @@
 
   <Navigator id="team_navigator"
              title="Comm360 Team"
-             preview="TeamPreview"
-             detail="TeamDetail">
+             preview="team_nav_preview"
+             detail="team_nav_detail">
 - id: ty
   name: Ty
   role: Intern Teammate
@@ -51,6 +51,11 @@
   experience: 8 years at Comm360, 15+ years leadership experience
   skills: [Executive Leadership, Strategic Decision Making, Resource Management, Organizational Development]
   </Navigator>
+
+  <Hidden>
+    <NavigatorTeamPreview id="team_nav_preview" />
+    <NavigatorTeamDetail id="team_nav_detail" />
+  </Hidden>
 
   <TextBlock>
     ## Key Features

@@ -9,8 +9,8 @@
 
   <Navigator id="team_navigator_blocks"
              title="Team Members"
-             preview="TeamPreview"
-             detail="TeamDetail">
+             preview="blocks_nav_preview"
+             detail="blocks_nav_detail">
 - id: ty
   name: Ty
   role: Intern Teammate
@@ -32,6 +32,11 @@
   experience: 5 years at Comm360
   skills: [Program Management, Leadership]
   </Navigator>
+
+  <Hidden>
+    <NavigatorTeamPreview id="blocks_nav_preview" />
+    <NavigatorTeamDetail id="blocks_nav_detail" />
+  </Hidden>
 
   <TextBlock>
     ## How This Works

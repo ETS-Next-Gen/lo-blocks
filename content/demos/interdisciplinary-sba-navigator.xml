@@ -13,8 +13,8 @@
 
       <Navigator id="team_nav"
                  title="Comm360 Team"
-                 preview="TeamPreview"
-                 detail="TeamDetail"
+                 preview="team_preview_tpl"
+                 detail="team_detail_tpl"
                  searchable="true">
 - id: ty
   name: Ty
@@ -60,8 +60,8 @@
 
       <Navigator id="literature_nav"
                  title="Research Documents"
-                 preview="DefaultPreview"
-                 detail="DefaultDetail"
+                 preview="lit_preview_tpl"
+                 detail="lit_detail_tpl"
                  searchable="true">
 - id: psych_study
   title: Motivation and Dropout Risk
@@ -90,6 +90,13 @@
     roi: $7 per $1 invested
     keyFindings: [Early intervention most cost-effective, Vocational programs promising, Long-term benefits substantial]
       </Navigator>
+
+      <Hidden>
+        <NavigatorTeamPreview id="team_preview_tpl" />
+        <NavigatorTeamDetail id="team_detail_tpl" />
+        <NavigatorDefaultPreview id="lit_preview_tpl" />
+        <NavigatorDefaultDetail id="lit_detail_tpl" />
+      </Hidden>
 
     </Vertical>
   </LeftPane>

@@ -8,8 +8,8 @@
 
   <Navigator id="document_navigator"
              title="Research Documents"
-             preview="DefaultPreview"
-             detail="DefaultDetail">
+             preview="doc_nav_preview"
+             detail="doc_nav_detail">
 - id: psych_motivation
   title: Psychological Factors in School Dropout
   subtitle: Psychology Research
@@ -58,6 +58,11 @@
     scope: 15 states
     keyFindings: [Mandatory attendance laws have mixed results, Flexible scheduling improves outcomes, Teacher training crucial]
   </Navigator>
+
+  <Hidden>
+    <NavigatorDefaultPreview id="doc_nav_preview" />
+    <NavigatorDefaultDetail id="doc_nav_detail" />
+  </Hidden>
 
   <TextBlock>
     ## Interdisciplinary Analysis

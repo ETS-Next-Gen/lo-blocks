@@ -20,8 +20,8 @@ Browse the research studies and resources relevant to understanding high school 
 
     <Navigator id="interdisciplinary_library_navigator"
                title="Available Readings"
-               preview="DefaultPreview"
-               detail="ReadingDetail">
+               preview="lib_nav_preview"
+               detail="lib_nav_detail">
 - id: adhd_study
   name: Is ADHD a Risk Factor for High School Dropout?
   subtitle: Fried et al. (2016) - Psychology
@@ -58,6 +58,11 @@ Browse the research studies and resources relevant to understanding high school 
   description: Executive summary highlighting national dropout crisis and recommendations for intervention.
   ref: reading_policy_brief
     </Navigator>
+
+    <Hidden>
+      <NavigatorDefaultPreview id="lib_nav_preview" />
+      <NavigatorReadingDetail id="lib_nav_detail" />
+    </Hidden>
   </Vertical>
 
   <!-- Team directory navigator -->
@@ -70,8 +75,8 @@ Explore the team directory to learn about your colleagues for this project. Clic
 
     <Navigator id="interdisciplinary_team_navigator"
                title="Comm360 Team"
-               preview="TeamPreview"
-               detail="TeamDetail">
+               preview="team_nav_preview_sba"
+               detail="team_nav_detail_sba">
 - id: ty
   name: Ty
   role: Intern Teammate
@@ -112,6 +117,11 @@ Explore the team directory to learn about your colleagues for this project. Clic
   experience: 8 years at Comm360, 15+ years leadership experience
   skills: [Executive Leadership, Strategic Decision Making, Resource Management, Organizational Development]
     </Navigator>
+
+    <Hidden>
+      <NavigatorTeamPreview id="team_nav_preview_sba" />
+      <NavigatorTeamDetail id="team_nav_detail_sba" />
+    </Hidden>
   </Vertical>
 
 </Vertical>

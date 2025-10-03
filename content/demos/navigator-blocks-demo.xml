@@ -7,9 +7,11 @@
     rather than hardcoded component types.
   </TextBlock>
 
-  <Navigator id="team_navigator_blocks" 
+  <Navigator id="team_navigator_blocks"
              title="Team Members"
-             data="- id: ty
+             preview="TeamPreview"
+             detail="TeamDetail">
+- id: ty
   name: Ty
   role: Intern Teammate
   bio: Data analysis and research specialist
@@ -28,36 +30,7 @@
   role: Supervisor/Mentor
   bio: Program director and mentor
   experience: 5 years at Comm360
-  skills: [Program Management, Leadership]">
-  
-    <!-- Custom preview block -->
-    <NavigatorPreview id="team_preview">
-      <Vertical>
-        <TextBlock>**{{itemData.name}}** - {{itemData.role}}</TextBlock>
-        <TextBlock>{{itemData.experience}}</TextBlock>
-      </Vertical>
-    </NavigatorPreview>
-    
-    <!-- Custom detail block -->
-    <NavigatorDetail id="team_detail">
-      <Vertical>
-        <TextBlock>
-          # {{itemData.name}}
-          
-          **Role:** {{itemData.role}}
-          
-          **Experience:** {{itemData.experience}}
-          
-          **Background:** {{itemData.bio}}
-          
-          **Key Skills:** {{itemData.skills}}
-        </TextBlock>
-        
-        <TextArea id="notes_about_{{itemData.id}}" 
-                  placeholder="Notes about {{itemData.name}}..." />
-      </Vertical>
-    </NavigatorDetail>
-    
+  skills: [Program Management, Leadership]
   </Navigator>
 
   <TextBlock>

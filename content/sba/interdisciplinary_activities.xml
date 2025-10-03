@@ -10,6 +10,56 @@ Working with supervisor Lianne Park and your intern teammates, you'll investigat
   <!-- GSU professor image -->
   <Image id="interdisciplinary_gsu_prof_image" src="images/GSU_prof.png" alt="Professor at Georgia State University" />
 
+  <!-- Library of readings navigator -->
+  <Vertical id="interdisciplinary_library">
+    <Markdown id="library_intro">
+## Library of Readings
+
+Browse the research studies and resources relevant to understanding high school dropout. Click on each item to read the full text.
+    </Markdown>
+
+    <Navigator id="interdisciplinary_library_navigator"
+               title="Available Readings"
+               preview="DefaultPreview"
+               detail="ReadingDetail">
+- id: adhd_study
+  name: Is ADHD a Risk Factor for High School Dropout?
+  subtitle: Fried et al. (2016) - Psychology
+  description: Examines ADHD as a risk factor for grade retention and dropout, controlling for IQ and learning disorders.
+  ref: reading_adhd_study
+
+- id: employment_study
+  name: Is Adolescent Employment Still a Risk Factor for Dropout?
+  subtitle: Staff et al. (2019) - Sociology/Economics
+  description: Examines whether intensive work during high school increases dropout risk using 2009 longitudinal data.
+  ref: reading_employment_study
+
+- id: rural_urban_study
+  name: Rural and Urban High School Dropout Rates
+  subtitle: Jordan et al. (2012) - Education
+  description: Compares dropout rates in rural vs urban areas, examining geographic and family factors.
+  ref: reading_rural_urban_study
+
+- id: marijuana_study
+  name: Marijuana Use and High School Dropout
+  subtitle: McCaffrey et al. (2010) - Health Economics
+  description: Examines the relationship between marijuana use and dropout using propensity score methods.
+  ref: reading_marijuana_study
+
+- id: silent_epidemic
+  name: The Silent Epidemic - Student Perspectives
+  subtitle: Gates Foundation (2006) - Primary Source
+  description: Focus group data and student survey providing direct perspectives from high school dropouts.
+  ref: reading_silent_epidemic
+
+- id: policy_brief
+  name: Urgent Focus on High School Dropout Rates
+  subtitle: Policy Brief - Education Policy
+  description: Executive summary highlighting national dropout crisis and recommendations for intervention.
+  ref: reading_policy_brief
+    </Navigator>
+  </Vertical>
+
   <!-- Team directory navigator -->
   <Vertical id="interdisciplinary_team_members">
     <Markdown id="team_directory_intro">

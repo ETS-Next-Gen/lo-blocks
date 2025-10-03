@@ -4,7 +4,7 @@
 import React, { useMemo } from 'react';
 import NextImage from 'next/image';
 import { useReduxState } from '@/lib/state';
-import { renderCompiledKids } from '@/lib/render';
+import { renderCompiledKids, render } from '@/lib/render';
 import { resolveImagePath } from '@/lib/util';
 
 // Default preview component for list items
@@ -122,6 +122,50 @@ const COMPONENT_REGISTRY = {
       </div>
     </div>
   ),
+
+  // HACK: ReadingDetail component for library navigator
+  // TODO: This should be refactored to support general block embedding via ref
+  // Future architecture should allow detail to specify component/ref/src directly
+  ReadingDetail: (renderProps) => {
+    const { item, onClose, ...props } = renderProps;
+
+    if (!item) {
+      return (
+        <div className="flex items-center justify-center h-48 text-gray-500">
+          Select a reading to view
+        </div>
+      );
+    }
+
+    const blockId = item.ref;
+    if (!blockId) {
+      return (
+        <div className="p-6 text-red-500">
+          No reading reference specified
+        </div>
+      );
+    }
+
+    return (
+      <div className="reading-detail-pane">
+        <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-start z-10">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">{item.name}</h2>
+            {item.subtitle && <p className="text-sm text-gray-600 mt-1">{item.subtitle}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-6 prose prose-sm max-w-none">
+          {render({ ...props, node: blockId })}
+        </div>
+      </div>
+    );
+  },
 
   TeamDetail: ({ item, onClose }) => {
     if (!item) {

@@ -63,8 +63,9 @@
     ## Interdisciplinary Analysis
 
     **Selected Document Insights:**
-    <Ref target="document_navigator" field="selectedItem" fallback="Select a document to see its key insights" />
-
+  </TextBlock>
+  <Ref target="document_navigator" field="selectedItem" fallback="Select a document to see its key insights" />
+  <TextBlock>
     Use this navigator to explore research from different disciplines and identify:
     - **Convergent findings**: Where disciplines agree
     - **Conflicting perspectives**: Where disciplines disagree

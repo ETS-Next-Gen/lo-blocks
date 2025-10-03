@@ -119,8 +119,9 @@
         ### Step 2: Team Member Assignments
 
         **Currently exploring team member:**
-        <Ref target="team_nav" field="selectedItem" fallback="Select a team member to see their expertise" />
-
+      </TextBlock>
+      <Ref target="team_nav" field="selectedItem" fallback="Select a team member to see their expertise" />
+      <TextBlock>
         How will you leverage each team member's skills for this project?
       </TextBlock>
 
@@ -132,8 +133,9 @@
         ### Step 3: Disciplinary Insights
 
         **Currently reviewing document:**
-        <Ref target="literature_nav" field="selectedItem" fallback="Select a research document to analyze" />
-
+      </TextBlock>
+      <Ref target="literature_nav" field="selectedItem" fallback="Select a research document to analyze" />
+      <TextBlock>
         What are the key insights from each discipline? Where do they converge or conflict?
       </TextBlock>
 

@@ -23,7 +23,7 @@
         3. How should we structure our presentation to the PDE committee?
       </TextBlock>
 
-      <TextArea id="team_strategy"
+      <TextArea id="sba_team_strategy"
                 placeholder="Outline your team strategy and member assignments..." />
 
       <TextBlock>

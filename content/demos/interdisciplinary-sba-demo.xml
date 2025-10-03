@@ -32,35 +32,8 @@ Your final problem statement should address:
       </Vertical>
 
       <!-- Tab 3: Library of Readings -->
-      <Vertical id="interdisciplinary_library" label="Library">
-        <Markdown id="library_contents">
-## Library of Readings
-
-### Research Studies
-
-**ADHD and School Performance**
-- Focus: Psychology perspective on attention disorders
-- Key finding: Early identification critical for intervention
-
-**Employment and Education**
-- Focus: Economics perspective on opportunity costs
-- Key finding: Economic pressures drive dropout decisions
-
-**Rural vs. Urban Dropout Patterns**
-- Focus: Sociology perspective on environmental factors
-- Key finding: Geographic disparities in support systems
-
-**School Funding and Resources**
-- Focus: Political science perspective on policy impacts
-- Key finding: Funding inequities affect educational outcomes
-
-### Framework Resources
-
-**Repko's Broad Model of Interdisciplinary Research (2019)**
-- Criteria for interdisciplinary problems
-- Disciplinary integration methods
-- Problem statement development
-        </Markdown>
+      <Vertical id="interdisciplinary_library_tab" label="Library">
+        <Use ref="interdisciplinary_library" />
       </Vertical>
 
       <!-- Tab 4: Team Directory -->

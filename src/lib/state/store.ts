@@ -22,6 +22,8 @@ import { websocketLogger } from 'lo_event/lo_event/websocketLogger.js';
 import { scopes, Scope } from './scopes';
 import type { FieldInfo, Fields } from '../types';
 
+// TODO this ought to come from settings instead
+const WEBSOCKET_URL = 'ws://localhost:8888/wsapi/in/'
 const initialState = {
   component: {},
   componentSetting: {},
@@ -107,7 +109,7 @@ function configureStore({ extraFields = [] }: { extraFields?: ExtraFieldsParam }
   lo_event.init(
     'org.ets.sba',
     '0.0.1',
-    [consoleLogger(), reduxLogger.reduxLogger([], {}), websocketLogger('ws://localhost:8888/wsapi/in/')],
+    [consoleLogger(), reduxLogger.reduxLogger([], {}), websocketLogger(WEBSOCKET_URL)],
     {
       debugLevel: debug.LEVEL.EXTENDED,
       debugDest: [debug.LOG_OUTPUT.CONSOLE],

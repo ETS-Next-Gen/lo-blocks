@@ -37,22 +37,7 @@
 'use client';
 import React from 'react';
 import NextImage from 'next/image';
-
-function resolveImageSrc(src) {
-  // External URLs
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return { type: 'external', src };
-  }
-
-  // Platform-wide assets (// prefix)
-  if (src.startsWith('//')) {
-    return { type: 'platform', src: src.slice(2) };
-  }
-
-  // All other paths treated as content paths
-  // Relative paths should be resolved during parsing, not rendering
-  return { type: 'content', src: src.startsWith('/') ? src.slice(1) : src };
-}
+import { resolveImagePath } from '@/lib/util';
 
 function _Image(props) {
   const { src, alt, width, height, nodeInfo } = props;
@@ -64,19 +49,10 @@ function _Image(props) {
   }
 
   try {
-    const resolved = resolveImageSrc(src);
+    const finalSrc = resolveImagePath(src);
 
-    let finalSrc;
-    switch (resolved.type) {
-      case 'external':
-        finalSrc = resolved.src;
-        break;
-      case 'platform':
-        finalSrc = `/${resolved.src}`;
-        break;
-      case 'content':
-        finalSrc = `/content/${resolved.src}`;
-        break;
+    if (!finalSrc) {
+      throw new Error('Invalid image path');
     }
 
     // Only pass explicitly defined image-related props

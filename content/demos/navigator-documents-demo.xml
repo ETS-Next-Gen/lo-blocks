@@ -1,0 +1,80 @@
+<!-- content/demos/navigator-documents-demo.xml -->
+<Vertical id="navigator_documents_demo" title="Document Navigator Demo" launchable="true">
+  <TextBlock>
+    ## Document Navigator Demo
+
+    This shows how the Navigator component can be used for any type of content - here with research documents for an interdisciplinary study on high school dropout.
+  </TextBlock>
+
+  <Navigator id="document_navigator"
+             title="Research Documents"
+             preview="doc_nav_preview"
+             detail="doc_nav_detail">
+- id: psych_motivation
+  title: Psychological Factors in School Dropout
+  subtitle: Psychology Research
+  description: Comprehensive study examining motivation, self-efficacy, and psychological barriers to academic success.
+  details:
+    discipline: Psychology
+    authors: [Smith, J., Johnson, M.]
+    year: 2023
+    methodology: Mixed methods
+    sampleSize: 847 students
+    keyFindings: [Self-efficacy strongly predicts retention, Peer support reduces dropout risk, Academic identity formation crucial]
+
+- id: socio_determinants
+  title: Social Determinants of Educational Outcomes
+  subtitle: Sociology Research
+  description: Analysis of how family structure, socioeconomic status, and community factors influence educational attainment.
+  details:
+    discipline: Sociology
+    authors: [Rodriguez, C., Williams, K.]
+    year: 2022
+    methodology: Longitudinal cohort study
+    sampleSize: 1,200 families
+    keyFindings: [Family income strongly correlates with completion, Single-parent households face additional challenges, Community resources matter]
+
+- id: econ_cost_benefit
+  title: Economic Analysis of Dropout Prevention
+  subtitle: Economics Research
+  description: Cost-benefit analysis of various intervention programs and their long-term economic impacts.
+  details:
+    discipline: Economics
+    authors: [Chen, L., Thompson, R.]
+    year: 2023
+    methodology: Econometric analysis
+    dataSource: State education department
+    keyFindings: [Early intervention most cost-effective, $7 ROI for every $1 invested, Vocational programs show promise]
+
+- id: policy_interventions
+  title: Policy Interventions and Implementation
+  subtitle: Public Policy Research
+  description: Evaluation of state and federal policies aimed at reducing dropout rates and improving graduation outcomes.
+  details:
+    discipline: Public Policy
+    authors: [Davis, A., Martinez, S.]
+    year: 2022
+    methodology: Policy analysis
+    scope: 15 states
+    keyFindings: [Mandatory attendance laws have mixed results, Flexible scheduling improves outcomes, Teacher training crucial]
+  </Navigator>
+
+  <Hidden>
+    <NavigatorDefaultPreview id="doc_nav_preview" />
+    <NavigatorDefaultDetail id="doc_nav_detail" />
+  </Hidden>
+
+  <TextBlock>
+    ## Interdisciplinary Analysis
+
+    **Selected Document Insights:**
+  </TextBlock>
+  <Ref target="document_navigator" field="selectedItem" fallback="Select a document to see its key insights" />
+  <TextBlock>
+    Use this navigator to explore research from different disciplines and identify:
+    - **Convergent findings**: Where disciplines agree
+    - **Conflicting perspectives**: Where disciplines disagree
+    - **Complementary insights**: How findings from different fields combine
+    - **Research gaps**: What questions remain unanswered
+  </TextBlock>
+</Vertical>

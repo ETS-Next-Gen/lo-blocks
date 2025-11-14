@@ -1,0 +1,34 @@
+<!-- Interdisciplinary Studies SBA: High School Dropout Analysis Demo -->
+<SplitPanel id="interdisciplinary_sba_demo" title="Interdisciplinary Studies SBA - High School Dropout Analysis" launchable="true">
+
+  <!-- Left Panel: Dialogue Conversation -->
+  <LeftPane>
+    <Chat id="interdisciplinary_chat" src="../sba/interdisciplinary_sba_dialogue.chatpeg" height="600px" />
+  </LeftPane>
+
+  <!-- Right Panel: Tabbed interface -->
+  <RightPane>
+    <Tabs id="interdisciplinary_sba_tabs">
+      <!-- Tab 1: Current Activity -->
+      <Vertical id="interdisciplinary_current_activity" label="Current Activity">
+        <UseHistory id="interdisciplinary_sba_sidebar" initial="interdisciplinary_orientation" />
+      </Vertical>
+
+      <!-- Tab 2: Student Artifact -->
+      <Vertical id="interdisciplinary_artifact_tab" label="Artifact">
+        <Use ref="interdisciplinary_artifact" />
+      </Vertical>
+
+      <!-- Tab 3: Library of Readings -->
+      <Vertical id="interdisciplinary_library_tab" label="Library">
+        <Use ref="interdisciplinary_library" />
+      </Vertical>
+
+      <!-- Tab 4: Team Directory -->
+      <Vertical id="interdisciplinary_directory" label="Team">
+        <Use ref="interdisciplinary_team_members" />
+      </Vertical>
+    </Tabs>
+  </RightPane>
+
+</SplitPanel>

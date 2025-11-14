@@ -1,0 +1,69 @@
+<!-- content/demos/navigator-team-demo.xml -->
+<Vertical id="navigator_team_demo" title="Navigator Team Demo" launchable="true">
+  <TextBlock>
+    ## Team Navigator Demo
+
+    This demonstrates the new Navigator component with the Comm360 team.
+    The left panel shows a searchable list of team members, click to see details on the right.
+  </TextBlock>
+
+  <Navigator id="team_navigator"
+             title="Comm360 Team"
+             preview="team_nav_preview"
+             detail="team_nav_detail">
+- id: ty
+  name: Ty
+  role: Intern Teammate
+  photo: /team/ty.jpg
+  bio: Intern at Comm360 focusing on program evaluation and data analysis.
+  experience: 6 months at Comm360
+  skills: [Data Analysis, Research, Program Evaluation]
+
+- id: peggy
+  name: Peggy
+  role: Intern Teammate
+  photo: /team/peggy.jpg
+  bio: Intern specializing in community outreach and stakeholder engagement.
+  experience: 4 months at Comm360
+  skills: [Community Outreach, Communication, Project Management]
+
+- id: lacy
+  name: Lacy
+  role: Intern Teammate
+  photo: /team/lacy.jpg
+  bio: Intern with focus on program development and implementation strategies.
+  experience: 5 months at Comm360
+  skills: [Program Development, Strategic Planning, Implementation]
+
+- id: lianne
+  name: Lianne Park
+  role: Supervisor/Mentor
+  photo: /team/lianne.jpg
+  bio: Director of multiple programs at Comm360 with extensive experience in program evaluation and development. Presents findings to the PDE committee.
+  experience: 5 years at Comm360
+  skills: [Program Management, Leadership, Strategic Planning, Evaluation]
+
+- id: anne
+  name: Anne Hastings
+  role: Chief Executive Officer
+  photo: /team/anne.jpg
+  bio: CEO of Comm360, making ultimate decisions about programs and resources. Reports to the board of directors.
+  experience: 8 years at Comm360, 15+ years leadership experience
+  skills: [Executive Leadership, Strategic Decision Making, Resource Management, Organizational Development]
+  </Navigator>
+
+  <Hidden>
+    <NavigatorTeamPreview id="team_nav_preview" />
+    <NavigatorTeamDetail id="team_nav_detail" />
+  </Hidden>
+
+  <TextBlock>
+    ## Key Features
+
+    - **Two-pane layout**: List on left, details on right
+    - **Search functionality**: Filter team members by name or role
+    - **Click to explore**: Encourages active learning through interaction
+    - **Modular components**: TeamPreview and TeamDetail components can be reused
+    - **YAML data format**: Easy to author and modify team information
+  </TextBlock>
+</Vertical>

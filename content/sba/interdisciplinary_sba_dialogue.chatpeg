@@ -133,12 +133,12 @@ Peggy: So let's see if we can each write two causes.
 
 --- pause ---
 
-brainstorm_causes -> cause_inputs
+interdisciplinary_sba_sidebar -> cause_inputs
 
 [id=causes_review]
 Lacy: Here are all of our reasons, Lianne. What do you think?
 
-brainstorm_causes -> causes_list
+interdisciplinary_sba_sidebar -> causes_list
 
 --- wait cause_internal, cause_structural ---
 
@@ -153,7 +153,7 @@ Task Set 2: Review Focus Group Data [id=focus_group_start]
 
 Lianne: Read this part of the transcript before you go on.
 
-focus_group_part1 -> focus_group_transcript_pt1
+interdisciplinary_sba_sidebar -> focus_group_transcript_pt1
 
 Lianne: Highlight any reasons that our participants gave for students dropping out of high school.
 
@@ -161,7 +161,7 @@ Lianne: Highlight any reasons that our participants gave for students dropping o
 
 Lianne: Now let's look at the second part of the focus group transcript.
 
-focus_group_part2 -> focus_group_transcript_pt2
+interdisciplinary_sba_sidebar -> focus_group_transcript_pt2
 
 Lianne: Again, highlight any reasons that our participants gave for students dropping out of high school.
 
@@ -169,7 +169,7 @@ Lianne: Again, highlight any reasons that our participants gave for students dro
 
 Ty: I hope we get to work on focus groups here because that was really interesting. Here's what I highlighted.
 
-focus_group_review -> focus_group_highlights_shown
+interdisciplinary_sba_sidebar -> focus_group_highlights_shown
 
 --- pause ---
 
@@ -186,15 +186,15 @@ Lacy: Now we need to turn our attention to the research. I think we should focus
 
 Lacy: Which ones would you select to research?
 
-reasons_selection -> reasons_checklist
+interdisciplinary_sba_sidebar -> reasons_checklist
 
 --- wait reasons ---
 
 Lianne: I agree with you on some of your choices. Why did you select that set?
 
-reasons_selection -> reasons_shown
+interdisciplinary_sba_sidebar -> reasons_shown
 
-reason_explanation -> reason_explanation_input
+interdisciplinary_sba_sidebar -> reason_explanation_input
 
 --- wait reason_explanation ---
 
@@ -227,20 +227,20 @@ Ty: Let's do it.
 
 --- pause ---
 
-repko_model -> broad_model_display
+interdisciplinary_sba_sidebar -> broad_model_display
 
 Disciplinary Classification [id=discipline_classification]
 ---------------------------
 
 Peggy: Let's figure out which disciplines are likely to give us the most insights into the problem and possible solutions. How about each of us select all the disciplines in a row that we think apply for each of the causes listed? I think it is ok if we check as many boxes in a row as we think apply. Then, we can sum up our responses to see if they align and if we think this is an interdisciplinary problem.
 
-discipline_table -> causes_by_disciplines
+interdisciplinary_sba_sidebar -> causes_by_disciplines
 
 --- wait reasons_classification ---
 
 Peggy: Ok, I summed up our responses and this shows any category that got more than one vote. We didn't always agree on each discipline, but overall we all seem to see how different disciplines might investigate the problem.
 
-discipline_table -> causes_by_disciplines_answers
+interdisciplinary_sba_sidebar -> causes_by_disciplines_answers
 
 --- pause ---
 
@@ -266,7 +266,7 @@ Task Set 4: Review Literature - ADHD Study [id=literature_adhd]
 
 Ty: Here it is.
 
-research_study_adhd -> adhd_study_text
+interdisciplinary_sba_sidebar -> adhd_study_text
 
 --- pause ---
 
@@ -284,7 +284,7 @@ Peggy: Plus there's a heavy focus on early identification and intervention, espe
 
 Peggy: A big clue was also psychological risk factors.
 
-research_study_adhd -> adhd_study_highlighted
+interdisciplinary_sba_sidebar -> adhd_study_highlighted
 
 --- pause ---
 
@@ -293,7 +293,7 @@ Employment Study [id=literature_employment]
 
 Lacy: I used the search term method and found another study. This one is on employment. Take a look.
 
-research_study_employment -> employment_study_text
+interdisciplinary_sba_sidebar -> employment_study_text
 
 --- pause ---
 
@@ -305,13 +305,13 @@ Lianne: Click on words to highlight them; make sure you scroll down to the botto
 
 Lianne: So which disciplines do you think are represented in this study?
 
-employment_disciplines -> employment_discipline_checkboxes
+interdisciplinary_sba_sidebar -> employment_discipline_checkboxes
 
 --- wait source_2_classification ---
 
 Lianne: How are the clues you picked representative of the disciplines you picked? Can you explain?
 
-employment_explanation -> source_2_explanation_input
+interdisciplinary_sba_sidebar -> source_2_explanation_input
 
 --- wait source_2_classification_explanation ---
 
@@ -320,17 +320,17 @@ Rural and Urban Study [id=literature_rural_urban]
 
 Lacy: I think it makes sense to use this highlighting method for other studies we find. Like this one.
 
-research_study_rural -> rural_urban_study_text
+interdisciplinary_sba_sidebar -> rural_urban_study_text
 
 --- wait source_3_highlights ---
 
 Lianne: So which disciplines do you think are represented in this study?
 
-rural_disciplines -> rural_discipline_checkboxes
+interdisciplinary_sba_sidebar -> rural_discipline_checkboxes
 
 --- wait source_3_classification ---
 
-rural_explanation -> source_3_explanation_input
+interdisciplinary_sba_sidebar -> source_3_explanation_input
 
 --- wait source_3_classification_explanation ---
 
@@ -339,17 +339,17 @@ School Funding Study [id=literature_funding]
 
 Ty: I'm going to add this study to the ones we should review.
 
-research_study_funding -> funding_study_text
+interdisciplinary_sba_sidebar -> funding_study_text
 
 --- wait source_4_highlights ---
 
 Lianne: So which disciplines do you think are represented in this study?
 
-funding_disciplines -> funding_discipline_checkboxes
+interdisciplinary_sba_sidebar -> funding_discipline_checkboxes
 
 --- wait source_4_classification ---
 
-funding_explanation -> source_4_explanation_input
+interdisciplinary_sba_sidebar -> source_4_explanation_input
 
 --- wait source_4_classification_explanation ---
 
@@ -373,7 +373,7 @@ Importance of the Problem [id=importance_criterion]
 
 Peggy: I think this source will help us.
 
-nces_source -> nces_trends_text
+interdisciplinary_sba_sidebar -> nces_trends_text
 
 Lianne: This would be a good time to use the highlighting method to look for information in the text that speaks to the importance of this problem.
 
@@ -381,9 +381,9 @@ Lianne: This would be a good time to use the highlighting method to look for inf
 
 Lianne: Here is the text you highlighted.
 
-nces_importance_review -> nces_importance_highlights_shown
+interdisciplinary_sba_sidebar -> nces_importance_highlights_shown
 
-importance_explanation -> importance_explanation_input
+interdisciplinary_sba_sidebar -> importance_explanation_input
 
 --- wait source_5_importance_explanation ---
 
@@ -392,15 +392,15 @@ Unresolved Nature of Problem [id=unresolved_criterion]
 
 Lianne: Now we should focus on whether the text source helps us know if the problem is not yet resolved. Let's use the highlighting method.
 
-nces_source -> nces_trends_text
+interdisciplinary_sba_sidebar -> nces_trends_text
 
 --- wait source_5_unresolved_highlights ---
 
 Lianne: Here is the text you highlighted.
 
-nces_unresolved_review -> nces_unresolved_highlights_shown
+interdisciplinary_sba_sidebar -> nces_unresolved_highlights_shown
 
-unresolved_explanation -> unresolved_explanation_input
+interdisciplinary_sba_sidebar -> unresolved_explanation_input
 
 --- wait source_5_unresolved_explanation ---
 
@@ -409,7 +409,7 @@ Avoiding Disciplinary Bias [id=avoiding_bias]
 
 Peggy: I've put together a sentence that explains why dropping out of high school is an important and unresolved problem. Maybe we can polish it up and use it as a part of our problem statement.
 
-problematic_statement -> problematic_significance_text
+interdisciplinary_sba_sidebar -> problematic_significance_text
 
 Lacy: That doesn't sound right. It focuses too much on crime and vocational education. We should rewrite it so that it more accurately reflects what we've learned so far.
 
@@ -422,13 +422,13 @@ Lianne: Can you correct and revise this sentence based on the source texts we re
 Revising the Statement [id=revision_task]
 ----------------------
 
-revision_context -> revision_instructions
+interdisciplinary_sba_sidebar -> revision_instructions
 
 --- wait problem_statement_revised ---
 
 Peggy: I can see that my sentence needed to be fixed. Thanks for the suggested revision. I'll take it into account!
 
-revised_display -> revised_statement_shown
+interdisciplinary_sba_sidebar -> revised_statement_shown
 
 Lianne: OK, as we move closer to developing a problem statement, let's pull together all of the information we've gathered. Take some time to review everything, and then we'll start figuring out how to write the problem statement.
 
@@ -439,7 +439,7 @@ Problem Statement Criteria [id=statement_criteria]
 
 Lianne: At this point in our interdisciplinary process, we need to develop a problem statement on the causes of high school dropout. We will use Repko and colleagues' 2019 criteria for writing an effective problem statement.
 
-problem_statement_criteria -> criteria_list
+interdisciplinary_sba_sidebar -> criteria_list
 
 Peggy: We have already described why high school dropout is an important problem, that's criterion one, and talked about its complexity, criterion two. We also talked about importance of avoiding personal or disciplinary biases in the interdisciplinary research process, criterion three.
 
@@ -473,21 +473,21 @@ Peggy: Please make your choices in the table below.
 
 Peggy: You may find that all or none of the choices apply to a specific cause. Feel free to check all that apply but be ready to explain how you see the cause can be the basis for your choices. I'll need those explanations to bring to the Committee.
 
-priority_mapping -> causes_by_priorities_table
+interdisciplinary_sba_sidebar -> causes_by_priorities_table
 
 --- wait problem_areas ---
 
 Lianne: Can you explain why you think these causes are aligned with Comm360's priority areas?
 
-priority_mapping -> causes_by_priorities_shown
+interdisciplinary_sba_sidebar -> causes_by_priorities_shown
 
-priority_explanation -> priority_explanation_input
+interdisciplinary_sba_sidebar -> priority_explanation_input
 
 --- wait priority_explanation ---
 
 Lianne: These look great! Looks like the causes fall in with three of our priority areas: Family and Youth Services, Health and Wellness, and Community Building and Advocacy.
 
-priority_mapping -> causes_by_priorities_answers
+interdisciplinary_sba_sidebar -> causes_by_priorities_answers
 
 Lianne: However, I talked to Ms. Hastings and we agreed that we have capacity only to address the Health and Wellness priority by providing programming and services around depression, anxiety, or ADHD so they don't interfere with students' ability to get good grades and remain in school.
 
@@ -498,15 +498,15 @@ Focus Selection [id=focus_selection_final]
 
 Lianne: Great! We're going to focus on the Health and Wellness area, specifically on conditions like depression, anxiety, or ADHD that can interfere with a student's ability to get good grades and remain engaged in school.
 
-priority_focus -> health_wellness_focus_shown
+interdisciplinary_sba_sidebar -> health_wellness_focus_shown
 
 Lianne: We know that Psychology offers relevant insights on this cause and we can consult Psychology in building Health and Wellness programming and services to address this cause. What other disciplines do you think would offer useful insights that we should consult?
 
-additional_disciplines -> additional_disciplines_checkboxes
+interdisciplinary_sba_sidebar -> additional_disciplines_checkboxes
 
 --- wait additional_disciplines ---
 
-additional_disciplines_explanation -> additional_disciplines_explanation_input
+interdisciplinary_sba_sidebar -> additional_disciplines_explanation_input
 
 --- wait additional_disciplines_explanation ---
 
@@ -515,11 +515,11 @@ Writing the Final Problem Statement [id=final_statement]
 
 Lianne: Ok, now we are ready to write our problem statement. Let's first review the information we have covered.
 
-complete_notes -> full_notes_display
+interdisciplinary_sba_sidebar -> full_notes_display
 
 Lianne: Use your notes to help you write your problem statement. You can copy and paste from your notes. You don't have to use all of your notes; you can choose which notes to use or add additional information. When you are done, click next.
 
-problem_statement_input -> full_problem_statement_input
+interdisciplinary_sba_sidebar -> full_problem_statement_input
 
 --- wait full_problem_statement ---
 

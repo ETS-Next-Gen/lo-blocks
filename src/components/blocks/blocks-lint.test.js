@@ -125,32 +125,10 @@ function findJSXInFile(filePath) {
 }
 
 describe('Blueprint files (.js) should not contain JSX', () => {
-  // Get blueprint files from the registry generator's logic
   const { blocks } = generateAllRegistryContents();
 
-  // Parse the generated content to extract file paths
-  // Lines look like: export { default as Name } from './blocks/Name';
-  const blueprintFiles = blocks.content
-    .split('\n')
-    .filter(line => line.startsWith('export'))
-    .map(line => {
-      const match = line.match(/from '(.+)'/);
-      if (!match) return null;
-      // Convert relative path to absolute, trying common extensions
-      const relPath = match[1];
-      for (const ext of ['.js', '.ts', '.jsx', '.tsx']) {
-        const fullPath = relPath.replace('./blocks', BLOCKS_DIR) + ext;
-        try {
-          readFileSync(fullPath);
-          return fullPath;
-        } catch {}
-      }
-      return null;
-    })
-    .filter(Boolean);
-
   // Only check .js files (not .jsx/.tsx which are expected to have JSX)
-  const jsFiles = blueprintFiles.filter(f => f.endsWith('.js'));
+  const jsFiles = blocks.files.filter(f => f.endsWith('.js'));
 
   it('finds blueprint .js files to check', () => {
     expect(jsFiles.length).toBeGreaterThan(0);

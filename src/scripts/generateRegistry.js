@@ -95,7 +95,7 @@ function walkDir(dir, filePattern, ignorePatterns, excludePattern) {
 
 /**
  * Generate registry contents (without writing to disk).
- * Returns { blocks: { content, outputFile }, css: { content, outputFile } }
+ * Returns { blocks: { content, outputFile, files }, css: { content, outputFile, files } }
  */
 export function generateAllRegistryContents() {
   const ignorePatterns = readBlockIgnore(ignoreFile);
@@ -110,7 +110,8 @@ export function generateAllRegistryContents() {
     );
     result[name] = {
       content: config.fileHeader + config.reducer(files, config.outputFile),
-      outputFile: config.outputFile
+      outputFile: config.outputFile,
+      files
     };
   }
 

@@ -110,7 +110,7 @@ export function grader({ grader, infer = true } = {}) {
     const param = values.length === 1
       ? { input: values[0], inputs: values }
       : { inputs: values };
-    const { correct, message } = grader(
+    const { correct, message, score } = grader(
       { ...props, ...targetAttributes },
       param
     );
@@ -127,6 +127,7 @@ export function grader({ grader, infer = true } = {}) {
       id: targetId,
       correct: correctness,
       message,
+      score,
       answers: values  // Key-value pair?
     });
     return correct;
@@ -142,7 +143,7 @@ export function executeNodeActions(props) {
   const ids = inferRelatedNodes( props, {
     selector: n => isAction(n.blueprint),
     infer: props.infer,
-    targets: props.targets
+    targets: props.targets || props.target
   });
   const map = props.componentMap;
   ids.forEach(targetId => {

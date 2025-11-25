@@ -41,7 +41,7 @@ What do YOU think Annie's roommate should do to get the 6-year-old to go to slee
     </Markdown>
     <TextArea id="initial_suggestion"
               placeholder="Share your initial strategy (2-3 sentences)..." />
-    <ActionButton id="submit_suggestion_btn" target="psych_chat" action="advance" label="Submit and Continue" />
+    <ActionButton id="submit_suggestion_btn" dependsOn="initial_suggestion" target="psych_chat" action="advance" label="Submit and Continue" />
   </Vertical>
 
   <!-- Group brainstorm sorting activity -->
@@ -52,9 +52,9 @@ What do YOU think Annie's roommate should do to get the 6-year-old to go to slee
 The group has several different suggestions. Rank these ideas from **best** to **worst** based on what you think would work for the 6-year-old:
     </Markdown>
 
-    <CapaProblem id="rank_bedtime_strategies">
+    <CapaProblem id="rank_bedtime_strategies" submitLabel="Lock in order">
       <Markdown>Drag to rank from **best** (top) to **worst** (bottom):</Markdown>
-      <SortableGrader id="bedtime_strategy_grader">
+      <SortableGrader id="bedtime_strategy_grader" algorithm="survey">
         <SortableInput dragMode="whole">
           <Ref target="initial_suggestion" id="ref_student_suggestion_in_brainstorm" fallback="[Please make sure you've entered a suggestion on the prior screen]" />
           <TextBlock>Give him 50 cents if he goes to bed on time (money reward)</TextBlock>
@@ -64,7 +64,7 @@ The group has several different suggestions. Rank these ideas from **best** to *
       </SortableGrader>
     </CapaProblem>
 
-    <ActionButton id="continue_after_sorting" target="psych_chat" action="advance" label="Continue Discussion" />
+    <ActionButton id="continue_after_sorting" dependsOn="bedtime_strategy_grader" target="psych_chat" action="advance" label="Continue Discussion" />
   </Vertical>
 
   <!-- Messages screenshot -->

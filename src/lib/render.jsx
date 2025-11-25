@@ -26,7 +26,6 @@ export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {} });
 // Main render function: handles single nodes, strings, JSX, and blocks
 export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
   if (!node) return null;
-
   // JSX passthrough
   if (React.isValidElement(node)) return node;
 
@@ -133,6 +132,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
       <div className={combinedClassName} data-block-type={tag}>
         <Component
           { ...attributes }
+          id={node.id}
           kids={ kids }
           idMap={ idMap }
           blueprint={ componentMap[tag].blueprint }

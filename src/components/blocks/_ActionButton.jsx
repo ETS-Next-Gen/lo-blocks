@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { executeNodeActions } from '@/lib/blocks';
 import { renderCompiledKids } from '@/lib/render';
-import { checkRequirements, parseRequirements } from '@/lib/util/requirements';
+import { checkRequirements, parseRequirements } from '@/lib/util/prerequisites';
 import { useReduxState } from '@/lib/state';
 import { store } from 'lo_event/lo_event/reduxLogger.js';
 

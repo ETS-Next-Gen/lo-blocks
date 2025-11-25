@@ -1,9 +1,15 @@
-// src/lib/util/requirements.js
+// src/lib/util/prerequisites.js
 /**
- * Centralized helpers for expressing and evaluating block dependencies.
- * We use these functions to make "wait until" logic consistent across components,
- * so steps only run when their prerequisite blocks have produced meaningful data
- * or grading results.
+ * This is a set of helpers for expressing whether we are ready to take
+ * some action, such as a student advancing to the next set of exercises.
+ * In most cases, this might be simply checking whether some set of exercises
+ * is finished, but there may be more complex dependencies as well.
+ * 
+ * We are still evaluating the right format for this, but this version should
+ * be sufficient for the current SBAs. We are less than comfortable with the
+ * level of regexps used and the code complexity, and we need a documented,
+ * human-friendly format to use in the courseware. This is the start of a
+ * work-in-progress
  */
 import { getValueById } from '@/lib/blocks';
 import * as state from '@/lib/state';

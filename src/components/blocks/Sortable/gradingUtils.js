@@ -51,7 +51,7 @@ function gradeSurvey() {
   return {
     score: 1.0,
     correct: true,
-    message: 'Response recorded. There is no single correct order for this activity.'
+    message: 'Thanks for sharing your order! This activity explores different perspectives, so any arrangement is accepted.'
   };
 }
 

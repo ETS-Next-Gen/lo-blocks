@@ -6,13 +6,17 @@ import React, { useCallback, useMemo, useEffect } from 'react';
 import { useReduxState, updateReduxField } from '@/lib/state';
 import { ChatComponent, InputFooter, AdvanceFooter } from '@/components/common/ChatComponent';
 import { DisplayError } from '@/lib/util/debug';
-import { checkRequirements } from '@/lib/util/requirements';
+import { checkRequirements } from '@/lib/util/prerequisites';
 
 import * as chatUtils from './chatUtils';
 
 /* ----------------------------------------------------------------
  * Advance Handler Registry
  * -------------------------------------------------------------- */
+// We keep a registry of advance handlers so other components (e.g., footers
+// or keyboard shortcuts) can trigger progression without holding direct
+// references to the chat component. This indirection also makes cleanup
+// predictable when components unmount.
 const advanceHandlers = new Map();
 
 export function registerChatAdvanceHandler(id, handler) {
@@ -234,6 +238,8 @@ export function _Chat(props) {
 /* ----------------------------------------------------------------
  * Custom Hook for Handler Registration
  * -------------------------------------------------------------- */
+// Convenience hook to register/unregister an advance handler alongside the
+// component lifecycle so callers don't have to manage the registry directly.
 
 export function useChatAdvanceRegistration(id, handler) {
   useEffect(() => {

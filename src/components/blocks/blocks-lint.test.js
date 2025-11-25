@@ -116,28 +116,40 @@ function findJSXInFile(filePath) {
 
     // Make sure it's not inside a line comment
     const commentIndex = line.indexOf('//');
-    if (commentIndex === -1 || jsxMatch.index < commentIndex) {
-      return { line: i + 1, content: trimmed };
-    }
+    if (commentIndex !== -1 && jsxMatch.index > commentIndex) continue;
+
+    // Make sure it's not inside a string or template literal
+    const beforeMatch = line.slice(0, jsxMatch.index);
+    const quotes = (beforeMatch.match(/[`'"]/g) || []).length;
+    if (quotes % 2 === 1) continue; // Inside a string
+
+    return { line: i + 1, content: trimmed };
   }
 
   return null;
 }
 
-describe('Blueprint files (.js) should not contain JSX', () => {
+describe('Blueprint files should not contain JSX', () => {
   const { blocks } = generateAllRegistryContents();
 
-  // Only check .js files (not .jsx/.tsx which are expected to have JSX)
-  const jsFiles = blocks.files.filter(f => f.endsWith('.js'));
-
-  it('finds blueprint .js files to check', () => {
-    expect(jsFiles.length).toBeGreaterThan(0);
+  it('finds blueprint files to check', () => {
+    expect(blocks.files.length).toBeGreaterThan(0);
   });
 
-  jsFiles.forEach(filePath => {
-    const name = relative(BLOCKS_DIR, filePath);
+  blocks.files.forEach(filePath => {
+    const name = relative(process.cwd(), filePath);
 
     it(name, () => {
+      const ext = filePath.match(/\.[^.]+$/)[0];
+
+      // Blueprint files should use .js/.ts, not .jsx/.tsx
+      if (ext === '.jsx' || ext === '.tsx') {
+        expect.fail(
+          `Blueprint should use ${ext.replace('x', '')} extension, not ${ext}\n\n` +
+          `Rename to ${ext.replace('x', '')} and move any JSX to a _Component${ext} file.`
+        );
+      }
+
       const violation = findJSXInFile(filePath);
       if (!violation) return;
 

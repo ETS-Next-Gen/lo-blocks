@@ -65,7 +65,7 @@ export default function BlockDocsPage({ params }) {
               )}
             </p>
           )}
-          {blockData.fields.length > 0 && (
+          {blockData.fields?.length > 0 && (
             <p className="text-gray-500 text-sm mt-1">
               Fields: {blockData.fields.map(f => <code key={f} className="bg-gray-100 px-1 mx-0.5 rounded">{f}</code>)}
             </p>
@@ -96,7 +96,7 @@ export default function BlockDocsPage({ params }) {
           )}
 
           {/* Examples */}
-          {blockData.examples.length > 0 ? (
+          {blockData.examples?.length > 0 ? (
             <section className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Examples</h2>
               <div className="space-y-6">

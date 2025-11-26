@@ -30,6 +30,7 @@
     "@codemirror/lang-xml": "^6.1.0",
     "@fontsource/geist-mono": "^5.2.6",
     "@fontsource/geist-sans": "^5.2.5",
+    "@tailwindcss/typography": "^0.5.19",
     "@uiw/react-codemirror": "^4.23.12",
     "@xyflow/react": "^12.6.0",
     "codemirror": "^6.0.1",

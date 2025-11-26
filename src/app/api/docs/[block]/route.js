@@ -1,15 +1,17 @@
 // src/app/api/docs/[block]/route.js
 import fs from 'fs';
 import path from 'path';
+import { resolveSafePath } from '@/lib/storage';
 
 const blocksDir = path.resolve('./src/components/blocks');
 
 export async function GET(request, { params }) {
   const { block } = await params;
-  
+
   try {
-    const blockPath = path.join(blocksDir, block);
-    
+    // Validate path to prevent directory traversal attacks
+    const blockPath = await resolveSafePath(blocksDir, block);
+
     // Check if block directory exists
     if (!fs.existsSync(blockPath) || !fs.statSync(blockPath).isDirectory()) {
       return Response.json(
@@ -66,8 +68,16 @@ export async function GET(request, { params }) {
       block: blockDocs
     });
   } catch (error) {
+    // Path validation errors (traversal attempts, symlinks) return 400
+    if (error.message === 'Invalid path' || error.message === 'Symlinks not allowed') {
+      return Response.json(
+        { ok: false, error: `Block '${block}' not found` },
+        { status: 400 }
+      );
+    }
+
     console.error(`Error loading documentation for block '${block}':`, error);
-    
+
     return Response.json(
       {
         ok: false,

@@ -25,7 +25,7 @@ import pegExts from '../../generated/pegExtensions.json' assert { type: 'json' }
 import { ProvenanceURI } from '../types';
 import { fileTypes, FileType } from './fileTypes';
 
-async function resolveSafePath(baseDir: string, relPath: string) {
+export async function resolveSafePath(baseDir: string, relPath: string) {
   if (typeof relPath !== 'string' || relPath.includes('\0')) {
     throw new Error('Invalid path');
   }

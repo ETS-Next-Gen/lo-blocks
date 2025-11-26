@@ -45,6 +45,12 @@ const ENDPOINT_LINKS = [
     type: 'JSON',
     description: 'Development-only shutdown endpoint (GET)',
   },
+  {
+    href: '/docs',
+    label: '/docs',
+    type: 'HTML',
+    description: 'Block documentation index',
+  },
 ];
 
 function LessonsAndActivities() {

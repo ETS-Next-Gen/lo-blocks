@@ -4,26 +4,81 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-export default function Home() {
+const ENDPOINT_LINKS = [
+  {
+    href: '/api/content/root',
+    label: '/api/content/root',
+    type: 'JSON',
+    description: 'Launchable content entries (GET)',
+  },
+  {
+    href: '/api/content/all',
+    label: '/api/content/all',
+    type: 'JSON',
+    description: 'Complete content map (GET)',
+  },
+  {
+    key: 'contentId',
+    hrefTemplate: id => `/api/content/${id}`,
+    label: '/api/content/',
+    placeholder: 'id',
+    type: 'JSON',
+    description: 'Content lookup for a specific ID (GET)',
+  },
+  {
+    href: '/api/files',
+    label: '/api/files',
+    type: 'JSON',
+    description: 'File tree for the content directory (GET)',
+  },
+  {
+    key: 'filePath',
+    hrefTemplate: path => `/api/file?path=${encodeURIComponent(path)}`,
+    label: '/api/file?path=',
+    placeholder: 'path/to/file',
+    type: 'JSON',
+    description: 'Read an allowed file via a path query (GET)',
+  },
+  {
+    href: '/api/admin/shutdown',
+    label: '/api/admin/shutdown',
+    type: 'JSON',
+    description: 'Development-only shutdown endpoint (GET)',
+  },
+];
+
+function LessonsAndActivities() {
   const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch('/api/content/root')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
-        // Transform the object into an array of entries
         const allEntries = Object.keys(data.idMap).map(key => ({
           id: key,
           ...data.idMap[key]
         }));
         setEntries(allEntries);
-      });
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
+  if (loading) {
+    return <p className="text-gray-500">Loading lessons...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-600">Failed to load lessons: {error}</p>;
+  }
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">📚 Learning Blocks</h1>
+    <section className="mb-8">
       <p className="mb-4">Explore available lessons and activities:</p>
       <ul className="space-y-2 list-disc pl-6">
         {entries.map(entry => (
@@ -43,6 +98,65 @@ export default function Home() {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+function EndpointList() {
+  const [params, setParams] = useState({});
+
+  return (
+    <section className="mb-8">
+      <h2 className="text-xl font-semibold mb-2">Endpoints</h2>
+      <p className="mb-3 text-gray-700">Direct links to read-only endpoints, including JSON responses where available:</p>
+      <ul className="space-y-2 list-disc pl-6">
+        {ENDPOINT_LINKS.map(endpoint => (
+          <li key={endpoint.key || endpoint.label} className="space-x-2">
+            {endpoint.hrefTemplate ? (
+              <>
+                <code className="text-sm bg-gray-100 px-1 py-0.5 rounded">{endpoint.label}</code>
+                <input
+                  type="text"
+                  placeholder={endpoint.placeholder}
+                  value={params[endpoint.key] || ''}
+                  onChange={e => setParams({ ...params, [endpoint.key]: e.target.value })}
+                  className="text-sm border px-1 py-0.5 rounded w-32"
+                />
+                <a
+                  href={params[endpoint.key] ? endpoint.hrefTemplate(params[endpoint.key]) : '#'}
+                  className={`text-sm ${params[endpoint.key] ? 'text-blue-600 hover:underline' : 'text-gray-400'}`}
+                  target="_blank"
+                  onClick={e => !params[endpoint.key] && e.preventDefault()}
+                >
+                  Go
+                </a>
+              </>
+            ) : (
+              <Link
+                href={endpoint.href}
+                className="text-blue-600 hover:underline"
+                target="_blank"
+              >
+                {endpoint.label}
+              </Link>
+            )}
+            <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
+              {endpoint.type}
+            </span>
+            <span className="text-gray-700">{endpoint.description}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export default function Home() {
+  return (
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-4">📚 Learning Blocks</h1>
+      <LessonsAndActivities />
+      <EndpointList />
     </main>
   );
 }

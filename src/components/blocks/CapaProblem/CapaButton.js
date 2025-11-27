@@ -8,6 +8,7 @@ const CapaButton = blocks.dev({
   name: 'CapaButton',
   description: 'Problem controls with button + correctness + message, with label logic based on attempts/teacher-scored',
   component: _CapaButton,
+  internal: true
 });
 
 export default CapaButton;

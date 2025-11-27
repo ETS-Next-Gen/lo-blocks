@@ -62,6 +62,7 @@ function createBlock(config: BlockBlueprint): Block {
     OLXName: olxName,
     description: parsed.description,
     namespace: parsed.namespace,
+    internal: config.internal,
     requiresUniqueId: config.requiresUniqueId,
 
     blueprint: config

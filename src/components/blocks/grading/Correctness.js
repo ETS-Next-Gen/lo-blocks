@@ -11,7 +11,8 @@ const Correctness = dev({
   name: 'Correctness',
   description: 'Visual indicator showing grading status (correct/incorrect/unsubmitted)',
   component: _Correctness,
-  fields
+  fields,
+  internal: true
 });
 
 export default Correctness;

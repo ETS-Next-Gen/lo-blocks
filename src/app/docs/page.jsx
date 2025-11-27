@@ -82,6 +82,8 @@ function BlockSidebar({
   onSearchChange,
   collapsedCategories,
   onToggleCategory,
+  showInternal,
+  onToggleInternal,
 }) {
   const [hoveredBlock, setHoveredBlock] = useState(null);
 
@@ -155,6 +157,18 @@ function BlockSidebar({
           </div>
         ))}
       </nav>
+
+      <div className="p-2 border-t">
+        <label className="flex items-center gap-2 px-2 py-1 text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+          <input
+            type="checkbox"
+            checked={showInternal}
+            onChange={(e) => onToggleInternal(e.target.checked)}
+            className="w-3 h-3"
+          />
+          Show internal blocks
+        </label>
+      </div>
     </aside>
   );
 }
@@ -380,6 +394,7 @@ export default function DocsPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [showInternal, setShowInternal] = useState(false);
 
   // Fetch block list on mount
   useEffect(() => {
@@ -418,8 +433,12 @@ export default function DocsPage() {
   }, [selectedBlock]);
 
   const categorizedBlocks = useMemo(() => {
-    return docs?.blocks ? groupBlocksByCategory(docs.blocks) : {};
-  }, [docs]);
+    if (!docs?.blocks) return {};
+    const visibleBlocks = showInternal
+      ? docs.blocks
+      : docs.blocks.filter(b => !b.internal);
+    return groupBlocksByCategory(visibleBlocks);
+  }, [docs, showInternal]);
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categorizedBlocks;
@@ -484,6 +503,8 @@ export default function DocsPage() {
           onSearchChange={setSearchQuery}
           collapsedCategories={collapsedCategories}
           onToggleCategory={handleToggleCategory}
+          showInternal={showInternal}
+          onToggleInternal={setShowInternal}
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">

@@ -8,3 +8,4 @@
 //
 export { NetworkStorageProvider, type NetworkProviderOptions } from './network';
 export { InMemoryStorageProvider } from './memory';
+export { StackedStorageProvider } from './stacked';

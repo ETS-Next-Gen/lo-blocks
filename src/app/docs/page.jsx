@@ -294,10 +294,14 @@ function OverviewTab({ block, details }) {
   );
 }
 
-function ReadmeTab({ content }) {
+function ReadmeTab({ content, path }) {
   return (
-    <div className="bg-white rounded-lg border p-6">
-      <div className="prose max-w-none">
+    <div className="bg-white rounded-lg border overflow-hidden">
+      <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+        <span className="font-medium text-gray-700">README</span>
+        <code className="text-xs text-gray-500">{path}</code>
+      </div>
+      <div className="p-6 prose max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {content}
         </ReactMarkdown>
@@ -312,14 +316,7 @@ function ExampleTab({ example }) {
       <section className="bg-white rounded-lg border overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
           <span className="font-medium text-gray-700">Live Preview</span>
-          <a
-            href={`/view/${encodeURIComponent(example.path || example.filename)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:text-blue-800"
-          >
-            Open in Viewer →
-          </a>
+          <code className="text-xs text-gray-500">{example.path || example.filename}</code>
         </div>
         <div className="p-6">
           <RenderOLX inline={example.content} />
@@ -327,9 +324,9 @@ function ExampleTab({ example }) {
       </section>
 
       <section className="bg-white rounded-lg border overflow-hidden">
-        <div className="px-4 py-3 bg-gray-50 border-b">
+        <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
           <span className="font-medium text-gray-700">Source Code</span>
-          <span className="ml-2 text-sm text-gray-400">{example.filename}</span>
+          <code className="text-xs text-gray-500">{example.path || example.filename}</code>
         </div>
         <div className="p-4 overflow-x-auto bg-gray-50">
           <pre className="text-sm">
@@ -355,7 +352,7 @@ function BlockContent({ block, details, activeTab, loading }) {
   }
 
   if (activeTab === 'readme' && details?.readme?.content) {
-    return <ReadmeTab content={details.readme.content} />;
+    return <ReadmeTab content={details.readme.content} path={details.readme.path} />;
   }
 
   if (activeTab.startsWith('example-')) {

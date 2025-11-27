@@ -9,25 +9,17 @@
 // - Virtual filesystems for documentation examples
 // - Multi-file content where files reference each other via src=""
 //
-import type { ProvenanceURI } from '../../types';
-import type {
-  StorageProvider,
-  XmlFileInfo,
-  XmlScanResult,
-  FileSelection,
-  UriNode,
-} from '../types';
 
-export class InMemoryStorageProvider implements StorageProvider {
-  private files: Record<string, string>;
-  private basePath: string;
+const CONTENT_EXTENSIONS = ['.xml', '.olx', '.md'];
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
 
-  constructor(files: Record<string, string>, basePath: string = '') {
+export class InMemoryStorageProvider {
+  constructor(files, basePath = '') {
     this.files = files;
     this.basePath = basePath;
   }
 
-  async read(path: string): Promise<string> {
+  async read(path) {
     // Normalize path - remove leading ./ or /
     const normalized = path.replace(/^\.?\//, '');
 
@@ -44,42 +36,55 @@ export class InMemoryStorageProvider implements StorageProvider {
     throw new Error(`File not found: ${path}`);
   }
 
-  async exists(path: string): Promise<boolean> {
+  async exists(path) {
     const normalized = path.replace(/^\.?\//, '');
     return this.files[normalized] !== undefined;
   }
 
-  async write(_path: string, _content: string): Promise<void> {
+  async write() {
     throw new Error('InMemoryStorageProvider is read-only');
   }
 
-  async update(_path: string, _content: string): Promise<void> {
+  async update() {
     throw new Error('InMemoryStorageProvider is read-only');
   }
 
-  async listFiles(_selection: FileSelection = {}): Promise<UriNode> {
-    // Build a simple flat list of files
-    const children: UriNode[] = Object.keys(this.files).map(uri => ({ uri }));
+  async listFiles() {
+    const children = Object.keys(this.files).map(uri => ({ uri }));
     return { uri: '', children };
   }
 
-  async loadXmlFilesWithStats(
-    _previous: Record<ProvenanceURI, XmlFileInfo> = {}
-  ): Promise<XmlScanResult> {
-    throw new Error('loadXmlFilesWithStats not implemented for InMemoryStorageProvider');
+  async loadXmlFilesWithStats(previous = {}) {
+    const isContentFile = (filename) =>
+      CONTENT_EXTENSIONS.some(ext => filename.endsWith(ext));
+
+    const added = {};
+    const unchanged = {};
+
+    for (const [filename, content] of Object.entries(this.files)) {
+      if (!isContentFile(filename)) continue;
+
+      const uri = `memory://${filename}`;
+      const ext = filename.split('.').pop() || '';
+
+      if (previous[uri]) {
+        unchanged[uri] = previous[uri];
+      } else {
+        added[uri] = { id: uri, type: ext, _metadata: {}, content };
+      }
+    }
+
+    return { added, changed: {}, unchanged, deleted: {} };
   }
 
-  resolveRelativePath(_baseProvenance: ProvenanceURI, relativePath: string): string {
-    // For in-memory provider, just return the relative path as-is
-    // since all files are in a flat namespace
+  resolveRelativePath(_baseProvenance, relativePath) {
     return relativePath.replace(/^\.?\//, '');
   }
 
-  async validateImagePath(imagePath: string): Promise<boolean> {
-    const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
-    if (!imageExts.some(ext => imagePath.toLowerCase().endsWith(ext))) {
-      return false;
-    }
-    return this.exists(imagePath);
+  async validateImagePath(imagePath) {
+    const hasImageExt = IMAGE_EXTENSIONS.some(ext =>
+      imagePath.toLowerCase().endsWith(ext)
+    );
+    return hasImageExt && this.exists(imagePath);
   }
 }

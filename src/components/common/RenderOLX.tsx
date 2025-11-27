@@ -183,7 +183,7 @@ export default function RenderOLX({
     if (!mergedIdMap[rootId]) {
       return (
         <div className="text-red-600">
-          RenderOLX: ID &quot;{id}&quot; not found in content
+          RenderOLX: ID &quot;{rootId}&quot; not found in content
         </div>
       );
     }

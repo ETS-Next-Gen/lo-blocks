@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import RenderOLX from '@/components/common/RenderOLX';
 
 // Extract category from source path like "src/components/blocks/display/Markdown/Markdown.js"
 function getCategory(source) {
@@ -33,13 +34,30 @@ const CATEGORY_ORDER = [
   'Reference', 'Specialized', 'Utility', 'CAPA Problems', 'Test Blocks', 'Other'
 ];
 
-// Tabs for the content panel
-const TABS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'readme', label: 'README' },
-  { id: 'examples', label: 'Examples' },
-  { id: 'source', label: 'Source' }
-];
+// Build dynamic tabs based on block's available content
+function buildTabs(blockMeta, blockDetails) {
+  const tabs = [
+    { id: 'overview', label: 'Overview' }
+  ];
+
+  // Add README tab if documentation exists
+  if (blockDetails?.readme?.content) {
+    tabs.push({ id: 'readme', label: 'README' });
+  }
+
+  // Add one tab per example file
+  if (blockDetails?.examples?.length > 0) {
+    blockDetails.examples.forEach((example, index) => {
+      tabs.push({
+        id: `example-${index}`,
+        label: example.filename.replace(/\.(olx|xml)$/, ''),
+        exampleIndex: index
+      });
+    });
+  }
+
+  return tabs;
+}
 
 export default function DocsPage() {
   const [docs, setDocs] = useState(null);
@@ -145,6 +163,11 @@ export default function DocsPage() {
     if (!docs?.blocks || !selectedBlock) return null;
     return docs.blocks.find(b => b.name === selectedBlock);
   }, [docs, selectedBlock]);
+
+  // Build tabs dynamically based on block content
+  const tabs = useMemo(() => {
+    return buildTabs(currentBlockMeta, blockDetails);
+  }, [currentBlockMeta, blockDetails]);
 
   if (loading) {
     return (
@@ -287,23 +310,18 @@ export default function DocsPage() {
 
               {/* Tabs */}
               <div className="bg-white border-b px-6">
-                <nav className="flex gap-4">
-                  {TABS.map(tab => (
+                <nav className="flex gap-4 overflow-x-auto">
+                  {tabs.map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                      className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                         activeTab === tab.id
                           ? 'border-blue-500 text-blue-600'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     >
                       {tab.label}
-                      {tab.id === 'examples' && currentBlockMeta.examples?.length > 0 && (
-                        <span className="ml-1 text-xs text-gray-400">
-                          ({currentBlockMeta.examples.length})
-                        </span>
-                      )}
                     </button>
                   ))}
                 </nav>
@@ -320,62 +338,67 @@ export default function DocsPage() {
                     {/* Overview Tab */}
                     {activeTab === 'overview' && (
                       <div className="space-y-6">
+                        {/* Quick Reference + Source combined */}
                         <section className="bg-white rounded-lg border p-6">
-                          <h3 className="text-lg font-semibold mb-3">Quick Reference</h3>
-                          <dl className="grid grid-cols-2 gap-4 text-sm">
+                          <h3 className="text-lg font-semibold mb-4">Quick Reference</h3>
+                          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
                             <div>
                               <dt className="text-gray-500">Block Name</dt>
-                              <dd className="font-mono">&lt;{selectedBlock} /&gt;</dd>
+                              <dd className="font-mono text-lg">&lt;{selectedBlock} /&gt;</dd>
                             </div>
                             <div>
-                              <dt className="text-gray-500">Category</dt>
-                              <dd>{getCategory(currentBlockMeta.source)}</dd>
+                              <dt className="text-gray-500">Source</dt>
+                              <dd className="font-mono text-xs text-gray-600 break-all">
+                                {currentBlockMeta.source || 'Unknown'}
+                              </dd>
                             </div>
-                            <div>
-                              <dt className="text-gray-500">Has Documentation</dt>
-                              <dd>{currentBlockMeta.readme ? 'Yes' : 'No'}</dd>
-                            </div>
-                            <div>
-                              <dt className="text-gray-500">Examples</dt>
-                              <dd>{currentBlockMeta.examples?.length || 0} file(s)</dd>
-                            </div>
+                            {currentBlockMeta.namespace && (
+                              <div>
+                                <dt className="text-gray-500">Namespace</dt>
+                                <dd className="font-mono text-sm">{currentBlockMeta.namespace}</dd>
+                              </div>
+                            )}
+                            {currentBlockMeta.fields?.length > 0 && (
+                              <div>
+                                <dt className="text-gray-500">Fields</dt>
+                                <dd className="font-mono text-sm">{currentBlockMeta.fields.join(', ')}</dd>
+                              </div>
+                            )}
                           </dl>
                         </section>
 
-                        {blockDetails?.readme?.content && (
+                        {/* Main Example (if available) */}
+                        {blockDetails?.examples?.[0] && (
                           <section className="bg-white rounded-lg border p-6">
-                            <h3 className="text-lg font-semibold mb-3">Summary</h3>
-                            <div className="prose prose-sm max-w-none">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {blockDetails.readme.content.split('\n').slice(0, 15).join('\n')}
-                              </ReactMarkdown>
-                            </div>
-                            {blockDetails.readme.content.split('\n').length > 15 && (
-                              <button
-                                onClick={() => setActiveTab('readme')}
-                                className="mt-4 text-blue-600 hover:text-blue-800 text-sm"
-                              >
-                                Read more →
-                              </button>
-                            )}
-                          </section>
-                        )}
+                            <h3 className="text-lg font-semibold mb-4">Example</h3>
 
-                        {currentBlockMeta.examples?.length > 0 && (
-                          <section className="bg-white rounded-lg border p-6">
-                            <h3 className="text-lg font-semibold mb-3">Quick Example</h3>
-                            <div className="bg-gray-50 rounded border p-4 overflow-x-auto">
-                              <pre className="text-sm">
-                                <code>{blockDetails?.examples?.[0]?.content?.slice(0, 500) || 'Loading...'}</code>
-                              </pre>
+                            {/* Live Preview */}
+                            <div className="mb-4 border rounded-lg overflow-hidden">
+                              <div className="px-3 py-2 bg-gray-100 border-b text-xs text-gray-500">
+                                Live Preview
+                              </div>
+                              <div className="p-4 bg-white">
+                                <RenderOLX inline={blockDetails.examples[0].content} />
+                              </div>
                             </div>
-                            {currentBlockMeta.examples.length > 1 && (
-                              <button
-                                onClick={() => setActiveTab('examples')}
-                                className="mt-4 text-blue-600 hover:text-blue-800 text-sm"
-                              >
-                                View all {currentBlockMeta.examples.length} examples →
-                              </button>
+
+                            {/* Source Code */}
+                            <div className="border rounded-lg overflow-hidden">
+                              <div className="px-3 py-2 bg-gray-100 border-b text-xs text-gray-500 flex justify-between items-center">
+                                <span>OLX Source</span>
+                                <span className="text-gray-400">{blockDetails.examples[0].filename}</span>
+                              </div>
+                              <div className="p-4 bg-gray-50 overflow-x-auto max-h-64">
+                                <pre className="text-sm">
+                                  <code>{blockDetails.examples[0].content}</code>
+                                </pre>
+                              </div>
+                            </div>
+
+                            {blockDetails.examples.length > 1 && (
+                              <p className="mt-4 text-sm text-gray-500">
+                                {blockDetails.examples.length - 1} more example{blockDetails.examples.length > 2 ? 's' : ''} available in the tabs above.
+                              </p>
                             )}
                           </section>
                         )}
@@ -383,96 +406,57 @@ export default function DocsPage() {
                     )}
 
                     {/* README Tab */}
-                    {activeTab === 'readme' && (
+                    {activeTab === 'readme' && blockDetails?.readme?.content && (
                       <div className="bg-white rounded-lg border p-6">
-                        {blockDetails?.readme?.content ? (
-                          <div className="prose max-w-none">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {blockDetails.readme.content}
-                            </ReactMarkdown>
-                          </div>
-                        ) : (
-                          <div className="text-center py-12 text-gray-500">
-                            <p className="mb-2">No documentation available for this block.</p>
-                            <p className="text-sm">
-                              Create <code className="bg-gray-100 px-1 rounded">{selectedBlock}.md</code> in the block's directory.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Examples Tab */}
-                    {activeTab === 'examples' && (
-                      <div className="space-y-6">
-                        {blockDetails?.examples?.length > 0 ? (
-                          blockDetails.examples.map((example, index) => (
-                            <div key={index} className="bg-white rounded-lg border">
-                              <div className="px-4 py-2 border-b bg-gray-50 flex items-center justify-between">
-                                <span className="font-medium text-sm text-gray-700">
-                                  {example.filename}
-                                </span>
-                                <a
-                                  href={`/view/${encodeURIComponent(example.path || example.filename)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 hover:text-blue-800"
-                                >
-                                  Open in Viewer →
-                                </a>
-                              </div>
-                              <div className="p-4 overflow-x-auto">
-                                <pre className="text-sm">
-                                  <code>{example.content}</code>
-                                </pre>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="bg-white rounded-lg border p-6 text-center text-gray-500">
-                            <p className="mb-2">No examples available for this block.</p>
-                            <p className="text-sm">
-                              Create <code className="bg-gray-100 px-1 rounded">{selectedBlock}.olx</code> in the block's directory.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Source Tab */}
-                    {activeTab === 'source' && (
-                      <div className="bg-white rounded-lg border p-6">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Source File</h3>
-                            <code className="text-sm bg-gray-100 px-2 py-1 rounded block">
-                              {currentBlockMeta.source || 'Unknown'}
-                            </code>
-                          </div>
-                          {currentBlockMeta.namespace && (
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-500 mb-1">Namespace</h3>
-                              <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                                {currentBlockMeta.namespace}
-                              </code>
-                            </div>
-                          )}
-                          {currentBlockMeta.exportName && (
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-500 mb-1">Export Name</h3>
-                              <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                                {currentBlockMeta.exportName}
-                              </code>
-                            </div>
-                          )}
-                          <div className="pt-4 border-t">
-                            <p className="text-sm text-gray-500">
-                              View the source code in your editor or IDE at the path shown above.
-                            </p>
-                          </div>
+                        <div className="prose max-w-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {blockDetails.readme.content}
+                          </ReactMarkdown>
                         </div>
                       </div>
                     )}
+
+                    {/* Individual Example Tabs */}
+                    {activeTab.startsWith('example-') && (() => {
+                      const exampleIndex = parseInt(activeTab.replace('example-', ''), 10);
+                      const example = blockDetails?.examples?.[exampleIndex];
+                      if (!example) return null;
+
+                      return (
+                        <div className="space-y-6">
+                          {/* Live Preview */}
+                          <section className="bg-white rounded-lg border overflow-hidden">
+                            <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+                              <span className="font-medium text-gray-700">Live Preview</span>
+                              <a
+                                href={`/view/${encodeURIComponent(example.path || example.filename)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800"
+                              >
+                                Open in Viewer →
+                              </a>
+                            </div>
+                            <div className="p-6">
+                              <RenderOLX inline={example.content} />
+                            </div>
+                          </section>
+
+                          {/* Source Code */}
+                          <section className="bg-white rounded-lg border overflow-hidden">
+                            <div className="px-4 py-3 bg-gray-50 border-b">
+                              <span className="font-medium text-gray-700">Source Code</span>
+                              <span className="ml-2 text-sm text-gray-400">{example.filename}</span>
+                            </div>
+                            <div className="p-4 overflow-x-auto bg-gray-50">
+                              <pre className="text-sm">
+                                <code>{example.content}</code>
+                              </pre>
+                            </div>
+                          </section>
+                        </div>
+                      );
+                    })()}
                   </>
                 )}
               </div>

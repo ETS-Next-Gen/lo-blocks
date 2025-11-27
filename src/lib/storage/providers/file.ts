@@ -23,7 +23,7 @@ import { fileTypes } from '../fileTypes';
  * Prevents path traversal attacks and symlink-based escapes.
  * Server-only - uses Node.js fs module.
  */
-async function resolveSafePath(baseDir: string, relPath: string) {
+export async function resolveSafePath(baseDir: string, relPath: string) {
   if (typeof relPath !== 'string' || relPath.includes('\0')) {
     throw new Error('Invalid path');
   }

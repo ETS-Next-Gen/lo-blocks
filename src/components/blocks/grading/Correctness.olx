@@ -1,0 +1,23 @@
+<!-- Correctness Block Examples -->
+<Vertical id="CorrectnessDemo" title="Correctness Block Demo" launchable="true">
+
+  <Markdown id="intro">
+## Correctness Indicator
+
+Correctness shows visual feedback (checkmark/X) for graded responses. CapaProblem includes one automatically in the header.
+  </Markdown>
+
+  <CapaProblem id="math_problem">
+    <NumericalGrader answer="56">
+      <p>What is 7 × 8?</p>
+      <NumberInput />
+    </NumericalGrader>
+  </CapaProblem>
+
+  <Markdown id="explanation">
+### How It Works
+
+CapaProblem automatically includes a Correctness indicator in its header. The indicator shows a checkmark when correct, X when incorrect, and nothing when unsubmitted.
+  </Markdown>
+
+</Vertical>

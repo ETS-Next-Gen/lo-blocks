@@ -90,6 +90,121 @@ type ParsedContent = {
   idMap: IdMap;
 };
 
+// ============================================================================
+// Helper functions - pure functions for building providers and extracting content
+// ============================================================================
+
+/**
+ * Build a stacked provider from all content sources.
+ * Returns null if no providers are specified.
+ */
+function buildProviderStack(
+  inline: string | undefined,
+  files: Record<string, string> | undefined,
+  provider: StorageProvider | undefined,
+  providers: StorageProvider[] | undefined,
+  resolveProvider: StorageProvider | undefined
+): StorageProvider | null {
+  const stack: StorageProvider[] = [];
+
+  // Priority order: inline > files > provider > providers > resolveProvider
+  if (inline) {
+    stack.push(new InMemoryStorageProvider({ '_inline.olx': inline }));
+  }
+  if (files) {
+    stack.push(new InMemoryStorageProvider(files));
+  }
+  if (provider) {
+    stack.push(provider);
+  }
+  if (providers) {
+    stack.push(...providers);
+  }
+  if (resolveProvider) {
+    stack.push(resolveProvider);
+  }
+
+  if (stack.length === 0) return null;
+  if (stack.length === 1) return stack[0];
+  return new StackedStorageProvider(stack);
+}
+
+/**
+ * Determine what OLX content string to parse and its provenance.
+ * Returns null if no parseable content is available (e.g., only baseIdMap).
+ */
+function getContentToParse(
+  id: string,
+  inline: string | undefined,
+  files: Record<string, string> | undefined,
+  provenance: string | undefined
+): { content: string; provenance: string } | null {
+  if (inline) {
+    return {
+      content: inline,
+      provenance: provenance || 'inline://'
+    };
+  }
+
+  if (files) {
+    const mainFile = findMainOlxFile(files, id);
+    if (mainFile) {
+      return {
+        content: files[mainFile],
+        provenance: provenance || `memory://${mainFile}`
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find the main OLX file in a files record.
+ * Prefers files matching the id, otherwise takes the first .olx/.xml file.
+ */
+function findMainOlxFile(
+  files: Record<string, string>,
+  id: string
+): string | undefined {
+  const olxFiles = Object.keys(files).filter(
+    f => f.endsWith('.olx') || f.endsWith('.xml')
+  );
+  return olxFiles.find(f => f.includes(id)) || olxFiles[0];
+}
+
+/**
+ * Merge parsed idMap with base idMap.
+ * Parsed content takes priority (overrides base).
+ */
+function mergeIdMaps(
+  parsed: ParsedContent | null,
+  baseIdMap: IdMap | undefined
+): IdMap | null {
+  if (!parsed && !baseIdMap) return null;
+  if (!parsed) return baseIdMap!;
+  if (!baseIdMap) return parsed.idMap;
+  return { ...baseIdMap, ...parsed.idMap };
+}
+
+/**
+ * Determine which node ID to use as the render root.
+ */
+function getRootId(
+  requestedId: string,
+  idMap: IdMap,
+  parsed: ParsedContent | null
+): string {
+  // If the requested ID exists, use it
+  if (idMap[requestedId]) return requestedId;
+  // Fall back to the parsed root, or the requested ID (which will error)
+  return parsed?.root || requestedId;
+}
+
+// ============================================================================
+// Component
+// ============================================================================
+
 export default function RenderOLX({
   id,
   inline,
@@ -105,107 +220,28 @@ export default function RenderOLX({
   const [parsed, setParsed] = useState<ParsedContent | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Build the effective provider stack and determine content to parse
-  const { effectiveProvider, contentToParse, contentProvenance, renderFromBaseOnly } = useMemo(() => {
-    // Build provider stack from all sources (highest to lowest priority)
-    const providerStack: StorageProvider[] = [];
+  // Build provider stack for content resolution
+  const effectiveProvider = useMemo(
+    () => buildProviderStack(inline, files, provider, providers, resolveProvider),
+    [inline, files, provider, providers, resolveProvider]
+  );
 
-    // 1. inline content (highest priority)
-    let inlineProvider: StorageProvider | null = null;
-    if (inline) {
-      inlineProvider = new InMemoryStorageProvider({ '_inline.olx': inline });
-      providerStack.push(inlineProvider);
-    }
-
-    // 2. files virtual filesystem
-    let filesProvider: StorageProvider | null = null;
-    if (files) {
-      filesProvider = new InMemoryStorageProvider(files);
-      providerStack.push(filesProvider);
-    }
-
-    // 3. single provider
-    if (provider) {
-      providerStack.push(provider);
-    }
-
-    // 4. providers array
-    if (providers) {
-      providerStack.push(...providers);
-    }
-
-    // 5. resolveProvider (for src="" resolution, added to stack for fallback reads)
-    if (resolveProvider) {
-      providerStack.push(resolveProvider);
-    }
-
-    // If no providers at all, check if we can render from baseIdMap alone
-    if (providerStack.length === 0) {
-      if (baseIdMap) {
-        return {
-          effectiveProvider: null,
-          contentToParse: null,
-          contentProvenance: null,
-          renderFromBaseOnly: true
-        };
-      }
-      // No content sources at all - this will show an error
-      return {
-        effectiveProvider: null,
-        contentToParse: null,
-        contentProvenance: null,
-        renderFromBaseOnly: false
-      };
-    }
-
-    // Create stacked provider (or use single provider if only one)
-    const effectiveProvider = providerStack.length === 1
-      ? providerStack[0]
-      : new StackedStorageProvider(providerStack);
-
-    // Determine what content to parse (from highest priority source)
-    let contentToParse: string | null = null;
-    let contentProvenance: string | null = null;
-
-    if (inline) {
-      contentToParse = inline;
-      contentProvenance = provenance || 'inline://';
-    } else if (files) {
-      // Find the main OLX file - prefer one matching the id or first .olx file
-      const olxFiles = Object.keys(files).filter(f => f.endsWith('.olx') || f.endsWith('.xml'));
-      const mainFile = olxFiles.find(f => f.includes(id)) || olxFiles[0];
-      if (mainFile) {
-        contentToParse = files[mainFile];
-        contentProvenance = provenance || `memory://${mainFile}`;
-      }
-    }
-    // If no inline/files, we rely on baseIdMap and provider is just for resolution
-
-    return {
-      effectiveProvider,
-      contentToParse,
-      contentProvenance,
-      renderFromBaseOnly: !contentToParse && !!baseIdMap
-    };
-  }, [inline, files, provider, providers, baseIdMap, resolveProvider, provenance, id]);
+  // Determine what content needs to be parsed
+  const contentToParse = useMemo(
+    () => getContentToParse(id, inline, files, provenance),
+    [id, inline, files, provenance]
+  );
 
   // Parse content when it changes
   useEffect(() => {
-    // If rendering from baseIdMap only, nothing to parse
-    if (renderFromBaseOnly) {
+    // Nothing to parse - will render from baseIdMap if available
+    if (!contentToParse) {
       setParsed(null);
       setError(null);
       return;
     }
 
-    // If no content to parse and no baseIdMap, show error
-    if (!contentToParse) {
-      if (!baseIdMap) {
-        setError('RenderOLX: No content source provided (need inline, files, provider, providers, or baseIdMap)');
-      }
-      return;
-    }
-
+    // Need to parse but no provider available
     if (!effectiveProvider) {
       setError('RenderOLX: No provider available for content resolution');
       return;
@@ -216,8 +252,8 @@ export default function RenderOLX({
     async function doParse() {
       try {
         const result = await parseOLX(
-          contentToParse!,
-          contentProvenance ? [contentProvenance] : [],
+          contentToParse!.content,
+          [contentToParse!.provenance],
           effectiveProvider!
         );
 
@@ -237,29 +273,27 @@ export default function RenderOLX({
 
     doParse();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [effectiveProvider, contentToParse, contentProvenance, renderFromBaseOnly, baseIdMap, onError]);
+    return () => { cancelled = true; };
+  }, [effectiveProvider, contentToParse, onError]);
 
-  // Merge parsed idMap with baseIdMap (parsed content overrides base)
-  const mergedIdMap = useMemo(() => {
-    if (renderFromBaseOnly && baseIdMap) {
-      return baseIdMap;
-    }
-    if (!parsed) return baseIdMap || null;
-    return baseIdMap ? { ...baseIdMap, ...parsed.idMap } : parsed.idMap;
-  }, [parsed, baseIdMap, renderFromBaseOnly]);
+  // Merge parsed content with base idMap
+  const mergedIdMap = useMemo(
+    () => mergeIdMaps(parsed, baseIdMap),
+    [parsed, baseIdMap]
+  );
 
-  // Render the content
+  // Render the content tree
   const rendered = useMemo(() => {
     if (!mergedIdMap) return null;
 
-    // Determine root ID to render
-    const rootId = mergedIdMap[id] ? id : (parsed?.root || id);
+    const rootId = getRootId(id, mergedIdMap, parsed);
 
     if (!mergedIdMap[rootId]) {
-      return <div className="text-red-600">RenderOLX: ID &quot;{id}&quot; not found in content</div>;
+      return (
+        <div className="text-red-600">
+          RenderOLX: ID &quot;{id}&quot; not found in content
+        </div>
+      );
     }
 
     try {
@@ -276,7 +310,7 @@ export default function RenderOLX({
     }
   }, [mergedIdMap, parsed, id, componentMap]);
 
-  // Handle error state
+  // Error state
   if (error) {
     return (
       <div className="text-red-600 p-2 border border-red-300 rounded bg-red-50">
@@ -286,7 +320,19 @@ export default function RenderOLX({
     );
   }
 
-  // Handle loading state
+  // Loading state (no content yet, but expecting some)
+  if (!mergedIdMap) {
+    if (!contentToParse && !baseIdMap) {
+      return (
+        <div className="text-red-600">
+          RenderOLX: No content source provided
+        </div>
+      );
+    }
+    return <div className="text-gray-500">Loading...</div>;
+  }
+
+  // No rendered output (shouldn't happen if mergedIdMap exists)
   if (!rendered) {
     return <div className="text-gray-500">Loading...</div>;
   }

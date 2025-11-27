@@ -6,7 +6,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { COMPONENT_MAP } from '@/components/componentMap';
-import { resolveSafePath } from '@/lib/storage';
+import { resolveSafePath } from '@/lib/storage/providers/file';
 
 export async function GET(request, { params }) {
   const { block: blockName } = await params;

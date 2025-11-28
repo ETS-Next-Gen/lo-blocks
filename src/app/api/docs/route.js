@@ -26,7 +26,9 @@ function generateDocumentation() {
       fields: Object.keys(block.fields || {}),
       hasAction: !!block.action,
       hasParser: !!block.parser,
-      internal: block.internal || false
+      internal: block.internal || false,
+      gitStatus: block.gitStatus || null,
+      readmeGitStatus: block.readmeGitStatus || null
     });
   }
 

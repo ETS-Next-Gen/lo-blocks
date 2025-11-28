@@ -123,6 +123,14 @@ export const BlockBlueprintSchema = z.object({
    */
   internal: z.boolean().optional(),
   /**
+   * Optional category override for documentation grouping.
+   * By default, blocks are grouped by their directory location (e.g., 'input', 'grading').
+   * Set this to override the default categorization without moving the file.
+   * Example: A grader block in the 'input' directory can set category: 'grading'
+   * to appear under the Grading section in documentation.
+   */
+  category: z.string().optional(),
+  /**
    * Controls whether this block type requires unique IDs in the content.
    *
    * - `true` (default): All instances must have unique IDs, enforces strict uniqueness
@@ -160,6 +168,11 @@ export interface Block {
    * Internal blocks are hidden from the main documentation navigation.
    */
   internal?: boolean;
+  /**
+   * Optional category override for documentation grouping.
+   * Overrides directory-based categorization without moving the file.
+   */
+  category?: string;
   /**
    * Controls whether this block type requires unique IDs in the content.
    *

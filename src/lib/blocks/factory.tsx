@@ -63,6 +63,7 @@ function createBlock(config: BlockBlueprint): Block {
     description: parsed.description,
     namespace: parsed.namespace,
     internal: config.internal,
+    category: config.category,
     requiresUniqueId: config.requiresUniqueId,
 
     blueprint: config

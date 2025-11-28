@@ -82,6 +82,8 @@ function BlockSidebar({
   onSearchChange,
   collapsedCategories,
   onToggleCategory,
+  showInternal,
+  onToggleInternal,
 }) {
   const [hoveredBlock, setHoveredBlock] = useState(null);
 
@@ -119,42 +121,92 @@ function BlockSidebar({
 
             {!collapsedCategories[category] && (
               <div className="ml-2 mt-1">
-                {blocks.map(block => (
-                  <div
-                    key={block.name}
-                    className="relative"
-                    onMouseEnter={() => setHoveredBlock(block)}
-                    onMouseLeave={() => setHoveredBlock(null)}
-                  >
-                    <button
-                      onClick={() => onSelectBlock(block.name)}
-                      className={`w-full text-left px-2 py-1 text-sm rounded flex items-center gap-1.5 ${
-                        selectedBlock === block.name
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <span className="truncate">{block.name}</span>
-                      {block.readme && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" title="Has documentation" />
-                      )}
-                      {block.examples?.length > 0 && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0" title="Has examples" />
-                      )}
-                    </button>
+                {blocks.map(block => {
+                  // Determine if block or its docs are uncommitted
+                  const blockUncommitted = block.gitStatus && block.gitStatus !== 'committed';
+                  const docsUncommitted = block.readmeGitStatus && block.readmeGitStatus !== 'committed';
+                  const examplesUncommitted = block.examples?.some(e => e.gitStatus && e.gitStatus !== 'committed');
+                  const anyUncommitted = blockUncommitted || docsUncommitted || examplesUncommitted;
 
-                    {hoveredBlock === block && block.description && (
-                      <div className="absolute left-full ml-2 top-0 z-50 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg">
-                        {block.description}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  // Git status indicator styling
+                  const getGitStatusStyle = (status) => {
+                    if (status === 'untracked') return 'border-2 border-dashed border-amber-400';
+                    if (status === 'modified') return 'border-2 border-amber-400';
+                    return '';
+                  };
+
+                  return (
+                    <div
+                      key={block.name}
+                      className="relative"
+                      onMouseEnter={() => setHoveredBlock(block)}
+                      onMouseLeave={() => setHoveredBlock(null)}
+                    >
+                      <button
+                        onClick={() => onSelectBlock(block.name)}
+                        className={`w-full text-left px-2 py-1 text-sm rounded flex items-center gap-1.5 ${
+                          selectedBlock === block.name
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        } ${anyUncommitted ? 'bg-amber-50' : ''}`}
+                      >
+                        <span className={`truncate ${blockUncommitted ? 'italic' : ''}`}>{block.name}</span>
+                        {block.readme && (
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                              docsUncommitted ? 'bg-amber-400' : 'bg-blue-500'
+                            }`}
+                            title={docsUncommitted
+                              ? `README (${block.readmeGitStatus})`
+                              : 'README (committed)'
+                            }
+                          />
+                        )}
+                        {block.examples?.length > 0 && (
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                              examplesUncommitted ? 'bg-amber-400' : 'bg-purple-500'
+                            }`}
+                            title={examplesUncommitted
+                              ? `Examples (some uncommitted)`
+                              : 'Examples (committed)'
+                            }
+                          />
+                        )}
+                      </button>
+
+                      {hoveredBlock === block && block.description && (
+                        <div className="absolute left-full ml-2 top-0 z-50 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg">
+                          {block.description}
+                          {anyUncommitted && (
+                            <div className="mt-1 pt-1 border-t border-gray-700 text-amber-300">
+                              {blockUncommitted && <div>Block: {block.gitStatus}</div>}
+                              {docsUncommitted && <div>README: {block.readmeGitStatus}</div>}
+                              {examplesUncommitted && <div>Examples: uncommitted</div>}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         ))}
       </nav>
+
+      <div className="p-2 border-t">
+        <label className="flex items-center gap-2 px-2 py-1 text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+          <input
+            type="checkbox"
+            checked={showInternal}
+            onChange={(e) => onToggleInternal(e.target.checked)}
+            className="w-3 h-3"
+          />
+          Show internal blocks
+        </label>
+      </div>
     </aside>
   );
 }
@@ -380,6 +432,7 @@ export default function DocsPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [showInternal, setShowInternal] = useState(false);
 
   // Fetch block list on mount
   useEffect(() => {
@@ -418,8 +471,12 @@ export default function DocsPage() {
   }, [selectedBlock]);
 
   const categorizedBlocks = useMemo(() => {
-    return docs?.blocks ? groupBlocksByCategory(docs.blocks) : {};
-  }, [docs]);
+    if (!docs?.blocks) return {};
+    const visibleBlocks = showInternal
+      ? docs.blocks
+      : docs.blocks.filter(b => !b.internal);
+    return groupBlocksByCategory(visibleBlocks);
+  }, [docs, showInternal]);
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categorizedBlocks;
@@ -484,6 +541,8 @@ export default function DocsPage() {
           onSearchChange={setSearchQuery}
           collapsedCategories={collapsedCategories}
           onToggleCategory={handleToggleCategory}
+          showInternal={showInternal}
+          onToggleInternal={setShowInternal}
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">

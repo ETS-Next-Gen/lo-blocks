@@ -33,7 +33,8 @@ export class InMemoryStorageProvider {
       return this.files[withBase];
     }
 
-    throw new Error(`File not found: ${path}`);
+    const availableFiles = Object.keys(this.files).join(', ') || '(none)';
+    throw new Error(`File not found: ${path} (available: ${availableFiles})`);
   }
 
   async exists(path) {

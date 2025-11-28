@@ -25,7 +25,10 @@ function generateDocumentation() {
       examples: block.examples || [],
       fields: Object.keys(block.fields || {}),
       hasAction: !!block.action,
-      hasParser: !!block.parser
+      hasParser: !!block.parser,
+      internal: block.internal || false,
+      gitStatus: block.gitStatus || null,
+      readmeGitStatus: block.readmeGitStatus || null
     });
   }
 

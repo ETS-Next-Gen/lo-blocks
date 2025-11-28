@@ -8,6 +8,7 @@ const Noop = core({
   name: 'Noop',
   description: 'Invisible container that renders child components without additional styling',
   component: _Noop,
+  internal: true
 });
 
 export default Noop;

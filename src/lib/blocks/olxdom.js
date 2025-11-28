@@ -143,6 +143,36 @@ function root(nodeInfo) {
   return nodeInfo;
 }
 
+/**
+ * Safely extract node ID from a nodeInfo, with helpful error for debugging.
+ * @param {Object} nodeInfo - The nodeInfo to get ID from
+ * @param {string} context - Description of what operation is being performed
+ * @returns {string} The node ID
+ * @throws {Error} If nodeInfo.node or nodeInfo.node.id is missing
+ */
+function getNodeId(nodeInfo, context = 'getNodeId') {
+  if (!nodeInfo.node) {
+    // Root node has sentinel instead of node
+    if (nodeInfo.sentinel === 'root') {
+      throw new Error(
+        `${context}: Attempted to get ID from root sentinel node. ` +
+        `This usually means a selector matched the root, which shouldn't have blueprint/node properties. ` +
+        `Check that your selector uses n.blueprint (not n.node.blueprint) and handles undefined cases.`
+      );
+    }
+    throw new Error(
+      `${context}: nodeInfo.node is undefined. nodeInfo keys: [${Object.keys(nodeInfo).join(', ')}]`
+    );
+  }
+  if (nodeInfo.node.id === undefined) {
+    throw new Error(
+      `${context}: nodeInfo.node.id is undefined. node keys: [${Object.keys(nodeInfo.node).join(', ')}], ` +
+      `tag: ${nodeInfo.node.tag || 'N/A'}`
+    );
+  }
+  return nodeInfo.node.id;
+}
+
 export function getAllNodes(nodeInfo, { selector = () => true } = {}) {
   return getKidsDFS(root(nodeInfo), { selector, includeRoot: true });
 }
@@ -180,11 +210,11 @@ export function inferRelatedNodes(props, {
   const explicitTargets = targetIds ? targetIds : [];
 
   const parents = inferModes.includes('parents')
-        ? getParents(nodeInfo, { selector, includeRoot: false }).map(n => n.node.id)
+        ? getParents(nodeInfo, { selector, includeRoot: false }).map(n => getNodeId(n, 'inferRelatedNodes (parents)'))
         : [];
 
   const kids = inferModes.includes('kids')
-        ? getKidsBFS(nodeInfo, { selector, includeRoot: false }).map(n => n.node.id)
+        ? getKidsBFS(nodeInfo, { selector, includeRoot: false }).map(n => getNodeId(n, 'inferRelatedNodes (kids)'))
         : [];
 
   // Combine all IDs and deduplicate using Set

@@ -1,12 +1,12 @@
 // src/components/blocks/ChoiceInput/Key.js
-import { dev } from '@/lib/blocks';
+import { core } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
 import _ChoiceItem from './_ChoiceItem.jsx';
 
-const Key = dev({
+const Key = core({
   ...parsers.text(),
   name: 'Key',
-  description: 'Correct answer choice option for multiple choice questions',
+  description: 'Correct answer option inside ChoiceInput',
   component: _ChoiceItem,
 });
 

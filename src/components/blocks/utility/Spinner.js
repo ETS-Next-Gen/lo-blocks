@@ -23,7 +23,8 @@ const Spinner = dev({
   ...parsers.ignore(),
   name: 'Spinner',
   description: 'Loading / processing indicator',
-  component: _Spinner
+  component: _Spinner,
+  internal: true
 });
 
 export default Spinner;

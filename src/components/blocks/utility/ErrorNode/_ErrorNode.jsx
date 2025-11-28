@@ -7,8 +7,14 @@ import { DisplayError } from '@/lib/util/debug';
 export function _ErrorNode(props) {
   const { id, kids } = props;
 
-  // Extract error information from the parsed content
-  const errorInfo = kids?.parsed?.error ? kids.parsed : null;
+  // TODO: Standardize error format across all parsers and error sources.
+  // Currently we handle multiple formats which is fragile:
+  // 1. Direct error object from PEG parser: kids = { type: 'peg_error', message, location, technical }
+  // 2. Wrapped format: kids = { parsed: { error: true, ... } }
+  // Should unify on a single OLXLoadingError structure passed consistently.
+  const errorInfo = kids?.type === 'peg_error' ? kids
+    : kids?.parsed?.error ? kids.parsed
+    : null;
   const parseError = props.parseError;
 
   if (!errorInfo && !parseError) {
@@ -24,9 +30,11 @@ export function _ErrorNode(props) {
 
   if (errorInfo) {
     // PEG parsing error with detailed information
-    // TODO: Make generic for any error
-    // We probably want some error type, and then to dispatch on it, or similar?
-    const { message, location, expected, found, name } = errorInfo;
+    const { message, location, technical } = errorInfo;
+    // Support both direct fields and nested technical object
+    const expected = errorInfo.expected || technical?.expected;
+    const found = errorInfo.found || technical?.found;
+    const name = errorInfo.name || technical?.name || errorInfo.type;
 
     let technicalDetails = `Error Type: ${name}\n`;
 
@@ -39,7 +47,14 @@ export function _ErrorNode(props) {
     }
 
     if (expected && expected.length > 0) {
-      technicalDetails += `Expected: ${expected.map(e => `"${e.description || e}"`).join(', ')}\n`;
+      const formatExpected = (e) => {
+        if (typeof e === 'string') return e;
+        if (e?.description) return e.description;
+        if (e?.text) return e.text;
+        if (e?.type) return e.type;
+        return JSON.stringify(e);
+      };
+      technicalDetails += `Expected: ${expected.map(e => `"${formatExpected(e)}"`).join(', ')}\n`;
     }
 
     return (

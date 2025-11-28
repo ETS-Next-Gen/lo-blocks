@@ -116,6 +116,13 @@ export const BlockBlueprintSchema = z.object({
   extraDebug: z.custom<React.ComponentType<any>>().optional(),
   description: z.string().optional(),
   /**
+   * Marks this block as internal/system use only.
+   * Internal blocks are hidden from the main documentation navigation
+   * and grouped separately, as they're not intended for direct use by
+   * course authors.
+   */
+  internal: z.boolean().optional(),
+  /**
    * Controls whether this block type requires unique IDs in the content.
    *
    * - `true` (default): All instances must have unique IDs, enforces strict uniqueness
@@ -148,6 +155,11 @@ export interface Block {
   OLXName: OLXTag;
   description?: string;
   namespace: string;
+  /**
+   * Marks this block as internal/system use only.
+   * Internal blocks are hidden from the main documentation navigation.
+   */
+  internal?: boolean;
   /**
    * Controls whether this block type requires unique IDs in the content.
    *

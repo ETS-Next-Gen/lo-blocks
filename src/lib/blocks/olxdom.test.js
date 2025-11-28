@@ -4,14 +4,20 @@ import { getKidsBFS, getKidsDFS, getParents, inferRelatedNodes, getAllNodes, __t
 const { normalizeTargetIds, normalizeInfer} = __testables;
 
 // Minimal mock node tree
+// Note: In production, `blueprint` is on nodeInfo, not on nodeInfo.node.
+// The `node` property contains the OLX node (id, tag, attributes, kids).
+// See render.jsx:107 where nodeInfo is created.
 const tree = {
-  node: { id: 'A', blueprint: {isAction: true} },
+  node: { id: 'A' },
+  blueprint: { isAction: true },
   renderedKids: {
     B: {
       node: { id: 'B' },
+      blueprint: null,
       renderedKids: {
         D: {
-          node: { id: 'D', blueprint: {isAction: true} },
+          node: { id: 'D' },
+          blueprint: { isAction: true },
           renderedKids: {},
           // parent assigned below
         },
@@ -19,7 +25,8 @@ const tree = {
       // parent assigned below
     },
     C: {
-      node: { id: 'C', blueprint: {isAction: true} },
+      node: { id: 'C' },
+      blueprint: { isAction: true },
       renderedKids: {},
       // parent assigned below
     },
@@ -142,10 +149,10 @@ describe('inferRelatedNodes', () => {
   });
 
   it("filters by selector", () => {
-    // Only nodes with isAction: true
+    // Only nodes with isAction: true (blueprint is on nodeInfo, not nodeInfo.node)
     const result = inferRelatedNodes(
       { nodeInfo: tree },
-      { selector: n => n.node.blueprint && n.node.blueprint.isAction, infer: true }
+      { selector: n => n.blueprint?.isAction, infer: true }
     );
     expect(result.sort()).toEqual(['C', 'D']);
   });

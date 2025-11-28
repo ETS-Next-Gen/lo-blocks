@@ -18,25 +18,255 @@ import type {
 } from '../types';
 import { fileTypes } from '../fileTypes';
 
-/**
- * Resolve a relative path within a base directory, with security checks.
- * Prevents path traversal attacks and symlink-based escapes.
- * Server-only - uses Node.js fs module.
+/*
+ * =============================================================================
+ * Path Security System
+ * =============================================================================
+ *
+ * CURRENT STATE (Hardcoded):
+ * --------------------------
+ * This module provides secure path resolution with symlink handling. Currently,
+ * allowed directories are hardcoded for local development. This is intentional -
+ * we're being conservative until we have a proper config system.
+ *
+ * FUTURE DIRECTION (Provider-based):
+ * ----------------------------------
+ * The allowed directories should eventually be configured per storage provider,
+ * not globally. The system will support a hierarchy of providers:
+ *
+ *   Priority | Provider                | Read | Write | Example
+ *   ---------|-------------------------|------|-------|------------------------
+ *   4 (high) | In-memory / dev overlay | ✓    | ✓     | Live editing state
+ *   3        | User content            | ✓    | ✓     | ~/lo-blocks-content/
+ *   2        | Institution content     | ✓    | role  | University DB
+ *   1 (low)  | System content          | ✓    | ✗     | project content/, blocks/
+ *
+ * Content IDs resolve top-down (check provider 4, then 3, then 2, then 1).
+ * Write permissions depend on the provider and user role.
+ *
+ * TEMPORARY WORKAROUND:
+ * ---------------------
+ * The OLX_CONTENT_DIR environment variable can override the content directory.
+ * This is used by tests and as a stopgap until the config system exists.
+ *
+ * When the config system is implemented:
+ * - Move getAllowedReadDirs / getAllowedWriteDirs to provider configuration
+ * - Each provider specifies its own allowed paths
+ * - User-specific providers (like ~/lo-blocks-content/) are configured per-user
+ * - Role-based write permissions for shared providers (institution content)
+ * - Remove OLX_CONTENT_DIR workaround
+ *
+ * SECURITY MODEL:
+ * ---------------
+ * 1. Path traversal prevention: Reject paths with '..' that escape base directory
+ * 2. Null byte rejection: Prevent path truncation attacks
+ * 3. Symlink resolution: Use realpath() to get canonical paths
+ * 4. Allowlist validation: Canonical path must be within allowed directories
+ * 5. Read vs Write separation: Writes are more restricted than reads
+ * 6. Symlinks rejected for writes: Prevent unexpected write targets
+ *
+ * =============================================================================
  */
-export async function resolveSafePath(baseDir: string, relPath: string) {
+
+// TODO: Move to provider configuration when config system is implemented
+const PROJECT_ROOT = process.cwd();
+
+/**
+ * Get allowed directories for read operations.
+ * Includes OLX_CONTENT_DIR if set (used by tests and custom content locations).
+ */
+function getAllowedReadDirs(): string[] {
+  const dirs = [
+    path.join(PROJECT_ROOT, 'src/components/blocks'),
+    path.join(PROJECT_ROOT, 'content'),
+  ];
+  // Support custom content directory via environment variable
+  // This is used by tests and will eventually be replaced by provider config
+  if (process.env.OLX_CONTENT_DIR) {
+    dirs.push(path.resolve(process.env.OLX_CONTENT_DIR));
+  }
+  return dirs;
+}
+
+/**
+ * Get allowed directories for write operations.
+ * Includes OLX_CONTENT_DIR if set.
+ */
+function getAllowedWriteDirs(): string[] {
+  const dirs = [
+    path.join(PROJECT_ROOT, 'content'),
+  ];
+  if (process.env.OLX_CONTENT_DIR) {
+    dirs.push(path.resolve(process.env.OLX_CONTENT_DIR));
+  }
+  return dirs;
+}
+
+/**
+ * Check if a canonical path is within any of the allowed directories.
+ */
+function isPathAllowed(canonicalPath: string, allowedDirs: string[]): boolean {
+  return allowedDirs.some(dir => {
+    const relative = path.relative(dir, canonicalPath);
+    return !relative.startsWith('..') && !path.isAbsolute(relative);
+  });
+}
+
+/**
+ * Resolve a path for reading, with security checks.
+ * Allows symlinks if the target is within allowed read directories.
+ *
+ * Allowed read directories (hardcoded for now):
+ * - src/components/blocks/ (block documentation, examples)
+ * - content/ (course content)
+ *
+ * @param baseDir - Base directory for resolving relative paths
+ * @param relPath - Relative path to resolve
+ * @returns Resolved path (follows symlinks internally but returns logical path)
+ * @throws Error if path escapes allowed directories or contains null bytes
+ */
+export async function resolveSafeReadPath(baseDir: string, relPath: string): Promise<string> {
+  if (typeof relPath !== 'string' || relPath.includes('\0')) {
+    throw new Error('Invalid path: null bytes not allowed');
+  }
+
+  const fs = await import('fs/promises');
+
+  // Resolve to full path
+  const full = path.resolve(baseDir, relPath);
+
+  // Check logical path doesn't escape baseDir via '..'
+  const relative = path.relative(baseDir, full);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Invalid path: escapes base directory');
+  }
+
+  // Get canonical path (resolves all symlinks)
+  let canonicalPath: string;
+  try {
+    canonicalPath = await fs.realpath(full);
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      // File doesn't exist - return logical path, caller will handle ENOENT
+      return full;
+    }
+    throw err;
+  }
+
+  // Verify canonical path is within allowed read directories
+  if (!isPathAllowed(canonicalPath, getAllowedReadDirs())) {
+    throw new Error('Invalid path: resolves outside allowed directories');
+  }
+
+  return full;
+}
+
+/**
+ * Resolve a path for writing, with security checks.
+ * Rejects all symlinks to prevent unexpected write targets.
+ *
+ * Allowed write directories (hardcoded for now):
+ * - content/ (course content only)
+ *
+ * @param baseDir - Base directory for resolving relative paths
+ * @param relPath - Relative path to resolve
+ * @returns Resolved path
+ * @throws Error if path contains symlinks, escapes allowed directories, or contains null bytes
+ */
+export async function resolveSafeWritePath(baseDir: string, relPath: string): Promise<string> {
+  if (typeof relPath !== 'string' || relPath.includes('\0')) {
+    throw new Error('Invalid path: null bytes not allowed');
+  }
+
+  const fs = await import('fs/promises');
+
+  // Resolve to full path
+  const full = path.resolve(baseDir, relPath);
+
+  // Check logical path doesn't escape baseDir via '..'
+  const relative = path.relative(baseDir, full);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Invalid path: escapes base directory');
+  }
+
+  // Check for symlinks - reject any symlinks for write operations
+  // We check the path by comparing logical vs canonical
+  let canonicalPath: string;
+  try {
+    canonicalPath = await fs.realpath(full);
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      // File doesn't exist yet (creating new file)
+      // Check parent directory exists and is within allowed dirs
+      const parentDir = path.dirname(full);
+      try {
+        const canonicalParent = await fs.realpath(parentDir);
+        if (!isPathAllowed(canonicalParent, getAllowedWriteDirs())) {
+          throw new Error('Invalid path: parent directory outside allowed write directories');
+        }
+        // Check parent path has no symlinks
+        if (canonicalParent !== parentDir) {
+          throw new Error('Invalid path: symlinks not allowed for write operations');
+        }
+      } catch (parentErr: any) {
+        if (parentErr.code === 'ENOENT') {
+          throw new Error('Invalid path: parent directory does not exist');
+        }
+        throw parentErr;
+      }
+      return full;
+    }
+    throw err;
+  }
+
+  // Reject if path contains symlinks
+  if (canonicalPath !== full) {
+    throw new Error('Invalid path: symlinks not allowed for write operations');
+  }
+
+  // Verify path is within allowed write directories
+  if (!isPathAllowed(full, getAllowedWriteDirs())) {
+    throw new Error('Invalid path: outside allowed write directories');
+  }
+
+  return full;
+}
+
+/**
+ * @deprecated Use resolveSafeReadPath or resolveSafeWritePath instead.
+ *
+ * Legacy function maintained for backwards compatibility during migration.
+ * Will be removed once all callers are updated.
+ */
+export async function resolveSafePath(
+  baseDir: string,
+  relPath: string,
+  { allowSymlinks = false }: { allowSymlinks?: boolean | 'file' } = {}
+): Promise<string> {
+  // For backwards compatibility, delegate to read path if symlinks allowed,
+  // otherwise use stricter write path logic
+  if (allowSymlinks) {
+    return resolveSafeReadPath(baseDir, relPath);
+  }
+
+  // Original strict behavior - no symlinks, must stay within baseDir
   if (typeof relPath !== 'string' || relPath.includes('\0')) {
     throw new Error('Invalid path');
   }
+
+  const fs = await import('fs/promises');
   const full = path.resolve(baseDir, relPath);
   const relative = path.relative(baseDir, full);
+
   if (relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new Error('Invalid path');
   }
-  const fs = await import('fs/promises');
+
   const stats = await fs.lstat(full).catch(() => null);
   if (stats && stats.isSymbolicLink()) {
     throw new Error('Symlinks not allowed');
   }
+
   return full;
 }
 
@@ -156,13 +386,20 @@ export class FileStorageProvider implements StorageProvider {
 
   async read(filePath: string): Promise<string> {
     const fs = await import('fs/promises');
-    const full = await resolveSafePath(this.baseDir, filePath);
-    return fs.readFile(full, 'utf-8');
+    const full = await resolveSafeReadPath(this.baseDir, filePath);
+    try {
+      return await fs.readFile(full, 'utf-8');
+    } catch (err: any) {
+      if (err.code === 'ENOENT') {
+        throw new Error(`File not found: ${filePath} (resolved to ${full})`);
+      }
+      throw err;
+    }
   }
 
   async write(filePath: string, content: string): Promise<void> {
     const fs = await import('fs/promises');
-    const full = await resolveSafePath(this.baseDir, filePath);
+    const full = await resolveSafeWritePath(this.baseDir, filePath);
     await fs.writeFile(full, content, 'utf-8');
   }
 
@@ -200,7 +437,7 @@ export class FileStorageProvider implements StorageProvider {
         return false;
       }
 
-      const fullPath = await resolveSafePath(this.baseDir, imagePath);
+      const fullPath = await resolveSafeReadPath(this.baseDir, imagePath);
       const fs = await import('fs/promises');
       const stat = await fs.stat(fullPath);
       return stat.isFile();

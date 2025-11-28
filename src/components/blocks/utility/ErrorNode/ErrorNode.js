@@ -8,7 +8,8 @@ const ErrorNode = core({
   name: 'ErrorNode',
   component: _ErrorNode,
   namespace: 'org.mitros.core',
-  description: 'Displays content loading and parsing errors in a user-friendly format'
+  description: 'Displays content loading and parsing errors in a user-friendly format',
+  internal: true
 });
 
 export default ErrorNode;

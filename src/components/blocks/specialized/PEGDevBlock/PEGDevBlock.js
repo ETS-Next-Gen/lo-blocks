@@ -9,7 +9,8 @@ const PEGDevBlock = dev({
   name: 'PEGDevBlock',
   component: _PEGDevBlock,
   namespace: 'org.mitros.dev',
-  description: 'Example block that parses an SBA dialogue format using PEG.'
+  description: 'Development workbench for creating and testing PEG grammars',
+  internal: true
 });
 
 export default PEGDevBlock;

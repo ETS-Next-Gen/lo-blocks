@@ -6,12 +6,24 @@ import createStubBlock from '@/components/blocks/utility/StubBlock';
 
 export const COMPONENT_MAP = { ...BlockRegistry };
 
-// We add dummy development components here.
-[
-  'Sidebar',
-  'MainPane',
-].forEach(name => {
-  COMPONENT_MAP[name] = createStubBlock(name, 'org.mitros.dev');
+// Structural marker blocks - parsed by parent blocks, not rendered directly
+const STUB_BLOCKS = {
+  MainPane: {
+    description: 'Main content area marker for SideBarPanel layout',
+    internal: true,
+    readme: 'src/components/blocks/utility/StubBlocks/MainPane.md'
+  },
+  Sidebar: {
+    description: 'Sidebar content marker for SideBarPanel layout',
+    internal: true,
+    readme: 'src/components/blocks/utility/StubBlocks/Sidebar.md'
+  }
+};
+
+Object.entries(STUB_BLOCKS).forEach(([name, options]) => {
+  const block = createStubBlock(name, options);
+  block.readme = options.readme;
+  COMPONENT_MAP[name] = block;
 });
 
 // We will validate it here, looking for common error(s).

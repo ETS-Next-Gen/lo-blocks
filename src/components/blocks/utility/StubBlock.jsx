@@ -4,9 +4,20 @@ import * as parsers from '@/lib/content/parsers';
 import { dev } from '@/lib/blocks';
 const warnedBlocks = new Set();
 
-export default function createStubBlock(name) {
+/**
+ * Creates a stub block for tags that are parsed but not rendered as full blocks.
+ * Used for structural markers like MainPane/Sidebar that are consumed by their parent.
+ *
+ * @param {string} name - Block name
+ * @param {object} options - Optional configuration
+ * @param {string} options.description - Block description
+ * @param {boolean} options.internal - Whether to hide from docs
+ */
+export default function createStubBlock(name, options = {}) {
   return dev({
     name,
+    description: options.description,
+    internal: options.internal,
     component: ({ id, ...props }) => {
       if (!warnedBlocks.has(name)) {
         console.warn(`[StubBlock] "${name}" is not yet implemented.`);

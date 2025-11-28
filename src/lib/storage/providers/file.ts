@@ -157,7 +157,14 @@ export class FileStorageProvider implements StorageProvider {
   async read(filePath: string): Promise<string> {
     const fs = await import('fs/promises');
     const full = await resolveSafePath(this.baseDir, filePath);
-    return fs.readFile(full, 'utf-8');
+    try {
+      return await fs.readFile(full, 'utf-8');
+    } catch (err: any) {
+      if (err.code === 'ENOENT') {
+        throw new Error(`File not found: ${filePath} (resolved to ${full})`);
+      }
+      throw err;
+    }
   }
 
   async write(filePath: string, content: string): Promise<void> {

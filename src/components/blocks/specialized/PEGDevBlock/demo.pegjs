@@ -9,6 +9,10 @@
   }
 }
 
+// Top-level rule - allow leading/trailing whitespace
+Start
+  = _ expr:Expression _ { return expr; }
+
 Expression
   = head:Term tail:(_ ("+" / "-") _ Term)* {
       return tail.reduce((acc, t) => makeBinary(t[1], acc, t[3]), head);

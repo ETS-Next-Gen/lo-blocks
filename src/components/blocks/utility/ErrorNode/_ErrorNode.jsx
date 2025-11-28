@@ -7,9 +7,11 @@ import { DisplayError } from '@/lib/util/debug';
 export function _ErrorNode(props) {
   const { id, kids } = props;
 
-  // Extract error information - handle multiple formats:
+  // TODO: Standardize error format across all parsers and error sources.
+  // Currently we handle multiple formats which is fragile:
   // 1. Direct error object from PEG parser: kids = { type: 'peg_error', message, location, technical }
-  // 2. Legacy format: kids = { parsed: { error: true, ... } }
+  // 2. Wrapped format: kids = { parsed: { error: true, ... } }
+  // Should unify on a single OLXLoadingError structure passed consistently.
   const errorInfo = kids?.type === 'peg_error' ? kids
     : kids?.parsed?.error ? kids.parsed
     : null;

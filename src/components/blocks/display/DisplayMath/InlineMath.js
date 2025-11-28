@@ -2,9 +2,9 @@
 import { _InlineMath } from './_InlineMath';
 
 import * as parsers from '@/lib/content/parsers';
-import { dev } from '@/lib/blocks';
+import { core } from '@/lib/blocks';
 
-const InlineMath = dev({
+const InlineMath = core({
   ...parsers.text(),
   name: 'InlineMath',
   component: _InlineMath,

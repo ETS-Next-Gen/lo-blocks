@@ -1,10 +1,10 @@
 // src/components/blocks/DisplayMath/BlockMath.js
-import { dev } from '@/lib/blocks';
+import { core } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
 
 import { _BlockMath } from './_BlockMath.jsx';
 
-const BlockMath = dev({
+const BlockMath = core({
   ...parsers.text(),
   name: 'BlockMath',
   component: _BlockMath,

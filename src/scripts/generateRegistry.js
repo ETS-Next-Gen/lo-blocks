@@ -183,7 +183,8 @@ function findBlockAssets(blockFilePath, gitStatusMap) {
   if (!fs.existsSync(dir)) return assets;
 
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.isFile()) continue;
+    // Include regular files and symlinks (symlinks to files)
+    if (!entry.isFile() && !entry.isSymbolicLink()) continue;
 
     const entryPath = path.relative(process.cwd(), path.join(dir, entry.name)).replace(/\\/g, '/');
 

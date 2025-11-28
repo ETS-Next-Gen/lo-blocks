@@ -6,7 +6,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { COMPONENT_MAP } from '@/components/componentMap';
-import { resolveSafePath } from '@/lib/storage/providers/file';
+import { resolveSafeReadPath } from '@/lib/storage/providers/file';
 
 export async function GET(request, { params }) {
   const { block: blockName } = await params;
@@ -42,7 +42,7 @@ export async function GET(request, { params }) {
     // Read readme content if path exists
     if (block.readme) {
       try {
-        const readmePath = await resolveSafePath(process.cwd(), block.readme);
+        const readmePath = await resolveSafeReadPath(process.cwd(), block.readme);
         blockDocs.readme = {
           path: block.readme,
           content: await fs.readFile(readmePath, 'utf8')
@@ -59,7 +59,7 @@ export async function GET(request, { params }) {
         const examplePath = typeof example === 'string' ? example : example.path;
         const gitStatus = typeof example === 'object' ? example.gitStatus : null;
         try {
-          const fullPath = await resolveSafePath(process.cwd(), examplePath);
+          const fullPath = await resolveSafeReadPath(process.cwd(), examplePath);
           blockDocs.examples.push({
             path: examplePath,
             filename: path.basename(examplePath),

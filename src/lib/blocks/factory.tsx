@@ -75,4 +75,4 @@ function createBlock(config: BlockBlueprint): Block {
 
 export const blocks = (namespace: string) =>
   (config: Omit<BlockBlueprint, 'namespace'>, locals?: any) =>
-    createBlock({ ...config, namespace, locals });
+    createBlock({ ...config, namespace, locals: locals ?? config.locals });

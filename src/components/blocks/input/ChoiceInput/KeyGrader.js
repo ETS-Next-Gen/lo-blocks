@@ -9,9 +9,10 @@ import { CORRECTNESS } from '@/lib/blocks/correctness.js';
 
 export const fields = state.fields(['correct', 'message']);
 
-function gradeKeySelected(props, { input }) {
-  const selected = input?.value ?? '';
-  const choice = input?.choices?.find(c => c.id === selected);
+function gradeKeySelected(props, { input, inputApi }) {
+  const selected = input ?? '';
+  const choices = inputApi.getChoices();
+  const choice = choices.find(c => c.value === selected);
   // TODO: Handle the situation where nothing is selected (and possible invalid inputs; e.g. if there's a bug)
   const correct = choice?.tag === 'Key'
     ? CORRECTNESS.CORRECT

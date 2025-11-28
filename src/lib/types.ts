@@ -112,6 +112,27 @@ export const BlockBlueprintSchema = z.object({
   reducers: z.array(z.function()).optional(),
   fields: ReduxFieldsReturn.optional(),
   getValue: z.function().optional(),
+  /**
+   * Block-local API functions that expose the block's logic separately from its UI.
+   *
+   * While the React component (_Block.jsx) handles presentation, `locals` contains
+   * the block's business logic as reusable functions. This separation enables:
+   * - Server-side execution (grading, analytics) without React dependencies
+   * - Cross-block communication (e.g., graders querying input metadata)
+   * - Cleaner testing of logic independent of rendering
+   *
+   * Each function receives (props, state, id, ...args) when called through the API.
+   * When passed to graders, these are pre-bound so graders just call fn(...args).
+   *
+   * Example for ChoiceInput:
+   *   locals: {
+   *     getChoices: (props, state, id) => {
+   *       // Returns [{ id, tag, value }, ...] for Key/Distractor children
+   *     }
+   *   }
+   *
+   * A grader would then call: inputApi.getChoices() to get the choices.
+   */
   locals: z.record(z.string(), z.any()).optional(),
   extraDebug: z.custom<React.ComponentType<any>>().optional(),
   description: z.string().optional(),

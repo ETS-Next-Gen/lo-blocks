@@ -9,7 +9,7 @@ it('handles added, unchanged, changed, and deleted files via filesystem mutation
   const tmpDir = await fs.mkdtemp('content-test-');
 
   // Seed with three XML files from content/demos
-  const seedFiles = ['changer.xml', 'helloaction.xml', 'capa.xml'];
+  const seedFiles = ['changer.xml', 'ref-demo.xml', 'course-demo.xml'];
   for (const file of seedFiles) {
     await fs.copyFile(path.join('content/demos', file), path.join(tmpDir, file));
   }
@@ -23,13 +23,13 @@ it('handles added, unchanged, changed, and deleted files via filesystem mutation
 
   // Mutate: modify changer.xml
   await fs.appendFile(path.join(tmpDir, 'changer.xml'), ' ');
-  // Add ref-demo.xml
+  // Add textHighlight_demo.xml
   await fs.copyFile(
-    path.join('content/demos/ref-demo.xml'),
-    path.join(tmpDir, 'ref-demo.xml')
+    path.join('content/demos/textHighlight_demo.xml'),
+    path.join(tmpDir, 'textHighlight_demo.xml')
   );
-  // Delete helloaction.xml
-  await fs.rm(path.join(tmpDir, 'helloaction.xml'));
+  // Delete ref-demo.xml
+  await fs.rm(path.join(tmpDir, 'ref-demo.xml'));
 
   const second = await provider.loadXmlFilesWithStats(prev);
 
@@ -37,10 +37,10 @@ it('handles added, unchanged, changed, and deleted files via filesystem mutation
     expect(info.type).toBe(fileTypes.xml);
   }
 
-  expect(Object.keys(second.unchanged).some(id => id.endsWith('capa.xml'))).toBe(true);
+  expect(Object.keys(second.unchanged).some(id => id.endsWith('course-demo.xml'))).toBe(true);
   expect(Object.keys(second.changed).some(id => id.endsWith('changer.xml'))).toBe(true);
-  expect(Object.keys(second.added).some(id => id.endsWith('ref-demo.xml'))).toBe(true);
-  expect(Object.keys(second.deleted).some(id => id.endsWith('helloaction.xml'))).toBe(true);
+  expect(Object.keys(second.added).some(id => id.endsWith('textHighlight_demo.xml'))).toBe(true);
+  expect(Object.keys(second.deleted).some(id => id.endsWith('ref-demo.xml'))).toBe(true);
 
   await fs.rm(tmpDir, { recursive: true, force: true });
 });

@@ -200,7 +200,11 @@ function resolveImageSrc(src) {
 - [x] Phase 3c: Documentation (completed 2025-11-29)
   - Created .md files for Collapsible, Tabs, TeamDirectory, Navigator
   - Navigator docs include template block documentation
-- [ ] Phase 4: Content and Images
+- [x] Phase 4: Content and Images (completed 2025-11-29)
+  - Created `content/sba/interdisciplinary/` structure
+  - Added team images (ty, peggy, lacy, lianne, anne, GSU_prof)
+  - Added artifact.olx and dialogue.chatpeg
+  - All 217 tests pass
 - [ ] Phase 5: Demos and Extracted Content
 
 ---

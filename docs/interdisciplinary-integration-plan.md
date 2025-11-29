@@ -189,8 +189,14 @@ function resolveImageSrc(src) {
 - [x] Phase 2b: Tabs Block (completed 2025-11-29)
   - Created `src/components/blocks/layout/Tabs/`
   - All 203 tests pass
-- [ ] Phase 3a: TeamDirectory Block
-- [ ] Phase 3b: Navigator Block
+- [x] Phase 3a: TeamDirectory Block (completed 2025-11-29)
+  - Created `src/components/blocks/specialized/TeamDirectory/`
+  - Updated image paths for content structure
+  - Changed from `core()` to `dev()` (still prototype)
+- [x] Phase 3b: Navigator Block (completed 2025-11-29)
+  - Created `src/components/blocks/layout/Navigator/`
+  - Includes 6 template sub-blocks: DefaultPreview, DefaultDetail, TeamPreview, TeamDetail, ReadingDetail
+  - All 217 tests pass
 - [ ] Phase 4: Content and Images
 - [ ] Phase 5: Demos and Extracted Content
 

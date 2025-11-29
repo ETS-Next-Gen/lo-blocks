@@ -1,0 +1,57 @@
+<!-- Navigator Block Demo -->
+<Vertical id="NavigatorDemo" title="Navigator Block Demo" launchable="true">
+
+  <Markdown>
+# Navigator Block Demo
+
+The Navigator block creates a two-pane interface: a searchable list on the left
+and detail view on the right. Item data comes from YAML in the block content.
+Templates for preview/detail are referenced by block ID.
+  </Markdown>
+
+  <Markdown>
+## Basic Navigator with Team Templates
+  </Markdown>
+
+  <Navigator id="team_navigator"
+             title="Team Members"
+             preview="team_preview"
+             detail="team_detail">
+- id: alice
+  name: Alice Chen
+  role: Project Lead
+  bio: Leading the development team with 10 years of experience
+  experience: 10 years in tech
+  skills: [Leadership, Strategy, Development]
+
+- id: bob
+  name: Bob Smith
+  role: Senior Developer
+  bio: Full-stack developer specializing in React and Node.js
+  experience: 7 years development
+  skills: [React, Node.js, TypeScript]
+
+- id: carol
+  name: Carol Davis
+  role: Designer
+  bio: UX/UI designer focused on accessible design
+  experience: 5 years design
+  skills: [UI Design, UX Research, Figma]
+  </Navigator>
+
+  <!-- Template blocks (hidden but referenced by Navigator) -->
+  <Hidden>
+    <NavigatorTeamPreview id="team_preview"/>
+    <NavigatorTeamDetail id="team_detail"/>
+  </Hidden>
+
+  <Markdown>
+## How It Works
+
+1. Navigator uses YAML text content for item data
+2. `preview` and `detail` attributes reference template block IDs
+3. Templates receive item data as props
+4. Search filters by name, title, role, or description
+  </Markdown>
+
+</Vertical>

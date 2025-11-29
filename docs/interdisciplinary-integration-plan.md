@@ -200,12 +200,19 @@ function resolveImageSrc(src) {
 - [x] Phase 3c: Documentation (completed 2025-11-29)
   - Created .md files for Collapsible, Tabs, TeamDirectory, Navigator
   - Navigator docs include template block documentation
-- [x] Phase 4: Content and Images (completed 2025-11-29)
+- [x] Phase 4: Content and Images (partial - 2025-11-29)
   - Created `content/sba/interdisciplinary/` structure
   - Added team images (ty, peggy, lacy, lianne, anne, GSU_prof)
   - Added artifact.olx and dialogue.chatpeg
+  - Added interdisciplinary_sba.olx - main SBA file with:
+    - Chat dialogue, Tabs for Activity/Artifact/Library/Team
+    - Reading library Navigator with 6 research documents
+    - Team directory, orientation block
+  - Added readings/ directory with research studies and policy docs
+  - **TODO**: Activities file needed - dialogue references ~30 activity block IDs
+    that need to be defined (similar to psych_sba_activities.olx)
   - All 217 tests pass
-- [ ] Phase 5: Demos and Extracted Content
+- [ ] Phase 5: Activities file and final integration
 
 ---
 

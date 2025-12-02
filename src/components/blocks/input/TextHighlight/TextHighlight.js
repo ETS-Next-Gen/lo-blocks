@@ -1,6 +1,7 @@
 // src/components/blocks/TextHighlight/TextHighlight.js
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
+import { fieldSelector, fieldByName } from '@/lib/state';
 import * as blocks from '@/lib/blocks';
 import { peggyParser } from '@/lib/content/parsers';
 import * as parser from './_textHighlightParser.js';
@@ -11,17 +12,18 @@ export const fields = state.fields([
   'attempts',   // Number of check attempts
   'feedback',   // Current feedback message
   'showAnswer', // Whether answer is revealed (self_check mode)
-  'checked'     // Whether graded mode has been checked
+  'checked',    // Whether graded mode has been checked
+  'score'       // Current score
 ]);
 
 const TextHighlight = core({
   ...peggyParser(parser),
   ...blocks.input({
-    getValue: (redux, id) => {
-      const selections = redux?.[id]?.value || [];
-      const attempts = redux?.[id]?.attempts || 0;
-      const correct = redux?.[id]?.correct;
-      return { selections, attempts, correct };
+    getValue: (props, state, id) => {
+      const selections = fieldSelector(state, props, fieldByName('value'), { fallback: [], id });
+      const attempts = fieldSelector(state, props, fieldByName('attempts'), { fallback: 0, id });
+      const score = fieldSelector(state, props, fieldByName('score'), { fallback: 0, id });
+      return { selections, attempts, score };
     }
   }),
   ...blocks.grader({

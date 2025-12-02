@@ -81,6 +81,7 @@ export default function _TextHighlight(props) {
   const [feedback, setFeedback] = useReduxState(props, fields.feedback, '');
   const [showAnswer, setShowAnswer] = useReduxState(props, fields.showAnswer, false);
   const [checked, setChecked] = useReduxState(props, fields.checked, false);
+  const [score, setScore] = useReduxState(props, fields.score, 0);
 
   // Refs for DOM elements
   const containerRef = useRef(null);
@@ -197,6 +198,7 @@ export default function _TextHighlight(props) {
     } else {
       setFeedback(`${correctSegments}/${groups.length} correct`);
     }
+    setScore(correctSegments / groups.length)
   };
 
   // Handle native text selection

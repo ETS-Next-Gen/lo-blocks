@@ -49,8 +49,5 @@ cx + dy
 \end{pmatrix}
   </BlockMath>
 
-  <!-- Shorthand syntax -->
-  <Markdown id="shorthand_label">**Shorthand syntax:**</Markdown>
-  <$$>E = mc^2</$$>
 
 </Vertical>

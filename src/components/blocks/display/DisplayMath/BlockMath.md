@@ -13,10 +13,12 @@ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 </BlockMath>
 ```
 
-### Shorthand Syntax
+### Shorthand Syntax (XML validation disabled only)
 ```xml
 <$$>E = mc^2</$$>
 ```
+
+**Note:** The shorthand `<$$>` syntax only works when XML validation is disabled, as `$$` is not a valid XML tag name. When validation is enabled (the default), use `<BlockMath>` instead.
 
 ### Properties
 - `id` (optional): Unique identifier for the block

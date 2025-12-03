@@ -27,6 +27,7 @@ export default function _ChoiceItem(props) {
     );
   }
 
+  // useFieldSelector and updateReduxField automatically apply idPrefix to the id override
   const selected = useFieldSelector(
     props,
     choiceFields.fieldInfoByField.value,
@@ -40,11 +41,14 @@ export default function _ChoiceItem(props) {
     updateReduxField(props, choiceFields.fieldInfoByField.value, itemValue, { id: parentId });
   };
 
+  // Radio button name needs the scoped ID for proper grouping
+  const scopedParentId = reduxId({ ...props, id: parentId });
+
   return (
     <label className="block">
       <input
         type="radio"
-        name={reduxId({ ...props, id: parentId })}
+        name={scopedParentId}
         checked={checked}
         onChange={handleChange}
        />

@@ -69,6 +69,12 @@ function resolveIdForContext(context, matrix = ID_RESOLUTION_MATRIX) {
 //    graphic_organizer.3.supporting_argument
 // All of this still comes from the OLX node supporting_argument
 //
+// ID references support path-like syntax:
+//   - "foo"      → relative, gets idPrefix applied (most common)
+//   - "/foo"     → absolute, bypasses idPrefix
+//   - "./foo"    → explicit relative (same as "foo")
+//   - "../foo"   → parent scope (TODO: not yet implemented)
+//
 // TODO:
 // * Helpers to point targets, graders, LLMs, etc. appropriately.
 // * Corresponding OLX formats.
@@ -77,8 +83,17 @@ function resolveIdForContext(context, matrix = ID_RESOLUTION_MATRIX) {
 const _reduxId = resolveIdForContext("reduxId");
 export const reduxId = (input, defaultValue) => {
   const base = _reduxId(input, defaultValue);
+
+  // Absolute references (starting with /) bypass the prefix
+  if (base.startsWith('/')) {
+    return base.slice(1);
+  }
+
+  // Explicit relative (starting with ./) - strip prefix marker
+  const resolvedBase = base.startsWith('./') ? base.slice(2) : base;
+
   const prefix = input?.idPrefix ?? '';
-  return prefix ? `${prefix}.${base}` : base;
+  return prefix ? `${prefix}.${resolvedBase}` : resolvedBase;
 };
 
 // If we would like to look ourselves up in idMap.

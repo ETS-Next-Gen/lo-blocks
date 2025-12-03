@@ -18,9 +18,8 @@ import * as idListParser from './_idlistParser.js';
 import _MasteryBank from './_MasteryBank';
 
 export const fields = state.fields([
-  'currentIndex',           // Index into shuffled problem order
   'correctStreak',          // Current streak of correct answers
-  'shuffledOrder',          // Randomized order of problem indices
+  'modeState',              // Mode-specific state (structure depends on mode: number for linear, object for shuffle)
   'completed',              // Whether mastery has been achieved
   'firstSubmissionResult'   // Result of first submission for current problem (null, 'correct', 'incorrect')
 ]);

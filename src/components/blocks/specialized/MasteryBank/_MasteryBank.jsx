@@ -11,8 +11,8 @@ import { DisplayError } from '@/lib/util/debug';
  * Fisher-Yates shuffle.
  * Uses Math.random() for true randomness so each student sees a different order.
  */
-function shuffleArray(array) {
-  const result = [...array];
+function shuffleArray(length) {
+  const result = Array.from({ length }, (_, i) => i);
   let m = result.length;
 
   while (m) {
@@ -23,10 +23,62 @@ function shuffleArray(array) {
 }
 
 /**
+ * Order modes for problem selection.
+ *
+ * Each mode provides:
+ *   - initial(itemCount): Returns initial state (optional, defaults to 0)
+ *   - nextItem(itemCount, state): Returns [nextItemIndex, newState]
+ *
+ * The state structure is mode-specific. For simple modes like linear,
+ * state is just the current index. For shuffle, state includes the
+ * shuffled order array and current position.
+ *
+ * Future modes to consider:
+ *   - linear_then_shuffle: Go through linearly once, then shuffle
+ *   - shuffle_once: Shuffle at start, then loop through that order
+ *   - shuffle_each_loop: Reshuffle each time we loop back
+ *   - random_pick: Pick a random item each time (may repeat)
+ */
+const ORDER_MODES = {
+  // Linear: 0,1,2,0,1,2,0,1,2...
+  // State is just the current index
+  linear: {
+    initial: () => 0,
+    nextItem: (itemCount, state) => [(state + 1) % itemCount, (state + 1) % itemCount]
+  },
+  // Shuffle: randomize order, reshuffle when we loop back
+  // State is { order: number[], index: number }
+  shuffle: {
+    initial: (itemCount) => ({ order: shuffleArray(itemCount), index: 0 }),
+    nextItem: (itemCount, state) => {
+      const nextIndex = state.index + 1;
+      if (nextIndex >= itemCount) {
+        // Reshuffle and start over
+        const newOrder = shuffleArray(itemCount);
+        return [newOrder[0], { order: newOrder, index: 0 }];
+      }
+      return [state.order[nextIndex], { ...state, index: nextIndex }];
+    }
+  }
+};
+
+/**
+ * Get the current item index from mode state.
+ * For linear mode, state IS the index. For shuffle, it's state.order[state.index].
+ */
+function getCurrentItem(mode, state, itemCount) {
+  if (mode === 'shuffle' && typeof state === 'object') {
+    return state.order[state.index];
+  }
+  // For linear mode or fallback, state is the index
+  return typeof state === 'number' ? state : 0;
+}
+
+/**
  * Inner component that renders when we have a valid problem ID.
  * This allows us to call useFieldSelector unconditionally.
  */
-function MasteryProblem({ props, currentProblemId, currentIndex, problemIds, correctStreak, goalNum, setCurrentIndex, setCorrectStreak, setShuffledOrder, setCompleted, firstSubmissionResult, setFirstSubmissionResult }) {
+function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, goalNum, setCorrectStreak, setModeState, setCompleted, firstSubmissionResult, setFirstSubmissionResult, modeState, orderMode }) {
   const { idMap } = props;
 
   // Watch the current problem's grader correctness state
@@ -86,14 +138,9 @@ function MasteryProblem({ props, currentProblemId, currentIndex, problemIds, cor
     // Reset first submission tracking for the next problem
     setFirstSubmissionResult(null);
 
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= problemIds.length) {
-      const indices = Array.from({ length: problemIds.length }, (_, i) => i);
-      setShuffledOrder(shuffleArray(indices));
-      setCurrentIndex(0);
-    } else {
-      setCurrentIndex(nextIndex);
-    }
+    // Use orderMode to get next item and new state
+    const [, newState] = orderMode.nextItem(problemIds.length, modeState);
+    setModeState(newState);
   };
 
   // Check if problem exists in idMap
@@ -139,7 +186,10 @@ function MasteryProblem({ props, currentProblemId, currentIndex, problemIds, cor
 }
 
 export default function _MasteryBank(props) {
-  const { id, fields, kids, goal = 6 } = props;
+  const { id, fields, kids, goal = 6, mode = 'linear' } = props;
+
+  // Get the order mode (default to linear if invalid)
+  const orderMode = ORDER_MODES[mode] || ORDER_MODES.linear;
 
   // Extract problem IDs from parsed content
   const problemIds = useMemo(() => {
@@ -151,23 +201,21 @@ export default function _MasteryBank(props) {
 
   const goalNum = typeof goal === 'string' ? parseInt(goal, 10) : goal;
 
-  // State - initialize shuffledOrder immediately if we have problems
-  const initialShuffledOrder = useMemo(() => {
+  // State - initialize mode state using the orderMode's initial function
+  const initialModeState = useMemo(() => {
     if (problemIds.length > 0) {
-      const indices = Array.from({ length: problemIds.length }, (_, i) => i);
-      return shuffleArray(indices);
+      return orderMode.initial(problemIds.length);
     }
-    return [];
-  }, [problemIds.length]); // Only depends on length to avoid reshuffling on every render
+    return 0;
+  }, [problemIds.length, orderMode]);
 
-  const [currentIndex, setCurrentIndex] = useReduxState(props, fields.currentIndex, 0);
   const [correctStreak, setCorrectStreak] = useReduxState(props, fields.correctStreak, 0);
   const [completed, setCompleted] = useReduxState(props, fields.completed, false);
-  const [shuffledOrder, setShuffledOrder] = useReduxState(props, fields.shuffledOrder, initialShuffledOrder);
+  const [modeState, setModeState] = useReduxState(props, fields.modeState, initialModeState);
   const [firstSubmissionResult, setFirstSubmissionResult] = useReduxState(props, fields.firstSubmissionResult, null);
 
-  // Get current problem ID
-  const currentProblemIndex = shuffledOrder?.[currentIndex % problemIds.length];
+  // Get current problem ID using mode-specific state interpretation
+  const currentProblemIndex = getCurrentItem(mode, modeState, problemIds.length);
   const currentProblemId = problemIds[currentProblemIndex];
 
   // Error states - return before we need to watch problem state
@@ -194,9 +242,9 @@ export default function _MasteryBank(props) {
         name="MasteryBank"
         message="Unable to select current problem"
         technical={{
-          hint: 'Internal state error - shuffledOrder may not be initialized',
-          currentIndex,
-          shuffledOrderLength: shuffledOrder?.length,
+          hint: 'Internal state error - modeState may not be initialized',
+          currentProblemIndex,
+          modeState,
           blockId: id
         }}
         id={`${id}_no_current_problem`}
@@ -216,6 +264,9 @@ export default function _MasteryBank(props) {
     );
   }
 
+  // Get displayable position (1-indexed)
+  const displayPosition = (typeof modeState === 'object' ? modeState.index : modeState) + 1;
+
   return (
     <div className="lo-mastery-bank">
       <div className="lo-mastery-bank__header">
@@ -223,23 +274,23 @@ export default function _MasteryBank(props) {
           Streak: {correctStreak} / {goalNum}
         </div>
         <div className="lo-mastery-bank__count">
-          Problem {currentIndex + 1} of {problemIds.length}
+          Problem {displayPosition} of {problemIds.length}
         </div>
       </div>
 
       <MasteryProblem
         props={props}
         currentProblemId={currentProblemId}
-        currentIndex={currentIndex}
         problemIds={problemIds}
         correctStreak={correctStreak}
         goalNum={goalNum}
-        setCurrentIndex={setCurrentIndex}
         setCorrectStreak={setCorrectStreak}
-        setShuffledOrder={setShuffledOrder}
+        setModeState={setModeState}
         setCompleted={setCompleted}
         firstSubmissionResult={firstSubmissionResult}
         setFirstSubmissionResult={setFirstSubmissionResult}
+        modeState={modeState}
+        orderMode={orderMode}
       />
     </div>
   );

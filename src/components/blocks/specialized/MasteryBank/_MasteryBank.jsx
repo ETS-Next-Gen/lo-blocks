@@ -79,7 +79,7 @@ function isGradedAnswer(correctness) {
 function MasteryProblem({ props, problemId, attemptNumber, masteryState, handlers }) {
   const { id, idMap } = props;
   const { problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode } = masteryState;
-  const { setCorrectStreak, setModeState, setCompleted, setFirstSubmissionResult, setAttemptNumber } = handlers;
+  const { setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber } = handlers;
 
   // Watch the current problem's grader correctness state (scoped by attempt)
   const scopedGraderId = `${problemId}_grader`;
@@ -123,7 +123,9 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
         setFirstSubmissionResult(CORRECTNESS.CORRECT);
         if (newStreak >= goalNum) {
           setCompleted(true);
+          setCorrect(CORRECTNESS.CORRECT);
         } else {
+          setCorrect(CORRECTNESS.INCOMPLETE);
           advanceToNext();
         }
       } else if (firstSubmissionResult === CORRECTNESS.INCORRECT) {
@@ -136,9 +138,10 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
         // First try wrong - reset streak, stay on problem
         setFirstSubmissionResult(CORRECTNESS.INCORRECT);
         setCorrectStreak(0);
+        setCorrect(CORRECTNESS.INCOMPLETE);
       }
     }
-  }, [currentCorrectness, firstSubmissionResult, correctStreak, goalNum, problemIds.length, modeState, orderMode, attemptNumber, setCorrectStreak, setModeState, setCompleted, setFirstSubmissionResult, setAttemptNumber]);
+  }, [currentCorrectness, firstSubmissionResult, correctStreak, goalNum, problemIds.length, modeState, orderMode, attemptNumber, setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber]);
 
   if (!idMap[problemId]) {
     return (
@@ -180,6 +183,7 @@ export default function _MasteryBank(props) {
 
   const [correctStreak, setCorrectStreak] = useReduxState(props, fields.correctStreak, 0);
   const [completed, setCompleted] = useReduxState(props, fields.completed, false);
+  const [, setCorrect] = useReduxState(props, fields.correct, null);
   const [modeState, setModeState] = useReduxState(props, fields.modeState, initialModeState);
   const [firstSubmissionResult, setFirstSubmissionResult] = useReduxState(props, fields.firstSubmissionResult, null);
   const [attemptNumber, setAttemptNumber] = useReduxState(props, fields.attemptNumber, 0);
@@ -251,7 +255,7 @@ export default function _MasteryBank(props) {
         problemId={currentProblemId}
         attemptNumber={attemptNumber}
         masteryState={{ problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode }}
-        handlers={{ setCorrectStreak, setModeState, setCompleted, setFirstSubmissionResult, setAttemptNumber }}
+        handlers={{ setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber }}
       />
     </div>
   );

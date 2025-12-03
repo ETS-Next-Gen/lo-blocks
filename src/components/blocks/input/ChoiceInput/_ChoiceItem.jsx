@@ -4,6 +4,7 @@
 import React, { useMemo } from 'react';
 import { useFieldSelector, updateReduxField } from '@/lib/state';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
+import { reduxId } from '@/lib/blocks/idResolver';
 import { fields as choiceFields } from './ChoiceInput';
 import { renderCompiledKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
@@ -43,7 +44,7 @@ export default function _ChoiceItem(props) {
     <label className="block">
       <input
         type="radio"
-        name={parentId}
+        name={reduxId({ ...props, id: parentId })}
         checked={checked}
         onChange={handleChange}
        />

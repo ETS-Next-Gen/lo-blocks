@@ -8,16 +8,14 @@ import { CORRECTNESS } from '@/lib/blocks';
 import { DisplayError } from '@/lib/util/debug';
 
 /**
- * Fisher-Yates shuffle.
+ * Fisher-Yates shuffle - returns array of indices [0, length) in random order.
  * Uses Math.random() for true randomness so each student sees a different order.
  */
-function shuffleArray(length) {
+function shuffleIndices(length) {
   const result = Array.from({ length }, (_, i) => i);
-  let m = result.length;
-
-  while (m) {
-    const i = Math.floor(Math.random() * m--);
-    [result[m], result[i]] = [result[i], result[m]];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
 }
@@ -26,147 +24,117 @@ function shuffleArray(length) {
  * Order modes for problem selection.
  *
  * Each mode provides:
- *   - initial(itemCount): Returns initial state (optional, defaults to 0)
+ *   - initial(itemCount): Returns initial state
  *   - nextItem(itemCount, state): Returns [nextItemIndex, newState]
- *
- * The state structure is mode-specific. For simple modes like linear,
- * state is just the current index. For shuffle, state includes the
- * shuffled order array and current position.
- *
- * Future modes to consider:
- *   - linear_then_shuffle: Go through linearly once, then shuffle
- *   - shuffle_once: Shuffle at start, then loop through that order
- *   - shuffle_each_loop: Reshuffle each time we loop back
- *   - random_pick: Pick a random item each time (may repeat)
+ *   - currentItem(state): Returns current item index from state
+ *   - position(state): Returns 0-indexed position for display
  */
 const ORDER_MODES = {
   // Linear: 0,1,2,0,1,2,0,1,2...
-  // State is just the current index
   linear: {
     initial: () => 0,
-    nextItem: (itemCount, state) => [(state + 1) % itemCount, (state + 1) % itemCount]
+    nextItem: (itemCount, state) => {
+      const next = (state + 1) % itemCount;
+      return [next, next];
+    },
+    currentItem: (state) => state,
+    position: (state) => state
   },
   // Shuffle: randomize order, reshuffle when we loop back
-  // State is { order: number[], index: number }
   shuffle: {
-    initial: (itemCount) => ({ order: shuffleArray(itemCount), index: 0 }),
+    initial: (itemCount) => ({ order: shuffleIndices(itemCount), index: 0 }),
     nextItem: (itemCount, state) => {
       const nextIndex = state.index + 1;
       if (nextIndex >= itemCount) {
-        // Reshuffle and start over
-        const newOrder = shuffleArray(itemCount);
+        const newOrder = shuffleIndices(itemCount);
         return [newOrder[0], { order: newOrder, index: 0 }];
       }
       return [state.order[nextIndex], { ...state, index: nextIndex }];
-    }
+    },
+    currentItem: (state) => state.order[state.index],
+    position: (state) => state.index
   }
 };
 
 /**
- * Get the current item index from mode state.
- * For linear mode, state IS the index. For shuffle, it's state.order[state.index].
+ * Checks if correctness represents a "real" graded answer (not pending/invalid states).
  */
-function getCurrentItem(mode, state, itemCount) {
-  if (mode === 'shuffle' && typeof state === 'object') {
-    return state.order[state.index];
-  }
-  // For linear mode or fallback, state is the index
-  return typeof state === 'number' ? state : 0;
+function isGradedAnswer(correctness) {
+  return correctness === CORRECTNESS.CORRECT ||
+         correctness === CORRECTNESS.INCORRECT ||
+         correctness === CORRECTNESS.PARTIALLY_CORRECT;
 }
 
 /**
- * Inner component that renders when we have a valid problem ID.
- * This allows us to call useFieldSelector unconditionally.
+ * Inner component that watches grader state and handles advancement.
+ * Separated to allow unconditional hook calls (useFieldSelector requires valid field).
  */
-function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, goalNum, setCorrectStreak, setModeState, setCompleted, firstSubmissionResult, setFirstSubmissionResult, modeState, orderMode }) {
+function MasteryProblem({ props, problemId, masteryState, handlers }) {
   const { idMap } = props;
+  const { problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode } = masteryState;
+  const { setCorrectStreak, setModeState, setCompleted, setFirstSubmissionResult } = handlers;
 
   // Watch the current problem's grader correctness state
-  // The grader ID follows the convention: problemId + "_grader"
-  const graderId = `${currentProblemId}_grader`;
+  const graderId = `${problemId}_grader`;
   const graderField = componentFieldByName(props, graderId, 'correct');
-
   const currentCorrectness = useFieldSelector(
     props,
     graderField,
-    {
-      id: graderId,
-      fallback: CORRECTNESS.UNSUBMITTED,
-      selector: s => s?.correct
-    }
+    { id: graderId, fallback: CORRECTNESS.UNSUBMITTED, selector: s => s?.correct }
   );
 
-  // Track previous correctness to detect state changes
   const prevCorrectnessRef = useRef(currentCorrectness);
 
-  const advanceToNext = () => {
-    // Reset first submission tracking for the next problem
-    setFirstSubmissionResult(null);
-
-    // Use orderMode to get next item and new state
-    const [, newState] = orderMode.nextItem(problemIds.length, modeState);
-    setModeState(newState);
-  };
-
   // Handle correctness changes
-  // - First incorrect: reset streak, stay on problem (student must get it right to advance)
-  // - Correct after incorrect: advance but don't increment streak
-  // - First correct: increment streak and advance
-  // - INVALID, INCOMPLETE, SUBMITTED: no-ops, let student fix input
   useEffect(() => {
     const prevCorrectness = prevCorrectnessRef.current;
     prevCorrectnessRef.current = currentCorrectness;
 
-    // Only act when correctness actually changes
-    if (prevCorrectness === currentCorrectness) {
+    // Only act on actual changes to graded answers
+    if (prevCorrectness === currentCorrectness || !isGradedAnswer(currentCorrectness)) {
       return;
     }
 
-    // Ignore transitions that don't involve a real answer
-    if (currentCorrectness === CORRECTNESS.UNSUBMITTED ||
-        currentCorrectness === CORRECTNESS.INVALID ||
-        currentCorrectness === CORRECTNESS.INCOMPLETE ||
-        currentCorrectness === CORRECTNESS.SUBMITTED) {
-      return;
-    }
+    const advanceToNext = () => {
+      setFirstSubmissionResult(null);
+      const [, newState] = orderMode.nextItem(problemIds.length, modeState);
+      setModeState(newState);
+    };
 
     if (currentCorrectness === CORRECTNESS.CORRECT) {
       if (firstSubmissionResult === null) {
-        // First submission was correct - increment streak
+        // First try correct - increment streak and advance
         const newStreak = correctStreak + 1;
         setCorrectStreak(newStreak);
         setFirstSubmissionResult(CORRECTNESS.CORRECT);
-
         if (newStreak >= goalNum) {
           setCompleted(true);
         } else {
           advanceToNext();
         }
       } else if (firstSubmissionResult === CORRECTNESS.INCORRECT) {
-        // Got it right after getting it wrong - advance but don't increment streak
+        // Correct after incorrect - advance without incrementing streak
         advanceToNext();
       }
-    } else if (currentCorrectness === CORRECTNESS.INCORRECT ||
-               currentCorrectness === CORRECTNESS.PARTIALLY_CORRECT) {
+    } else {
+      // INCORRECT or PARTIALLY_CORRECT
       if (firstSubmissionResult === null) {
-        // First submission was incorrect - reset streak, stay on problem
+        // First try wrong - reset streak, stay on problem
         setFirstSubmissionResult(CORRECTNESS.INCORRECT);
         setCorrectStreak(0);
       }
-      // If already incorrect, do nothing - student is retrying
     }
-  }, [currentCorrectness, firstSubmissionResult, setFirstSubmissionResult, setCorrectStreak, correctStreak, goalNum, setCompleted, problemIds.length, modeState, setModeState, orderMode]);
+  }, [currentCorrectness, firstSubmissionResult, correctStreak, goalNum, problemIds.length, modeState, orderMode, setCorrectStreak, setModeState, setCompleted, setFirstSubmissionResult]);
 
-  // Check if problem exists in idMap
-  if (!idMap[currentProblemId]) {
+  if (!idMap[problemId]) {
     return (
       <DisplayError
         props={props}
         name="MasteryBank"
-        message={`Problem not found: "${currentProblemId}"`}
+        message={`Problem not found: "${problemId}"`}
         technical={{
           hint: 'Make sure this problem is defined elsewhere in your content.',
-          problemId: currentProblemId,
+          problemId,
           blockId: props.id
         }}
         id={`${props.id}_problem_not_found`}
@@ -174,11 +142,9 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
     );
   }
 
-  const problemNode = { type: 'block', id: currentProblemId };
-
   return (
     <div className="lo-mastery-bank__problem">
-      {render({ ...props, node: problemNode })}
+      {render({ ...props, node: { type: 'block', id: problemId } })}
     </div>
   );
 }
@@ -186,25 +152,16 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
 export default function _MasteryBank(props) {
   const { id, fields, kids, goal = 6, mode = 'linear' } = props;
 
-  // Get the order mode (default to linear if invalid)
   const orderMode = ORDER_MODES[mode] || ORDER_MODES.linear;
 
-  // Extract problem IDs from parsed content
   const problemIds = useMemo(() => {
-    if (kids?.problemIds && Array.isArray(kids.problemIds)) {
-      return kids.problemIds;
-    }
-    return [];
+    return kids?.problemIds && Array.isArray(kids.problemIds) ? kids.problemIds : [];
   }, [kids]);
 
   const goalNum = typeof goal === 'string' ? parseInt(goal, 10) : goal;
 
-  // State - initialize mode state using the orderMode's initial function
   const initialModeState = useMemo(() => {
-    if (problemIds.length > 0) {
-      return orderMode.initial(problemIds.length);
-    }
-    return 0;
+    return problemIds.length > 0 ? orderMode.initial(problemIds.length) : 0;
   }, [problemIds.length, orderMode]);
 
   const [correctStreak, setCorrectStreak] = useReduxState(props, fields.correctStreak, 0);
@@ -212,11 +169,7 @@ export default function _MasteryBank(props) {
   const [modeState, setModeState] = useReduxState(props, fields.modeState, initialModeState);
   const [firstSubmissionResult, setFirstSubmissionResult] = useReduxState(props, fields.firstSubmissionResult, null);
 
-  // Get current problem ID using mode-specific state interpretation
-  const currentProblemIndex = getCurrentItem(mode, modeState, problemIds.length);
-  const currentProblemId = problemIds[currentProblemIndex];
-
-  // Error states - return before we need to watch problem state
+  // Error: no problems
   if (problemIds.length === 0) {
     return (
       <DisplayError
@@ -232,8 +185,11 @@ export default function _MasteryBank(props) {
     );
   }
 
+  const currentProblemIndex = orderMode.currentItem(modeState);
+  const currentProblemId = problemIds[currentProblemIndex];
+
+  // Error: invalid state
   if (!currentProblemId) {
-    // This shouldn't happen in normal operation, but handle it gracefully
     return (
       <DisplayError
         props={props}
@@ -262,8 +218,7 @@ export default function _MasteryBank(props) {
     );
   }
 
-  // Get displayable position (1-indexed)
-  const displayPosition = (typeof modeState === 'object' ? modeState.index : modeState) + 1;
+  const displayPosition = orderMode.position(modeState) + 1;
 
   return (
     <div className="lo-mastery-bank">
@@ -278,17 +233,9 @@ export default function _MasteryBank(props) {
 
       <MasteryProblem
         props={props}
-        currentProblemId={currentProblemId}
-        problemIds={problemIds}
-        correctStreak={correctStreak}
-        goalNum={goalNum}
-        setCorrectStreak={setCorrectStreak}
-        setModeState={setModeState}
-        setCompleted={setCompleted}
-        firstSubmissionResult={firstSubmissionResult}
-        setFirstSubmissionResult={setFirstSubmissionResult}
-        modeState={modeState}
-        orderMode={orderMode}
+        problemId={currentProblemId}
+        masteryState={{ problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode }}
+        handlers={{ setCorrectStreak, setModeState, setCompleted, setFirstSubmissionResult }}
       />
     </div>
   );

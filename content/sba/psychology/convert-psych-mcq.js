@@ -38,7 +38,7 @@ function generateProblemId(index, key) {
 }
 
 function questionToOlx(question, index) {
-  const { stem, key, explanation } = question;
+  const { stem, key, explanation, title } = question;
   const problemId = generateProblemId(index, key);
   const graderId = `${problemId}_grader`;
   const inputId = `${problemId}_input`;
@@ -55,9 +55,7 @@ function questionToOlx(question, index) {
   // Put explanation in a comment for now (Explanation block not yet implemented)
   const explanationComment = `<!-- Explanation: ${escapeXml(explanation)} -->`;
 
-  const title = `Question ${index + 1}`;
-
-  return `  <CapaProblem id="${problemId}" title="${title}">
+  return `  <CapaProblem id="${problemId}" title="${escapeXml(title)}">
     <p>${escapeXml(stem)}</p>
     <KeyGrader id="${graderId}">
       <ChoiceInput id="${inputId}">

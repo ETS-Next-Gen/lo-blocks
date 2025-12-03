@@ -7,6 +7,8 @@
 //   npx tsx src/scripts/convert-psych-mcq.js content/sba/psychology/operant-questions.json
 //
 // Output: Creates an OLX file with CapaProblems wrapped in a Vertical
+//
+// LLM-generated. Kind of a one-off. Should be converted to generic template tool in the future.
 
 import fs from 'fs';
 import path from 'path';

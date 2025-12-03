@@ -1,0 +1,113 @@
+<!-- content/demos/aggregate-block-demo.xml -->
+<Vertical id="aggregate_block_demo" title="Aggregate Block Usage" launchable="true">
+  <Markdown>
+    # Aggregate block quickstart
+
+    The `Aggregate` block collects values from multiple components and exposes a
+    **single aggregated value** through `getValue()`. Use it to combine scores,
+    join text, or template a summary string for use elsewhere.
+  </Markdown>
+
+  <Markdown>
+    ## Interactive example
+
+    Enter a few scores below and the `Aggregate` block will sum them. In a real
+    lesson you would reference the aggregate output from another component.
+  </Markdown>
+
+  <NumberInput id="score_q1">Question 1 score</NumberInput>
+  <NumberInput id="score_q2">Question 2 score</NumberInput>
+  <NumberInput id="score_q3">Question 3 score</NumberInput>
+
+  <Aggregate id="quiz_rollup" target="score_q1, score_q2, score_q3" strategy="sum" />
+
+  <Ref target="quiz_rollup" />
+
+  <Markdown>
+    ## Reading the aggregate value
+
+    The `Aggregate` block does not render UI. Instead, other components call its
+    `getValue()` to receive a **single value**.
+
+    Example return values:
+
+    ```json
+    12
+    ```
+
+    ```json
+    "alice, bob, carlos"
+    ```
+
+    ```json
+    "Scores: 5 / 4 / 3"
+    ```
+
+    Strategies:
+
+    - `sum` (default): Adds numeric-friendly values. Returns `null` when no
+      numeric values are present.
+    - `join`: Converts defined values to strings and joins them with
+      `separator` (default `", "`).
+    - `template`: Joins values (using `separator`) and replaces `{{values}}` in
+      the `template` string.
+
+  </Markdown>
+
+  <Markdown>
+    ## Join example
+
+    Gather short answers, combine them with a custom separator, and reuse the
+    resulting string elsewhere.
+  </Markdown>
+
+  <TextArea id="name_1" placeholder="First name" />
+  <TextArea id="name_2" placeholder="Second name" />
+  <TextArea id="name_3" placeholder="Third name" />
+
+  <Aggregate id="names_joined" target="name_1 name_2 name_3" strategy="join" separator=" | " />
+
+  <Ref target="names_joined" />
+
+  <Markdown>
+    ## Template example
+
+    Aggregate values into a custom sentence. Here we join the three original
+    quiz scores with a slash and embed them into a short summary string.
+  </Markdown>
+
+  <NumberInput id="score_q4">Question 4 score</NumberInput>
+  <NumberInput id="score_q5">Question 5 score</NumberInput>
+  <NumberInput id="score_q6">Question 6 score</NumberInput>
+
+  <Aggregate
+    id="quiz_template"
+    target="score_q4 score_q5 score_q6"
+    strategy="template"
+    template="Scores submitted: {{values}}"
+    separator=" / "
+  />
+
+  <Ref target="quiz_template" />
+
+  <Markdown>
+    ## Template with target placeholders
+
+    Template strings can also reference individual targets directly by ID.
+    Below we craft a sentence that names each part of a graphic organizer.
+  </Markdown>
+
+  <TextArea id="thesis_id" placeholder="Thesis" />
+  <TextArea id="evidence_id" placeholder="Evidence" />
+  <TextArea id="conclusion_id" placeholder="Conclusion" />
+
+  <Aggregate
+    id="organizer_template"
+    target="thesis_id evidence_id conclusion_id"
+    strategy="template"
+    template="Graphic Organizer: Thesis: {{thesis_id}}, Evidence: {{evidence_id}}, Conclusion: {{conclusion_id}}"
+    separator=", "
+  />
+  <Ref target="organizer_template" />
+
+</Vertical>

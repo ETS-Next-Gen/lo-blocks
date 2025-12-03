@@ -109,6 +109,7 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
   };
 
   // Handle first submission: auto-advance on correct, reset streak on incorrect
+  // States like INVALID, INCOMPLETE, SUBMITTED are no-ops - let student fix their input
   useEffect(() => {
     const prevCorrectness = prevCorrectnessRef.current;
     prevCorrectnessRef.current = currentCorrectness;
@@ -119,7 +120,7 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
         prevCorrectness === CORRECTNESS.UNSUBMITTED &&
         currentCorrectness !== CORRECTNESS.UNSUBMITTED) {
       if (currentCorrectness === CORRECTNESS.CORRECT) {
-        setFirstSubmissionResult('correct');
+        setFirstSubmissionResult(CORRECTNESS.CORRECT);
         // Auto-advance on correct answer
         const newStreak = correctStreak + 1;
         setCorrectStreak(newStreak);
@@ -129,11 +130,15 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
         } else {
           advanceToNext();
         }
-      } else if (currentCorrectness === CORRECTNESS.INCORRECT) {
-        setFirstSubmissionResult('incorrect');
+      } else if (currentCorrectness === CORRECTNESS.INCORRECT ||
+                 currentCorrectness === CORRECTNESS.PARTIALLY_CORRECT) {
+        // Partially correct counts as incorrect for mastery purposes
+        setFirstSubmissionResult(CORRECTNESS.INCORRECT);
         // Reset streak immediately on wrong answer
         setCorrectStreak(0);
       }
+      // INVALID, INCOMPLETE, SUBMITTED are no-ops - student can fix and resubmit
+      // firstSubmissionResult stays null so the next valid submission counts
     }
   }, [currentCorrectness, firstSubmissionResult, setFirstSubmissionResult, setCorrectStreak, correctStreak, goalNum, setCompleted, problemIds.length, modeState, setModeState, orderMode]);
 
@@ -162,7 +167,7 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
   const problemNode = { type: 'block', id: currentProblemId };
 
   // Show Next button only on incorrect answer (correct auto-advances)
-  const showNextButton = firstSubmissionResult === 'incorrect';
+  const showNextButton = firstSubmissionResult === CORRECTNESS.INCORRECT;
 
   return (
     <>

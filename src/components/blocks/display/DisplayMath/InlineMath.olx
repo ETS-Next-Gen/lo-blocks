@@ -4,17 +4,17 @@
   <Markdown id="intro">
 ## Inline Math
 
-InlineMath renders LaTeX expressions inline, without creating a new line. Use the shorthand `&lt;$&gt;...&lt;/$&gt;` syntax.
+InlineMath renders LaTeX expressions inline, without creating a new line.
   </Markdown>
 
   <Markdown id="examples_intro">### Examples</Markdown>
 
-  <$>ax^2 + bx + c = 0</$>
+  <InlineMath id="quadratic">ax^2 + bx + c = 0</InlineMath>
 
-  <$>\pi \approx 3.14159</$>
+  <InlineMath id="pi">\pi \approx 3.14159</InlineMath>
 
-  <$>E = mc^2</$>
+  <InlineMath id="emc2">E = mc^2</InlineMath>
 
-  <$>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}</$>
+  <InlineMath id="sum">\sum_{i=1}^{n} i = \frac{n(n+1)}{2}</InlineMath>
 
 </Vertical>

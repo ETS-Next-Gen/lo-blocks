@@ -11,10 +11,12 @@ The InlineMath block renders LaTeX mathematical expressions inline within text. 
 <InlineMath>x = 5</InlineMath>
 ```
 
-### Shorthand Syntax
+### Shorthand Syntax (XML validation disabled only)
 ```xml
 <$>x = 5</$>
 ```
+
+**Note:** The shorthand `<$>` syntax only works when XML validation is disabled, as `$` is not a valid XML tag name. When validation is enabled (the default), use `<InlineMath>` instead.
 
 ### Properties
 - `id` (optional): Unique identifier for the block
@@ -32,11 +34,11 @@ InlineMath supports the same LaTeX notation as BlockMath:
 InlineMath is a standalone block element. To mix text and math, alternate between Markdown and InlineMath blocks:
 
 ```xml
-<Markdown>The value of </Markdown><$>\pi</$><Markdown> is approximately 3.14159.</Markdown>
+<Markdown>The value of </Markdown><InlineMath>\pi</InlineMath><Markdown> is approximately 3.14159.</Markdown>
 ```
 
 ## Related Blocks
-- **BlockMath** / **\<$$\>**: For prominent, centered equations
+- **BlockMath**: For prominent, centered equations
 
 ## Example File
 See `InlineMath.olx` for working examples.

@@ -99,41 +99,6 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
   // Track previous correctness to detect first submission
   const prevCorrectnessRef = useRef(currentCorrectness);
 
-  // Capture first submission result when correctness changes from UNSUBMITTED
-  useEffect(() => {
-    const prevCorrectness = prevCorrectnessRef.current;
-    prevCorrectnessRef.current = currentCorrectness;
-
-    // Only capture if we haven't recorded a first submission yet
-    // and correctness just changed from UNSUBMITTED to something else
-    if (firstSubmissionResult === null &&
-        prevCorrectness === CORRECTNESS.UNSUBMITTED &&
-        currentCorrectness !== CORRECTNESS.UNSUBMITTED) {
-      if (currentCorrectness === CORRECTNESS.CORRECT) {
-        setFirstSubmissionResult('correct');
-      } else if (currentCorrectness === CORRECTNESS.INCORRECT) {
-        setFirstSubmissionResult('incorrect');
-      }
-    }
-  }, [currentCorrectness, firstSubmissionResult, setFirstSubmissionResult]);
-
-  // Handle next button click - use firstSubmissionResult for streak calculation
-  const handleNext = () => {
-    if (firstSubmissionResult === 'correct') {
-      const newStreak = correctStreak + 1;
-      setCorrectStreak(newStreak);
-
-      if (newStreak >= goalNum) {
-        setCompleted(true);
-      } else {
-        advanceToNext();
-      }
-    } else if (firstSubmissionResult === 'incorrect') {
-      setCorrectStreak(0);
-      advanceToNext();
-    }
-  };
-
   const advanceToNext = () => {
     // Reset first submission tracking for the next problem
     setFirstSubmissionResult(null);
@@ -141,6 +106,40 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
     // Use orderMode to get next item and new state
     const [, newState] = orderMode.nextItem(problemIds.length, modeState);
     setModeState(newState);
+  };
+
+  // Handle first submission: auto-advance on correct, reset streak on incorrect
+  useEffect(() => {
+    const prevCorrectness = prevCorrectnessRef.current;
+    prevCorrectnessRef.current = currentCorrectness;
+
+    // Only act if we haven't recorded a first submission yet
+    // and correctness just changed from UNSUBMITTED to something else
+    if (firstSubmissionResult === null &&
+        prevCorrectness === CORRECTNESS.UNSUBMITTED &&
+        currentCorrectness !== CORRECTNESS.UNSUBMITTED) {
+      if (currentCorrectness === CORRECTNESS.CORRECT) {
+        setFirstSubmissionResult('correct');
+        // Auto-advance on correct answer
+        const newStreak = correctStreak + 1;
+        setCorrectStreak(newStreak);
+
+        if (newStreak >= goalNum) {
+          setCompleted(true);
+        } else {
+          advanceToNext();
+        }
+      } else if (currentCorrectness === CORRECTNESS.INCORRECT) {
+        setFirstSubmissionResult('incorrect');
+        // Reset streak immediately on wrong answer
+        setCorrectStreak(0);
+      }
+    }
+  }, [currentCorrectness, firstSubmissionResult, setFirstSubmissionResult, setCorrectStreak, correctStreak, goalNum, setCompleted, problemIds.length, modeState, setModeState, orderMode]);
+
+  // Handle next button click (only shown for incorrect answers)
+  const handleNext = () => {
+    advanceToNext();
   };
 
   // Check if problem exists in idMap
@@ -162,8 +161,8 @@ function MasteryProblem({ props, currentProblemId, problemIds, correctStreak, go
 
   const problemNode = { type: 'block', id: currentProblemId };
 
-  // Show Next button once we have a first submission result
-  const showNextButton = firstSubmissionResult !== null;
+  // Show Next button only on incorrect answer (correct auto-advances)
+  const showNextButton = firstSubmissionResult === 'incorrect';
 
   return (
     <>

@@ -15,17 +15,17 @@ import { getValueById } from '@/lib/blocks';
 import * as state from '@/lib/state';
 
 const IDENTIFIER_REGEX = '[A-Za-z0-9_][A-Za-z0-9_-]*';
-const STATUS_REQUIREMENT = new RegExp(`^(${IDENTIFIER_REGEX})\\s+(${IDENTIFIER_REGEX})$`);
-const COMPARISON_REQUIREMENT = new RegExp(
+const STATUS_PREREQUISITE = new RegExp(`^(${IDENTIFIER_REGEX})\\s+(${IDENTIFIER_REGEX})$`);
+const COMPARISON_PREREQUISITE = new RegExp(
   `^(${IDENTIFIER_REGEX})\\s+(${IDENTIFIER_REGEX})\\s*(>=|<=|>|<|=)\\s*(\\d+(?:\\.\\d+)?)$`
 );
 
-function parseSingleRequirement(requirement) {
-  if (typeof requirement !== 'string') return null;
-  const trimmed = requirement.trim();
+function parseSinglePrerequisite(prerequisite) {
+  if (typeof prerequisite !== 'string') return null;
+  const trimmed = prerequisite.trim();
   if (!trimmed) return null;
 
-  const comparisonMatch = trimmed.match(COMPARISON_REQUIREMENT);
+  const comparisonMatch = trimmed.match(COMPARISON_PREREQUISITE);
   if (comparisonMatch) {
     return {
       id: comparisonMatch[1],
@@ -35,7 +35,7 @@ function parseSingleRequirement(requirement) {
     };
   }
 
-  const statusMatch = trimmed.match(STATUS_REQUIREMENT);
+  const statusMatch = trimmed.match(STATUS_PREREQUISITE);
   if (statusMatch) {
     return { id: statusMatch[1], status: statusMatch[2] };
   }
@@ -45,43 +45,86 @@ function parseSingleRequirement(requirement) {
     return { id: idMatch[0] };
   }
 
-  console.warn(`[requirements] Unable to parse requirement expression "${requirement}"`);
+  console.warn(`[prerequisites] Unable to parse prerequisite expression "${prerequisite}"`);
   return null;
 }
 
-export function parseRequirements(dependsOn) {
+export function parsePrerequisites(dependsOn) {
   if (!dependsOn) return [];
 
   if (Array.isArray(dependsOn)) {
     return dependsOn
-      .map((req) => (typeof req === 'string' ? parseSingleRequirement(req) : req))
+      .map((req) => (typeof req === 'string' ? parseSinglePrerequisite(req) : req))
       .filter(Boolean);
   }
 
   if (typeof dependsOn !== 'string') {
-    console.warn('[requirements] dependsOn must be a string or array');
+    console.warn('[prerequisites] dependsOn must be a string or array');
     return [];
   }
 
   return dependsOn
     .split(',')
-    .map((req) => parseSingleRequirement(req))
+    .map((req) => parseSinglePrerequisite(req))
     .filter(Boolean);
 }
 
-function checkRequirementValue(requirement, value) {
-  // TODO the requirement might include an operation like `score>0.8`
-  if (value == null) return false;
-  if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'string') return value.trim().length > 0;
-  if (typeof value === 'number') return value > 0;
-  if (typeof value === 'boolean') return value;
-  if (value instanceof Date) return true;
-  if (typeof value === 'object') return Object.keys(value).length > 0;
-  return Boolean(value);
+function resolvePrerequisiteValue(prerequisite, value) {
+  if (prerequisite?.field && value && typeof value === 'object') {
+    return value[prerequisite.field];
+  }
+  return value;
 }
 
-function requirementValueFromGrader(props, id) {
+function normalizeNumber(value) {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  return null;
+}
+
+export function checkPrerequisiteValue(prerequisite, value) {
+  const resolvedValue = resolvePrerequisiteValue(prerequisite, value);
+
+  if (prerequisite?.op && prerequisite?.value !== undefined) {
+    const actualNumber = normalizeNumber(resolvedValue);
+    const expectedNumber = normalizeNumber(prerequisite.value);
+    if (actualNumber == null || expectedNumber == null) return false;
+
+    switch (prerequisite.op) {
+      case '>':
+        return actualNumber > expectedNumber;
+      case '>=':
+        return actualNumber >= expectedNumber;
+      case '<':
+        return actualNumber < expectedNumber;
+      case '<=':
+        return actualNumber <= expectedNumber;
+      case '=':
+        return actualNumber === expectedNumber;
+      default:
+        return false;
+    }
+  }
+
+  if (prerequisite?.status) {
+    if (resolvedValue == null) return false;
+    return String(resolvedValue).toLowerCase() === String(prerequisite.status).toLowerCase();
+  }
+
+  if (resolvedValue == null) return false;
+  if (Array.isArray(resolvedValue)) return resolvedValue.length > 0;
+  if (typeof resolvedValue === 'string') return resolvedValue.trim().length > 0;
+  if (typeof resolvedValue === 'number') return resolvedValue > 0;
+  if (typeof resolvedValue === 'boolean') return resolvedValue;
+  if (resolvedValue instanceof Date) return true;
+  if (typeof resolvedValue === 'object') return Object.keys(resolvedValue).length > 0;
+  return Boolean(resolvedValue);
+}
+
+function prerequisiteValueFromGrader(props, id) {
   try {
     const correctField = state.componentFieldByName(props, id, 'correct');
     return state.selectFromStore(correctField, {
@@ -95,42 +138,42 @@ function requirementValueFromGrader(props, id) {
   }
 }
 
-export async function isRequirementSatisfied(props, requirement) {
-  if (!requirement?.id) return false;
+export async function isPrerequisiteSatisfied(props, prerequisite) {
+  if (!prerequisite?.id) return false;
   try {
-    const blockValue = await getValueById(props, requirement.id);
+    const blockValue = await getValueById(props, prerequisite.id);
     if (blockValue !== undefined) {
-      return checkRequirementValue(requirement, blockValue);
+      return checkPrerequisiteValue(prerequisite, blockValue);
     }
   } catch (error) {
-    console.warn(`[Chat] getValueById failed for wait requirement ${requirement.id}`, error);
+    console.warn(`[Chat] getValueById failed for wait prerequisite ${prerequisite.id}`, error);
   }
-  const blockScore = requirementValueFromGrader(props, requirement.id);
-  return checkRequirementValue(requirement, blockScore);
+  const blockScore = prerequisiteValueFromGrader(props, prerequisite.id);
+  return checkPrerequisiteValue(prerequisite, blockScore);
 }
 
 /**
- * Check if all wait requirements are satisfied
+ * Check if all wait prerequisites are satisfied
  * @param {Object} props - Component props for context
- * @param {Array} requirements - Array of requirement objects with {id}
- * @returns {Promise<boolean>} - True if all requirements are satisfied
+ * @param {Array} prerequisites - Array of prerequisite objects with {id}
+ * @returns {Promise<boolean>} - True if all prerequisites are satisfied
  */
-export async function checkRequirements(props, requirements) {
-  if (!requirements?.length) return true;
+export async function checkPrerequisites(props, prerequisites) {
+  if (!prerequisites?.length) return true;
   try {
     const results = await Promise.all(
-      requirements.map(async (requirement) => {
+      prerequisites.map(async (prerequisite) => {
         try {
-          return await isRequirementSatisfied(props, requirement);
+          return await isPrerequisiteSatisfied(props, prerequisite);
         } catch (error) {
-          console.warn(`[Chat] Failed to resolve wait requirement ${requirement.id}`, error);
+          console.warn(`[Chat] Failed to resolve wait prerequisite ${prerequisite.id}`, error);
           return false;
         }
       })
     );
     return results.every(Boolean);
   } catch (error) {
-    console.warn('[Chat] Failed to resolve wait requirements', error);
+    console.warn('[Chat] Failed to resolve wait prerequisites', error);
     return false;
   }
 }

@@ -57,9 +57,9 @@ The group has several different suggestions. Rank these ideas from **best** to *
       <SortableGrader id="bedtime_strategy_grader" algorithm="survey">
         <SortableInput dragMode="whole">
           <Ref target="initial_suggestion" id="ref_student_suggestion_in_brainstorm" fallback="[Please make sure you've entered a suggestion on the prior screen]" />
-          <TextBlock>Give him 50 cents if he goes to bed on time (money reward)</TextBlock>
-          <TextBlock>Say you won't play games with him ever again unless he sleeps at bedtime (threat)</TextBlock>
-          <TextBlock>Do nothing - let him stay up and be tired the next day (natural consequences)</TextBlock>
+          <Markdown>Give him 50 cents if he goes to bed on time (money reward)</Markdown>
+          <Markdown>Say you won't play games with him ever again unless he sleeps at bedtime (threat)</Markdown>
+          <Markdown>Do nothing - let him stay up and be tired the next day (natural consequences)</Markdown>
         </SortableInput>
       </SortableGrader>
     </CapaProblem>
@@ -751,17 +751,17 @@ Now that you've ranked the strategies, let's focus on why positive reinforcement
     <CapaProblem id="age_appropriate_selection">
       <SortableGrader>
         <SortableInput id="age_appropriate_strategies">
-          <TextBlock id="strategy_bedtime_story">Offering a special bedtime story if the child gets ready for bed on time</TextBlock>
-          <TextBlock id="strategy_sticker_chart">Creating a sticker chart where the child earns stars for each successful bedtime</TextBlock>
-          <TextBlock id="strategy_extra_playtime">Allowing extra playtime the next day when bedtime goes smoothly</TextBlock>
-          <TextBlock id="strategy_praise">Praising the child enthusiastically when they cooperate with bedtime routine</TextBlock>
-          <TextBlock id="strategy_reward_system">Setting up a reward system where 5 good bedtimes earn a small toy</TextBlock>
-          <TextBlock id="strategy_take_toys">Taking away toys when the child refuses to go to bed</TextBlock>
-          <TextBlock id="strategy_yelling">Yelling at the child when they run around at bedtime</TextBlock>
-          <TextBlock id="strategy_timeout">Sending the child to their room alone as punishment</TextBlock>
-          <TextBlock id="strategy_threats">Threatening to cancel weekend activities if bedtime problems continue</TextBlock>
-          <TextBlock id="strategy_ignoring">Ignoring the child completely when they refuse to go to bed</TextBlock>
-          <TextBlock id="strategy_student_suggestion">Your initial suggestion: <Ref id="ref_student_suggestion_in_sortable" target="initial_suggestion" /></TextBlock>
+          <Markdown id="strategy_bedtime_story">Offering a special bedtime story if the child gets ready for bed on time</Markdown>
+          <Markdown id="strategy_sticker_chart">Creating a sticker chart where the child earns stars for each successful bedtime</Markdown>
+          <Markdown id="strategy_extra_playtime">Allowing extra playtime the next day when bedtime goes smoothly</Markdown>
+          <Markdown id="strategy_praise">Praising the child enthusiastically when they cooperate with bedtime routine</Markdown>
+          <Markdown id="strategy_reward_system">Setting up a reward system where 5 good bedtimes earn a small toy</Markdown>
+          <Markdown id="strategy_take_toys">Taking away toys when the child refuses to go to bed</Markdown>
+          <Markdown id="strategy_yelling">Yelling at the child when they run around at bedtime</Markdown>
+          <Markdown id="strategy_timeout">Sending the child to their room alone as punishment</Markdown>
+          <Markdown id="strategy_threats">Threatening to cancel weekend activities if bedtime problems continue</Markdown>
+          <Markdown id="strategy_ignoring">Ignoring the child completely when they refuse to go to bed</Markdown>
+          <Markdown id="strategy_student_suggestion">Your initial suggestion: <Ref id="ref_student_suggestion_in_sortable" target="initial_suggestion" /></Markdown>
         </SortableInput>
       </SortableGrader>
     </CapaProblem>

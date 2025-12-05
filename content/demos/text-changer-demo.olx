@@ -2,12 +2,12 @@
 <Vertical id="rewrite_lesson" launchable="true" title="Text Rewriting Station">
   <SideBarPanel id="main_layout">
     <MainPane>
-      <TextBlock>
+      <Markdown>
         ## Write a text
 
         Put it in the box provided. After you get feedback and look at examples,
         feel free to revise your answer.
-      </TextBlock>
+      </Markdown>
 
       <TextArea id="student_essay" placeholder="Write your text here..." />
 
@@ -15,7 +15,7 @@
     </MainPane>
 
     <Sidebar>
-      <TextBlock>## Choose a rewrite style:</TextBlock>
+      <Markdown>## Choose a rewrite style:</Markdown>
 
       <ActionButton id="btn_first_grader" label="First Grader Text">
         <LLMAction id="action_first_grader" target="essay_rewrite">

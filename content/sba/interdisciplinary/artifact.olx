@@ -14,10 +14,10 @@ Your comprehensive problem statement that addresses:
 - Focus and scope aligned with Comm360's capacity
     </Markdown>
 
-    <TextBlock id="artifact_tb_1">**Final Problem Statement:**</TextBlock>
+    <Markdown id="artifact_tb_1">**Final Problem Statement:**</Markdown>
     <TextArea id="interdisciplinary_sba.full_problem_statement" placeholder="Your final problem statement will appear here once completed..." />
 
-    <TextBlock id="artifact_tb_2">**Revised Significance Statement:**</TextBlock>
+    <Markdown id="artifact_tb_2">**Revised Significance Statement:**</Markdown>
     <TextArea id="interdisciplinary_sba.problem_statement.revised" placeholder="Your significance statement will appear here..." />
   </Collapsible>
 
@@ -27,10 +27,10 @@ Your comprehensive problem statement that addresses:
 Evidence supporting the use of an interdisciplinary approach for this complex problem.
     </Markdown>
 
-    <TextBlock id="artifact_tb_3">**Why You Selected These Reasons:**</TextBlock>
+    <Markdown id="artifact_tb_3">**Why You Selected These Reasons:**</Markdown>
     <TextArea id="interdisciplinary_sba.reason_explanation" placeholder="Your explanation will appear here..." />
 
-    <TextBlock id="artifact_tb_4">**Selected Causes to Research:**</TextBlock>
+    <Markdown id="artifact_tb_4">**Selected Causes to Research:**</Markdown>
     <Markdown id="interdisciplinary_sba.reasons">
 - [ ] Some school systems can't accommodate students with physical or other kinds of disabilities
 - [ ] Students need to earn money right away to help their family
@@ -46,10 +46,10 @@ Evidence supporting the use of an interdisciplinary approach for this complex pr
 - [ ] Legal trouble makes it difficult to continue school
     </Markdown>
 
-    <TextBlock id="artifact_tb_5">**Importance Evidence:**</TextBlock>
+    <Markdown id="artifact_tb_5">**Importance Evidence:**</Markdown>
     <TextArea id="interdisciplinary_sba.source.5.importance.explanation" placeholder="Your explanation will appear here..." />
 
-    <TextBlock id="artifact_tb_6">**Unresolved Problem Evidence:**</TextBlock>
+    <Markdown id="artifact_tb_6">**Unresolved Problem Evidence:**</Markdown>
     <TextArea id="interdisciplinary_sba.source.5.unresolved.explanation" placeholder="Your explanation will appear here..." />
   </Collapsible>
 
@@ -59,14 +59,14 @@ Evidence supporting the use of an interdisciplinary approach for this complex pr
 The disciplines you've identified as relevant to understanding high school dropout.
     </Markdown>
 
-    <TextBlock id="artifact_tb_7">**Causes Mapped to Disciplines (Table):**</TextBlock>
-    <TextBlock id="artifact_tb_8">[Table component for interdisciplinary_sba.reasons discipline mapping - to be implemented]</TextBlock>
+    <Markdown id="artifact_tb_7">**Causes Mapped to Disciplines (Table):**</Markdown>
+    <Markdown id="artifact_tb_8">[Table component for interdisciplinary_sba.reasons discipline mapping - to be implemented]</Markdown>
 
-    <TextBlock id="artifact_tb_9">**Priority Area Alignment:**</TextBlock>
-    <TextBlock id="artifact_tb_10">[Table component for interdisciplinary_sba.problem_areas - to be implemented]</TextBlock>
+    <Markdown id="artifact_tb_9">**Priority Area Alignment:**</Markdown>
+    <Markdown id="artifact_tb_10">[Table component for interdisciplinary_sba.problem_areas - to be implemented]</Markdown>
     <TextArea id="interdisciplinary_sba.priority.explanation" placeholder="Your explanation will appear here..." />
 
-    <TextBlock id="artifact_tb_11">**Additional Relevant Disciplines:**</TextBlock>
+    <Markdown id="artifact_tb_11">**Additional Relevant Disciplines:**</Markdown>
     <Markdown id="interdisciplinary_sba.additional_disciplines">
 - [ ] Health Sciences
 - [ ] Biology
@@ -83,12 +83,12 @@ The disciplines you've identified as relevant to understanding high school dropo
 Research studies you've reviewed from different disciplines.
     </Markdown>
 
-    <TextBlock id="artifact_tb_12">**Study 1: ADHD Research (Psychology)**</TextBlock>
-    <TextBlock id="artifact_tb_13">[Highlight component for interdisciplinary_sba.source.1 - to be implemented]</TextBlock>
+    <Markdown id="artifact_tb_12">**Study 1: ADHD Research (Psychology)**</Markdown>
+    <Markdown id="artifact_tb_13">[Highlight component for interdisciplinary_sba.source.1 - to be implemented]</Markdown>
 
-    <TextBlock id="artifact_tb_14">**Study 2: Employment Research**</TextBlock>
-    <TextBlock id="artifact_tb_15">[Highlight component for interdisciplinary_sba.source.2 - to be implemented]</TextBlock>
-    <TextBlock id="artifact_tb_16">**Disciplines Identified:**</TextBlock>
+    <Markdown id="artifact_tb_14">**Study 2: Employment Research**</Markdown>
+    <Markdown id="artifact_tb_15">[Highlight component for interdisciplinary_sba.source.2 - to be implemented]</Markdown>
+    <Markdown id="artifact_tb_16">**Disciplines Identified:**</Markdown>
     <Markdown id="interdisciplinary_sba.source.2.classification">
 - [ ] Health Sciences
 - [ ] Biology
@@ -99,9 +99,9 @@ Research studies you've reviewed from different disciplines.
     </Markdown>
     <TextArea id="interdisciplinary_sba.source.2.classification.explanation" placeholder="Your explanation will appear here..." />
 
-    <TextBlock id="artifact_tb_17">**Study 3: Rural/Urban Research**</TextBlock>
-    <TextBlock id="artifact_tb_18">[Highlight component for interdisciplinary_sba.source.3 - to be implemented]</TextBlock>
-    <TextBlock id="artifact_tb_19">**Disciplines Identified:**</TextBlock>
+    <Markdown id="artifact_tb_17">**Study 3: Rural/Urban Research**</Markdown>
+    <Markdown id="artifact_tb_18">[Highlight component for interdisciplinary_sba.source.3 - to be implemented]</Markdown>
+    <Markdown id="artifact_tb_19">**Disciplines Identified:**</Markdown>
     <Markdown id="interdisciplinary_sba.source.3.classification">
 - [ ] Health Sciences
 - [ ] Biology
@@ -112,9 +112,9 @@ Research studies you've reviewed from different disciplines.
     </Markdown>
     <TextArea id="interdisciplinary_sba.source.3.classification.explanation" placeholder="Your explanation will appear here..." />
 
-    <TextBlock id="artifact_tb_20">**Study 4: School Funding Research**</TextBlock>
-    <TextBlock id="artifact_tb_21">[Highlight component for interdisciplinary_sba.source.4 - to be implemented]</TextBlock>
-    <TextBlock id="artifact_tb_22">**Disciplines Identified:**</TextBlock>
+    <Markdown id="artifact_tb_20">**Study 4: School Funding Research**</Markdown>
+    <Markdown id="artifact_tb_21">[Highlight component for interdisciplinary_sba.source.4 - to be implemented]</Markdown>
+    <Markdown id="artifact_tb_22">**Disciplines Identified:**</Markdown>
     <Markdown id="interdisciplinary_sba.source.4.classification">
 - [ ] Health Sciences
 - [ ] Biology
@@ -132,19 +132,19 @@ Research studies you've reviewed from different disciplines.
 Analysis of how different disciplines view the problem and where they conflict.
     </Markdown>
 
-    <TextBlock id="artifact_tb_23">**Key Insights from Psychology:**</TextBlock>
+    <Markdown id="artifact_tb_23">**Key Insights from Psychology:**</Markdown>
     <TextArea id="interdisciplinary_sba.insights.psychology" placeholder="Psychology insights: ADHD, motivation, self-efficacy factors..." />
 
-    <TextBlock id="artifact_tb_24">**Key Insights from Sociology:**</TextBlock>
+    <Markdown id="artifact_tb_24">**Key Insights from Sociology:**</Markdown>
     <TextArea id="interdisciplinary_sba.insights.sociology" placeholder="Sociology insights: Family structure, community factors, peer influences..." />
 
-    <TextBlock id="artifact_tb_25">**Key Insights from Economics:**</TextBlock>
+    <Markdown id="artifact_tb_25">**Key Insights from Economics:**</Markdown>
     <TextArea id="interdisciplinary_sba.insights.economics" placeholder="Economics insights: Employment pressures, cost-benefit of intervention..." />
 
-    <TextBlock id="artifact_tb_26">**Key Insights from Political Science:**</TextBlock>
+    <Markdown id="artifact_tb_26">**Key Insights from Political Science:**</Markdown>
     <TextArea id="interdisciplinary_sba.insights.political_science" placeholder="Political Science insights: School funding, policy interventions..." />
 
-    <TextBlock id="artifact_tb_27">**Sources of Conflict:**</TextBlock>
+    <Markdown id="artifact_tb_27">**Sources of Conflict:**</Markdown>
     <TextArea id="interdisciplinary_sba.insights.conflicts" placeholder="Where disciplines disagree or have different emphases..." />
   </Collapsible>
 
@@ -154,20 +154,20 @@ Analysis of how different disciplines view the problem and where they conflict.
 How the interdisciplinary process has enlarged your understanding of high school dropout.
     </Markdown>
 
-    <TextBlock id="artifact_tb_28">**Initial Understanding:**</TextBlock>
-    <TextBlock id="artifact_tb_29">**Your individual cause (internal):**</TextBlock>
+    <Markdown id="artifact_tb_28">**Initial Understanding:**</Markdown>
+    <Markdown id="artifact_tb_29">**Your individual cause (internal):**</Markdown>
     <TextArea id="interdisciplinary_sba.cause_internal" placeholder="Type a cause that focuses on an individual's choice..." />
 
-    <TextBlock id="artifact_tb_30">**Your structural cause:**</TextBlock>
+    <Markdown id="artifact_tb_30">**Your structural cause:**</Markdown>
     <TextArea id="interdisciplinary_sba.cause_structural" placeholder="Type a structural cause..." />
 
-    <TextBlock id="artifact_tb_31">**Evolved Understanding:**</TextBlock>
+    <Markdown id="artifact_tb_31">**Evolved Understanding:**</Markdown>
     <TextArea id="interdisciplinary_sba.reflection.evolved_understanding" placeholder="How your understanding changed after reviewing multiple disciplines..." />
 
-    <TextBlock id="artifact_tb_32">**Integration of Perspectives:**</TextBlock>
+    <Markdown id="artifact_tb_32">**Integration of Perspectives:**</Markdown>
     <TextArea id="interdisciplinary_sba.reflection.integration" placeholder="How you synthesized insights from different disciplines..." />
 
-    <TextBlock id="artifact_tb_33">**New Insights:**</TextBlock>
+    <Markdown id="artifact_tb_33">**New Insights:**</Markdown>
     <TextArea id="interdisciplinary_sba.reflection.new_insights" placeholder="What you learned that you didn't know before..." />
   </Collapsible>
 </Vertical>

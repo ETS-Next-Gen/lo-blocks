@@ -107,6 +107,11 @@ function EditControl({ content, setContent, handleSave, path }) {
 function PreviewPane({ path, content, idMap }) {
   const [error, setError] = useState<ComponentError>(null);
 
+  // Clear error when content changes (user may have fixed the issue)
+  useEffect(() => {
+    setError(null);
+  }, [content]);
+
   // Create a stable provider for resolving src="" references
   const resolveProvider = useMemo(() => new NetworkStorageProvider(), []);
 

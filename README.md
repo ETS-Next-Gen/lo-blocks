@@ -26,7 +26,7 @@ Learning Blocks allows you to:
 - Composable component protocol (with `createBlock()`)
 - Redux-based state tracking and dispatch
 - Real-time or offline-compatible delivery
-- Declarative XML authoring or simplified markup authoring (with proper PEG grammars)
+- Declarative XML authoring or simplified markup authoring (with explicit PEG grammars)
 - Clean introspection metadata for every block
 - Seamless integration with [`lo_event`](https://github.com/ETS-Next-Gen/lo_event)
 - Easy things are easy to author. Hard things are possible too. Long, but smooth learning curve for teachers, faculty, and instructional designers.
@@ -155,7 +155,7 @@ Install dependencies and run the development server:
 
 ```bash
 npm install
-npm run build:all  # Build grammars, registry, and content
+npm run build      # Build grammars, registry, and content
 npm run dev        # Start development server at http://localhost:3000
 ```
 

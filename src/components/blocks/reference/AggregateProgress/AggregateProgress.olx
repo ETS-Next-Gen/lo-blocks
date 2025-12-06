@@ -1,0 +1,43 @@
+<!-- src/components/blocks/reference/AggregateProgress.olx -->
+<Vertical id="AggregateProgressDemo" title="Aggregate Progress Demo" launchable="true">
+  <Markdown id="intro">
+    This demo includes two graders and a shared progress bar that updates as you submit answers.
+  </Markdown>
+
+  <CapaProblem id="geography_problem" title="Capital of Japan">
+    <p>What is the capital of Japan?</p>
+    <KeyGrader id="geography_grader">
+      <ChoiceInput id="geography_choices">
+        <Key id="tokyo">Tokyo</Key>
+        <Distractor id="osaka">Osaka</Distractor>
+        <Distractor id="kyoto">Kyoto</Distractor>
+        <Distractor id="yokohama">Yokohama</Distractor>
+      </ChoiceInput>
+    </KeyGrader>
+  </CapaProblem>
+
+  <!-- Science question -->
+  <CapaProblem id="biology_problem">
+    <p>Which organelle is responsible for producing ATP in cells?</p>
+    <KeyGrader>
+      <ChoiceInput>
+        <Distractor>Nucleus</Distractor>
+        <Key>Mitochondria</Key>
+        <Distractor>Ribosome</Distractor>
+        <Distractor>Golgi apparatus</Distractor>
+      </ChoiceInput>
+    </KeyGrader>
+  </CapaProblem>
+
+  <!-- True/False format -->
+  <CapaProblem id="tf_problem">
+    <p>True or False: The sun revolves around the Earth.</p>
+    <KeyGrader>
+      <ChoiceInput>
+        <Distractor>True</Distractor>
+        <Key>False</Key>
+      </ChoiceInput>
+    </KeyGrader>
+  </CapaProblem>
+  <AggregateProgress id="triangle_progress" label="Triangle progress" target="geography_choices, biology_problem, tf_problem" />
+</Vertical>

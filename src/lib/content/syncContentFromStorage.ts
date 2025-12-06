@@ -145,9 +145,13 @@ export async function syncContentFromStorage(
         contentStore.byId[storeId] = entry;
       }
 
+      // IMPORTANT: Spread fileInfo FIRST, then set nodes.
+      // This ensures fresh node IDs from parsing overwrite any stale
+      // nodes that might exist in fileInfo (when an unchanged file
+      // was promoted to changed due to auxiliary file changes).
       contentStore.byProvenance[uri] = {
-        nodes: ids,
-        ...fileInfo
+        ...fileInfo,
+        nodes: ids  // Must come AFTER spread to ensure fresh IDs win
       };
 
     } catch (fatalError) {

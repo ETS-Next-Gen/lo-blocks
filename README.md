@@ -38,6 +38,7 @@ Learning Blocks allows you to:
 - **Composable interactions** — `<LLMButton>` + `<LLMPrompt>` + `<TextArea>` → full loop
 - **Minimal magic** — XML → JSX and PEG → JSX transforms are explicit; well-defined grammars and validation
 - **Batteries included** — reusable reducers, event dispatchers, component selectors
+- **Simple, but scalable** — We can run off of a filesystem locally for development or a research study, or swap out backends to scale. This is common (and working) in the whole of Learning Observer.
 
 ---
 
@@ -174,10 +175,14 @@ For security, we use [Firejail](https://firejail.wordpress.com/) sandboxing in d
 - Use standard scripts: `npm run dev`, `npm run build`, `npm run test`
 - These are Firejail-wrapped for security
 
+This is helpful for rapid LLM prototyping, which may install untrusted dependencies.
+
 **CI/CD or pre-sandboxed environments** (GitHub Actions, containerized builds):
 - Use automation scripts: `npm run build-automation`, `npm run test-automation`
 - These omit Firejail (already running in a sandbox)
 - Typical failure signature: `cannot create /run/firejail/profile/...`
+
+Contributors have also mentioned this does not work on some operating systems; if not, simply remove `firejail` from `package.json` (or use the automation scripts, if relevant).
 
 ### Technologies Used
 
@@ -190,8 +195,7 @@ For security, we use [Firejail](https://firejail.wordpress.com/) sandboxing in d
 
 ### Documentation
 
-- [`docs/AGENTS.md`](docs/AGENTS.md) — Using LLM agents in the authoring workflow
-- [`docs/edit-preview-design.md`](docs/edit-preview-design.md) — Editor and preview architecture
+- [`docs/README.md`](docs/README.md) — An overview of the system architecture
 - [`docs/backlog.md`](docs/backlog.md) — Development roadmap and known issues
 
 ---

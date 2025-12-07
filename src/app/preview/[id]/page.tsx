@@ -46,7 +46,7 @@ export default function PreviewPage() {
     <div className="flex flex-col h-screen">
       <AppHeader home debug user />
       <div className="p-6 flex-1 overflow-auto">
-        <h1 className="text-xl font-bold mb-4">Preview: {id}</h1>
+        {debug && (<h1 className="text-xl font-bold mb-4">Preview: {id}</h1>)}
         <div className="space-y-4">
           <RenderOLX
             id={id}

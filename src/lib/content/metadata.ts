@@ -40,11 +40,11 @@ import { z } from 'zod';
  */
 export const OLXMetadataSchema = z.object({
   description: z.string().optional(),
+  category: z.string().optional(),
 
   // Future fields - uncomment and implement as needed:
   // author: z.string().optional(),
   // tags: z.array(z.string()).optional(),
-  // category: z.string().optional(),
   // namespace: z.string().optional(),
   // modified: z.string().datetime().optional(),
   // version: z.string().optional(),

@@ -180,6 +180,51 @@ function extractMetadataFromChildren(children: any[]): OLXMetadata {
   return extractMetadataFromComment(commentText);
 }
 
+/**
+ * Extracts metadata from a preceding sibling comment.
+ *
+ * Searches backwards from the current node index to find the nearest
+ * preceding comment with YAML frontmatter, skipping only whitespace.
+ *
+ * This handles both:
+ * - File-level metadata: Comments before the root element
+ * - Sibling metadata: Comments before elements within a parent
+ *
+ * @param siblings - Array of sibling nodes (can be parsedTree for root)
+ * @param nodeIndex - Index of the current node in the siblings array
+ * @returns Parsed and validated metadata object, or {} if none found
+ */
+function extractSiblingMetadata(siblings: any[], nodeIndex: number): OLXMetadata {
+  if (!siblings || nodeIndex <= 0) {
+    return {};
+  }
+
+  // Look backwards for the nearest preceding comment
+  for (let i = nodeIndex - 1; i >= 0; i--) {
+    const sibling = siblings[i];
+
+    // Skip whitespace text nodes
+    if ('#text' in sibling) {
+      const text = sibling['#text'];
+      if (text && typeof text === 'string' && text.trim() === '') {
+        continue; // Skip whitespace
+      }
+      break; // Stop at non-whitespace text
+    }
+
+    // Found a comment - extract and return metadata
+    if ('#comment' in sibling) {
+      const commentText = sibling['#comment']?.[0]?.['#text'];
+      return extractMetadataFromComment(commentText);
+    }
+
+    // Stop at any other element
+    break;
+  }
+
+  return {};
+}
+
 export async function parseOLX(
   xml,
   provenance: Provenance,
@@ -250,30 +295,9 @@ export async function parseOLX(
     let metadata = extractMetadataFromChildren(kids);
 
     // Check for preceding sibling comment (takes precedence over child metadata)
-    if (siblings && nodeIndex > 0) {
-      // Look backwards for the nearest preceding comment
-      for (let i = nodeIndex - 1; i >= 0; i--) {
-        const sibling = siblings[i];
-        // Skip whitespace text nodes
-        if ('#text' in sibling) {
-          const text = sibling['#text'];
-          if (text && typeof text === 'string' && text.trim() === '') {
-            continue; // Skip whitespace
-          }
-          break; // Stop at non-whitespace text
-        }
-        // Found a comment
-        if ('#comment' in sibling) {
-          const commentText = sibling['#comment']?.[0]?.['#text'];
-          const siblingMetadata = extractMetadataFromComment(commentText);
-          if (Object.keys(siblingMetadata).length > 0) {
-            metadata = siblingMetadata; // Sibling metadata takes precedence
-          }
-          break;
-        }
-        // Stop at any other element
-        break;
-      }
+    const siblingMetadata = extractSiblingMetadata(siblings, nodeIndex);
+    if (Object.keys(siblingMetadata).length > 0) {
+      metadata = siblingMetadata; // Sibling metadata takes precedence
     }
 
     if (attributes.ref) {
@@ -403,34 +427,16 @@ export async function parseOLX(
     )
     : parsedTree;
 
-  // Extract file-level metadata from comments before the root element
-  let fileLevelMetadata = {};
-  if (Array.isArray(parsedTree) && rootNode) {
-    // Find the index of the root node
-    const rootIndex = parsedTree.indexOf(rootNode);
-    // Look backwards for the first comment node
-    for (let i = rootIndex - 1; i >= 0; i--) {
-      const node = parsedTree[i];
-      if ('#comment' in node) {
-        const commentText = node['#comment']?.[0]?.['#text'];
-        fileLevelMetadata = extractMetadataFromComment(commentText);
-        break;  // Use the first comment found (closest to root)
-      }
-    }
-  }
-
   if (rootNode) {
     // We take the ID from the result of `parseNode` rather than directly from
     // `rootNode`. The parser can rewrite the ID (for example when handling
     // `<Use ref="...">`), so the value returned here reflects the final ID
     // stored in the ID map.
-    const parsedRoot = await parseNode(rootNode);
+    // Pass parsedTree as siblings so root can extract file-level metadata
+    const rootIndex = Array.isArray(parsedTree) ? parsedTree.indexOf(rootNode) : -1;
+    const parsedRoot = await parseNode(rootNode, parsedTree, rootIndex);
     if (parsedRoot?.id) {
       rootId = parsedRoot.id;
-      // Apply file-level metadata to the root block
-      if (rootId && idMap[rootId] && Object.keys(fileLevelMetadata).length > 0) {
-        Object.assign(idMap[rootId], fileLevelMetadata);
-      }
     }
   }
 

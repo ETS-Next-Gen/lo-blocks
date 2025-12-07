@@ -82,7 +82,7 @@ function categorizeActivities(entries) {
 
 function ActivityRow({ entry }) {
   const title = entry.attributes?.title || entry.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  const description = entry.attributes?.description;
+  const description = entry.description || entry.attributes?.description;  // Prefer metadata description
   const type = entry.tag || 'Activity';
 
   return (

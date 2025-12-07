@@ -16,6 +16,7 @@
 // by ID, relationships are explicit, and the structure supports DAG reuse patterns.
 //
 import SHA1 from 'crypto-js/sha1';
+import yaml from 'js-yaml';
 
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import { COMPONENT_MAP } from '@/components/componentMap';
@@ -25,6 +26,7 @@ import * as parsers from '@/lib/content/parsers';
 import { Provenance, IdMap, OLXLoadingError } from '@/lib/types';
 import { formatProvenanceList } from '@/lib/storage/provenance';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
+import { OLXMetadataSchema, type OLXMetadata } from '@/lib/content/metadata';
 
 const defaultParser = parsers.blocks().parser;
 
@@ -103,6 +105,81 @@ function shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, prove
   }
 }
 
+/**
+ * Extracts metadata from a comment node's text content.
+ *
+ * @param commentText - The text content of an XML comment
+ * @returns Parsed and validated metadata object, or {} if none found
+ */
+function extractMetadataFromComment(commentText: string): OLXMetadata {
+  if (!commentText || typeof commentText !== 'string') {
+    return {};
+  }
+
+  // Trim whitespace and check for YAML frontmatter delimiters (---)
+  // Must start with --- and end with --- to be treated as metadata
+  const trimmed = commentText.trim();
+  const frontmatterMatch = trimmed.match(/^---\s*\n([\s\S]*?)\n---\s*$/);
+  if (!frontmatterMatch) {
+    return {}; // Not metadata, just a regular comment
+  }
+
+  const yamlContent = frontmatterMatch[1];
+
+  try {
+    // Parse YAML
+    const parsed = yaml.load(yamlContent);
+
+    // Validate with Zod schema
+    const result = OLXMetadataSchema.safeParse(parsed);
+
+    if (!result.success) {
+      console.warn('[OLX Metadata] Invalid metadata format:', result.error.issues);
+      return {};
+    }
+
+    return result.data;
+  } catch (yamlError: any) {
+    console.warn('[OLX Metadata] Failed to parse YAML:', yamlError.message);
+    return {};
+  }
+}
+
+/**
+ * Extracts metadata from the first comment in a children array.
+ *
+ * Looks for a comment node at the beginning of an element's children
+ * with YAML frontmatter delimiters (---).
+ *
+ * Example:
+ *   <CapaProblem>
+ *     <!--
+ *     ---
+ *     description: Problem description
+ *     difficulty: intermediate
+ *     ---
+ *     -->
+ *     <p>Question text</p>
+ *   </CapaProblem>
+ *
+ * @param children - Array of child nodes from fast-xml-parser
+ * @returns Parsed and validated metadata object, or {} if none found
+ */
+function extractMetadataFromChildren(children: any[]): OLXMetadata {
+  if (!Array.isArray(children)) {
+    return {};
+  }
+
+  // Find the first comment node (skip whitespace text nodes)
+  const firstComment = children.find(node => '#comment' in node);
+  if (!firstComment) {
+    return {};
+  }
+
+  const commentText = firstComment['#comment']?.[0]?.['#text'];
+  return extractMetadataFromComment(commentText);
+}
+
 export async function parseOLX(
   xml,
   provenance: Provenance,
@@ -161,11 +238,43 @@ export async function parseOLX(
   let rootId = '';
   const errors: OLXLoadingError[] = [];
 
-  async function parseNode(node) {
+  async function parseNode(node, siblings = null, nodeIndex = -1) {
     const tag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
     if (!tag) return null;
 
     const attributes = node[':@'] ?? {};
+
+    // Extract metadata from children (first comment with frontmatter inside this element)
+    const tagParsed = node[tag];
+    const kids = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
+    let metadata = extractMetadataFromChildren(kids);
+
+    // Check for preceding sibling comment (takes precedence over child metadata)
+    if (siblings && nodeIndex > 0) {
+      // Look backwards for the nearest preceding comment
+      for (let i = nodeIndex - 1; i >= 0; i--) {
+        const sibling = siblings[i];
+        // Skip whitespace text nodes
+        if ('#text' in sibling) {
+          const text = sibling['#text'];
+          if (text && typeof text === 'string' && text.trim() === '') {
+            continue; // Skip whitespace
+          }
+          break; // Stop at non-whitespace text
+        }
+        // Found a comment
+        if ('#comment' in sibling) {
+          const commentText = sibling['#comment']?.[0]?.['#text'];
+          const siblingMetadata = extractMetadataFromComment(commentText);
+          if (Object.keys(siblingMetadata).length > 0) {
+            metadata = siblingMetadata; // Sibling metadata takes precedence
+          }
+          break;
+        }
+        // Stop at any other element
+        break;
+      }
+    }
 
     if (attributes.ref) {
       if (tag !== 'Use') {
@@ -228,6 +337,7 @@ export async function parseOLX(
       provenance,
       provider,
       parseNode,
+      metadata,  // Pass metadata to parser so it can include in entry
       storeEntry: (storeId, entry) => {
         if (idMap[storeId]) {
           const requiresUnique = shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, provenance);
@@ -293,22 +403,45 @@ export async function parseOLX(
     )
     : parsedTree;
 
+  // Extract file-level metadata from comments before the root element
+  let fileLevelMetadata = {};
+  if (Array.isArray(parsedTree) && rootNode) {
+    // Find the index of the root node
+    const rootIndex = parsedTree.indexOf(rootNode);
+    // Look backwards for the first comment node
+    for (let i = rootIndex - 1; i >= 0; i--) {
+      const node = parsedTree[i];
+      if ('#comment' in node) {
+        const commentText = node['#comment']?.[0]?.['#text'];
+        fileLevelMetadata = extractMetadataFromComment(commentText);
+        break;  // Use the first comment found (closest to root)
+      }
+    }
+  }
+
   if (rootNode) {
     // We take the ID from the result of `parseNode` rather than directly from
     // `rootNode`. The parser can rewrite the ID (for example when handling
     // `<Use ref="...">`), so the value returned here reflects the final ID
     // stored in the ID map.
     const parsedRoot = await parseNode(rootNode);
-    if (parsedRoot?.id) rootId = parsedRoot.id;
+    if (parsedRoot?.id) {
+      rootId = parsedRoot.id;
+      // Apply file-level metadata to the root block
+      if (rootId && idMap[rootId] && Object.keys(fileLevelMetadata).length > 0) {
+        Object.assign(idMap[rootId], fileLevelMetadata);
+      }
+    }
   }
 
   if (Array.isArray(parsedTree)) {
     // The remaining nodes are parsed only for their side effects. Each call to
     // `parseNode` populates `idMap` via `storeEntry`; the return values are not
     // used here.
-    for (const n of parsedTree) {
+    for (let i = 0; i < parsedTree.length; i++) {
+      const n = parsedTree[i];
       if (n !== rootNode) {
-        await parseNode(n);
+        await parseNode(n, parsedTree, i);
       }
     }
   }

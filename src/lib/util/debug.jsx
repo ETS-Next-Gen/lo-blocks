@@ -98,7 +98,7 @@ export function DisplayError({ props={}, name = 'Error', message, technical = nu
     }
   };
 
-  const [debug] = useReduxState(props, settingsFields.fieldInfoByField.debug, false);
+  const [debug] = useReduxState(props, settings.debug, false);
 
   // In debug mode, crash hard
   if (debug) {

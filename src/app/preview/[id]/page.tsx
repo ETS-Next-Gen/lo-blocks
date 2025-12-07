@@ -1,52 +1,73 @@
 // src/app/preview/[id]/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
-import { useReduxState, settingsFields } from '@/lib/state';
-import { ComponentError, IdMap } from '@/lib/types';
+import Spinner from '@/components/common/Spinner';
+import { DisplayError } from '@/lib/util/debug';
+import { useReduxState, settings } from '@/lib/state';
+import { useContentLoader } from '@/lib/content/useContentLoader';
 
 export default function PreviewPage() {
   const params = useParams();
   const id = params.id as string;
   const [debug] = useReduxState(
     {},
-    settingsFields.fieldInfoByField.debug,
+    settings.debug,
     false,
     { id: id, tag: 'preview' } // HACK: This works around not having proper props. Should be fixed. See below
   );
 
-  const [idMap, setIdMap] = useState<IdMap | null>(null);
-  const [error, setError] = useState<ComponentError>(null);
-
-  useEffect(() => {
-    if (!id) return;
-
-    fetch(`/api/content/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.ok) {
-          setError(data.error);
-        } else {
-          setIdMap(data.idMap);
-        }
-      })
-      .catch(err => setError(err.message));
-  }, [id]);
+  const { idMap, error, loading } = useContentLoader(id);
 
   if (error) {
-    return <pre className="text-red-600">Error: {error}</pre>;
+    return (
+      <div className="flex flex-col h-screen">
+        <AppHeader home debug user />
+        <div className="p-6 flex-1">
+          <DisplayError
+            props={{ id: id, tag: 'preview' }}
+            name="Content Loading Error"
+            message={`Failed to load content: ${id}`}
+            technical={error}
+            id={`${id}_load_error`}
+          />
+        </div>
+      </div>
+    );
   }
 
-  if (!idMap) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col h-screen">
+        <AppHeader home debug user />
+        <Spinner>Loading content...</Spinner>
+      </div>
+    );
+  }
+
+  if (!idMap) {
+    return (
+      <div className="flex flex-col h-screen">
+        <AppHeader home debug user />
+        <div className="p-6 flex-1">
+          <DisplayError
+            props={{ id: id, tag: 'preview' }}
+            name="No Content"
+            message={`No content found for ID: ${id}`}
+            id={`${id}_no_content`}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen">
-      <AppHeader />
+      <AppHeader home debug user />
       <div className="p-6 flex-1 overflow-auto">
-        <h1 className="text-xl font-bold mb-4">Preview: {id}</h1>
+        {debug && (<h1 className="text-xl font-bold mb-4">Preview: {id}</h1>)}
         <div className="space-y-4">
           <RenderOLX
             id={id}

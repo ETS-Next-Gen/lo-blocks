@@ -1,8 +1,12 @@
 // src/app/page.js
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import AppHeader from '@/components/common/AppHeader';
+import Spinner from '@/components/common/Spinner';
+import { DisplayError } from '@/lib/util/debug';
+import { useContentLoader } from '@/lib/content/useContentLoader';
 
 const ENDPOINT_LINKS = [
   {
@@ -54,33 +58,27 @@ const ENDPOINT_LINKS = [
 ];
 
 function LessonsAndActivities() {
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { idMap, error, loading } = useContentLoader('root');
 
-  useEffect(() => {
-    fetch('/api/content/root')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        const allEntries = Object.keys(data.idMap).map(key => ({
-          id: key,
-          ...data.idMap[key]
-        }));
-        setEntries(allEntries);
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const entries = idMap ? Object.keys(idMap).map(key => ({
+    id: key,
+    ...idMap[key]
+  })) : [];
 
   if (loading) {
-    return <p className="text-gray-500">Loading lessons...</p>;
+    return <Spinner>Loading lessons...</Spinner>;
   }
 
   if (error) {
-    return <p className="text-red-600">Failed to load lessons: {error}</p>;
+    return (
+      <DisplayError
+        props={{ id: 'lessons', tag: 'home' }}
+        name="Failed to Load Lessons"
+        message="Could not retrieve available lessons and activities"
+        technical={error}
+        id="lessons_load_error"
+      />
+    );
   }
 
   return (
@@ -159,10 +157,13 @@ function EndpointList() {
 
 export default function Home() {
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">📚 Learning Blocks</h1>
-      <LessonsAndActivities />
-      <EndpointList />
-    </main>
+    <div className="flex flex-col h-screen">
+      <AppHeader home user />
+      <main className="p-6 flex-1 overflow-auto">
+        <h1 className="text-2xl font-bold mb-4">📚 Learning Blocks</h1>
+        <LessonsAndActivities />
+        <EndpointList />
+      </main>
+    </div>
   );
 }

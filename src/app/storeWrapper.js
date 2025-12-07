@@ -7,11 +7,11 @@ import { Provider, useSelector } from 'react-redux';
 
 import * as lo_event from 'lo_event';
 
-import { store, settingsFields } from '@/lib/state';
+import { store, extendSettings } from '@/lib/state';
 import { editorFields } from './edit/editorFields';
 
 const reduxStore = store.init({
-  extraFields: settingsFields.extend(editorFields)
+  extraFields: extendSettings(editorFields)
 });
 
 const DEFAULT_REDUX_STORE_ID = 'default';

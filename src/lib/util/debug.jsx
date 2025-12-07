@@ -4,14 +4,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { parseProvenance, formatProvenance } from '@/lib/storage/provenance';
-import { useReduxState, settingsFields } from '@/lib/state';
+import { useReduxState, settings } from '@/lib/state';
 
 export const Trace = ({
   children,
   props = {},
   header
 }) => {
-  const [debug] = useReduxState(props, settingsFields.fieldInfoByField.debug, false,
+  const [debug] = useReduxState(props, settings.debug, false,
     { tag: true, id: true} // HACK
   );
   if (!debug) return null;
@@ -34,7 +34,7 @@ export const Trace = ({
 };
 
 export const DebugWrapper = ({ props = {}, blueprint, children }) => {
-  const [debug] = useReduxState(props, settingsFields.fieldInfoByField.debug, false,
+  const [debug] = useReduxState(props, settings.debug, false,
     { tag: true, id: true} // HACK
   );
   if (!debug) return <>{children}</>;

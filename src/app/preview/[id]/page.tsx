@@ -6,7 +6,7 @@ import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
 import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
-import { useReduxState, settingsFields } from '@/lib/state';
+import { useReduxState, settings } from '@/lib/state';
 import { useContentLoader } from '@/lib/content/useContentLoader';
 
 export default function PreviewPage() {
@@ -14,7 +14,7 @@ export default function PreviewPage() {
   const id = params.id as string;
   const [debug] = useReduxState(
     {},
-    settingsFields.fieldInfoByField.debug,
+    settings.debug,
     false,
     { id: id, tag: 'preview' } // HACK: This works around not having proper props. Should be fixed. See below
   );

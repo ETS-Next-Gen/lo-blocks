@@ -10,6 +10,18 @@
 import { fields } from './fields';
 import { scopes } from './scopes';
 
-export const settingsFields = fields([
+const settingsFields = fields([
   { name: 'debug', event: 'SET_DEBUG', scope: scopes.system }
 ]);
+
+// Export only the public interface (fieldInfoByField)
+// This is what external users should consume
+export const settings = settingsFields.fieldInfoByField;
+
+// TODO: The whole pattern of extending settings fields and combining them in storeWrapper
+// is convoluted. Settings should be settings. Editor state should be editor state. Those
+// should be registered cleanly, perhaps in the settings scope, but not "extended" into each
+// other via spaghetti code.
+//
+// This function is a temporary bridge to avoid breaking existing code.
+export const extendSettings = (additionalFields) => settingsFields.extend(additionalFields);

@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Home, UserCircle } from 'lucide-react';
-import { useReduxCheckbox, settingsFields } from '@/lib/state';
+import { useReduxCheckbox, settings } from '@/lib/state';
 
 interface AppHeaderProps {
   home?: boolean;
@@ -28,7 +28,7 @@ function HomeLink() {
 }
 
 function DebugSwitch() {
-  const [, debugProps] = useReduxCheckbox({}, settingsFields.fieldInfoByField.debug, false,
+  const [, debugProps] = useReduxCheckbox({}, settings.debug, false,
     { id: 'AppHeader', tag: 'AppHeader' }); // HACK.
   return (
     <label className="flex items-center space-x-1 text-sm cursor-pointer text-gray-600">

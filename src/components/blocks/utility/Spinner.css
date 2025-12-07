@@ -1,13 +1,11 @@
 /* src/components/blocks/Spinner.css */
 .spinner {
-  display: inline-block;
+  display: block;
   position: relative;
   width: 80px;
   height: 80px;
-  /* We added this to center. This might be teased out as an option
-   * (e.g. spinner align=Center) */
-  left: 50%;
-  transform: translateX(-50%);
+  /* Center horizontally using margin auto - works in both normal flow and flex containers */
+  margin: 0 auto;
 }
 .spinner div {
   display: inline-block;

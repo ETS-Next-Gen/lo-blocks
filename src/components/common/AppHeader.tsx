@@ -20,8 +20,8 @@ const HEADER_STYLE = 'bg-gray-50 shadow-sm';
 // Individual header item components
 function HomeLink() {
   return (
-    <Link href="/" className="flex items-center space-x-1 text-lg font-bold">
-      <Home className="w-5 h-5" />
+    <Link href="/" className="flex items-center space-x-1 text-lg font-semibold text-gray-600 hover:text-gray-800">
+      <Home className="w-4 h-4" />
       <span className="hidden sm:inline">Home</span>
     </Link>
   );
@@ -31,7 +31,7 @@ function DebugSwitch() {
   const [, debugProps] = useReduxCheckbox({}, settingsFields.fieldInfoByField.debug, false,
     { id: 'AppHeader', tag: 'AppHeader' }); // HACK.
   return (
-    <label className="flex items-center space-x-1 text-sm cursor-pointer">
+    <label className="flex items-center space-x-1 text-sm cursor-pointer text-gray-600">
       <input type="checkbox" className="h-4 w-4" {...debugProps} />
       <span>Debug</span>
     </label>
@@ -39,7 +39,7 @@ function DebugSwitch() {
 }
 
 function UserIcon() {
-  return <UserCircle className="w-6 h-6" />;
+  return <UserCircle className="w-4 h-4 text-gray-600" />;
 }
 
 export default function AppHeader({ home = true, debug = true, user = true }: AppHeaderProps) {

@@ -1,14 +1,13 @@
 // src/app/preview/[id]/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
 import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
 import { useReduxState, settingsFields } from '@/lib/state';
-import { ComponentError, IdMap } from '@/lib/types';
+import { useContentLoader } from '@/lib/content/useContentLoader';
 
 export default function PreviewPage() {
   const params = useParams();
@@ -20,23 +19,7 @@ export default function PreviewPage() {
     { id: id, tag: 'preview' } // HACK: This works around not having proper props. Should be fixed. See below
   );
 
-  const [idMap, setIdMap] = useState<IdMap | null>(null);
-  const [error, setError] = useState<ComponentError>(null);
-
-  useEffect(() => {
-    if (!id) return;
-
-    fetch(`/api/content/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.ok) {
-          setError(data.error);
-        } else {
-          setIdMap(data.idMap);
-        }
-      })
-      .catch(err => setError(err.message));
-  }, [id]);
+  const { idMap, error, loading } = useContentLoader(id);
 
   if (error) {
     return (
@@ -55,11 +38,27 @@ export default function PreviewPage() {
     );
   }
 
-  if (!idMap) {
+  if (loading) {
     return (
       <div className="flex flex-col h-screen">
         <AppHeader home debug user />
         <Spinner>Loading content...</Spinner>
+      </div>
+    );
+  }
+
+  if (!idMap) {
+    return (
+      <div className="flex flex-col h-screen">
+        <AppHeader home debug user />
+        <div className="p-6 flex-1">
+          <DisplayError
+            props={{ id: id, tag: 'preview' }}
+            name="No Content"
+            message={`No content found for ID: ${id}`}
+            id={`${id}_no_content`}
+          />
+        </div>
       </div>
     );
   }

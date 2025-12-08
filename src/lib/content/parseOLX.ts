@@ -109,9 +109,15 @@ function shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, prove
  * Extracts metadata from a comment node's text content.
  *
  * @param commentText - The text content of an XML comment
- * @returns Parsed and validated metadata object, or {} if none found
+ * @param provenance - Current provenance chain for error reporting
+ * @param errors - Array to collect parsing errors
+ * @returns Parsed and validated metadata object, or {} if none found or invalid
  */
-function extractMetadataFromComment(commentText: string): OLXMetadata {
+function extractMetadataFromComment(
+  commentText: string,
+  provenance: Provenance,
+  errors: OLXLoadingError[]
+): OLXMetadata {
   if (!commentText || typeof commentText !== 'string') {
     return {};
   }
@@ -125,6 +131,7 @@ function extractMetadataFromComment(commentText: string): OLXMetadata {
   }
 
   const yamlContent = frontmatterMatch[1];
+  const file = provenance.join(' → ');
 
   try {
     // Parse YAML
@@ -134,50 +141,79 @@ function extractMetadataFromComment(commentText: string): OLXMetadata {
     const result = OLXMetadataSchema.safeParse(parsed);
 
     if (!result.success) {
-      console.warn('[OLX Metadata] Invalid metadata format:', result.error.issues);
+      // Create teacher-friendly error message
+      const issues = result.error.issues.map(issue =>
+        `  • ${issue.path.join('.')}: ${issue.message}`
+      ).join('\n');
+
+      errors.push({
+        type: 'metadata_error',
+        file,
+        message: `📝 Metadata Format Error
+
+The metadata in your comment has formatting issues:
+
+${issues}
+
+📍 FOUND IN:
+   ${trimmed.split('\n').slice(0, 5).join('\n   ')}${trimmed.split('\n').length > 5 ? '\n   ...' : ''}
+
+💡 TIP: Check that your metadata follows the correct format. For example:
+   <!--
+   ---
+   description: A brief description of your activity
+   category: psychology
+   ---
+   -->
+
+Common issues:
+• Make sure field names are spelled correctly
+• Text values should be in quotes if they contain special characters
+• Lists need proper YAML formatting with dashes (-)`,
+        technical: {
+          yamlContent,
+          zodIssues: result.error.issues
+        }
+      });
       return {};
     }
 
     return result.data;
   } catch (yamlError: any) {
-    console.warn('[OLX Metadata] Failed to parse YAML:', yamlError.message);
+    // YAML parsing failed
+    errors.push({
+      type: 'metadata_error',
+      file,
+      message: `📝 Metadata YAML Syntax Error
+
+The metadata in your comment contains invalid YAML syntax:
+
+${yamlError.message}
+
+📍 FOUND IN:
+   ${trimmed.split('\n').slice(0, 5).join('\n   ')}${trimmed.split('\n').length > 5 ? '\n   ...' : ''}
+
+💡 TIP: Common YAML syntax issues:
+• Missing spaces after colons (use "key: value" not "key:value")
+• Incorrect indentation (use 2 spaces per level)
+• Unmatched quotes or brackets
+• Tabs instead of spaces (YAML requires spaces)
+
+Example of correct format:
+   <!--
+   ---
+   description: Master operant conditioning concepts
+   category: psychology
+   ---
+   -->`,
+      technical: {
+        yamlContent,
+        yamlError: yamlError.message,
+        yamlErrorDetails: yamlError
+      }
+    });
     return {};
   }
-}
-
-/**
- * Extracts metadata from the first comment in a children array.
- *
- * Looks for a comment node at the beginning of an element's children
- * with YAML frontmatter delimiters (---).
- *
- * Example:
- *   <CapaProblem>
- *     <!--
- *     ---
- *     description: Problem description
- *     difficulty: intermediate
- *     ---
- *     -->
- *     <p>Question text</p>
- *   </CapaProblem>
- *
- * @param children - Array of child nodes from fast-xml-parser
- * @returns Parsed and validated metadata object, or {} if none found
- */
-function extractMetadataFromChildren(children: any[]): OLXMetadata {
-  if (!Array.isArray(children)) {
-    return {};
-  }
-
-  // Find the first comment node (skip whitespace text nodes)
-  const firstComment = children.find(node => '#comment' in node);
-  if (!firstComment) {
-    return {};
-  }
-
-  const commentText = firstComment['#comment']?.[0]?.['#text'];
-  return extractMetadataFromComment(commentText);
 }
 
 /**
@@ -185,16 +221,20 @@ function extractMetadataFromChildren(children: any[]): OLXMetadata {
  *
  * Searches backwards from the current node index to find the nearest
  * preceding comment with YAML frontmatter, skipping only whitespace.
+ * Metadata always applies to the next element after the comment.
  *
- * This handles both:
- * - File-level metadata: Comments before the root element
- * - Sibling metadata: Comments before elements within a parent
- *
- * @param siblings - Array of sibling nodes (can be parsedTree for root)
+ * @param siblings - Array of sibling nodes
  * @param nodeIndex - Index of the current node in the siblings array
+ * @param provenance - Current provenance chain for error reporting
+ * @param errors - Array to collect parsing errors
  * @returns Parsed and validated metadata object, or {} if none found
  */
-function extractSiblingMetadata(siblings: any[], nodeIndex: number): OLXMetadata {
+function extractSiblingMetadata(
+  siblings: any[],
+  nodeIndex: number,
+  provenance: Provenance,
+  errors: OLXLoadingError[]
+): OLXMetadata {
   if (!siblings || nodeIndex <= 0) {
     return {};
   }
@@ -215,7 +255,7 @@ function extractSiblingMetadata(siblings: any[], nodeIndex: number): OLXMetadata
     // Found a comment - check if it has valid metadata
     if ('#comment' in sibling) {
       const commentText = sibling['#comment']?.[0]?.['#text'];
-      const metadata = extractMetadataFromComment(commentText);
+      const metadata = extractMetadataFromComment(commentText, provenance, errors);
       if (Object.keys(metadata).length > 0) {
         return metadata; // Found valid metadata
       }
@@ -294,16 +334,8 @@ export async function parseOLX(
 
     const attributes = node[':@'] ?? {};
 
-    // Extract metadata from children (first comment with frontmatter inside this element)
-    const tagParsed = node[tag];
-    const kids = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
-    let metadata = extractMetadataFromChildren(kids);
-
-    // Check for preceding sibling comment (takes precedence over child metadata)
-    const siblingMetadata = extractSiblingMetadata(siblings, nodeIndex);
-    if (Object.keys(siblingMetadata).length > 0) {
-      metadata = siblingMetadata; // Sibling metadata takes precedence
-    }
+    // Extract metadata from preceding sibling comment
+    const metadata = extractSiblingMetadata(siblings, nodeIndex, provenance, errors);
 
     if (attributes.ref) {
       if (tag !== 'Use') {

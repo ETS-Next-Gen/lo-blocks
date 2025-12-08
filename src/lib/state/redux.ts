@@ -174,13 +174,20 @@ export function useReduxStates<T = any>(
 ) {
   assertValidField(field);
 
-  const values = ids.map((id) => useFieldSelector<T>(props, field, { fallback, id, tag }));
+  return useSelector(
+    (state) => {
+      const values = ids.map((id) =>
+        fieldSelector(state, props, field, { fallback, id, tag }),
+      );
 
-  if (asObject) {
-    return Object.fromEntries(ids.map((id, index) => [id, values[index]]));
-  }
+      if (asObject) {
+        return Object.fromEntries(ids.map((id, index) => [id, values[index]]));
+      }
 
-  return values;
+      return values;
+    },
+    shallowEqual,
+  );
 }
 
 

@@ -1,102 +1,80 @@
-// src/components/blocks/reference/_AggregateProgress.jsx
+// src/components/blocks/reference/AggregateProgress/_AggregateProgress.jsx
 'use client';
 
-import React from 'react';
-import { CORRECTNESS, inferRelatedNodes } from '@/lib/blocks';
-import { DisplayError } from '@/lib/util/debug';
-import { fieldByName, useAggregate } from '@/lib/state';
+import React, { useMemo } from 'react';
+import { useReduxStates, componentFieldByName } from '@/lib/state';
 
-const correctnessField = fieldByName('correct');
+function normalizeTargets(rawTargets) {
+  if (!rawTargets) return [];
 
-function isGraded(value) {
-  return value !== null && value !== undefined && value !== CORRECTNESS.UNSUBMITTED;
+  if (Array.isArray(rawTargets)) {
+    return rawTargets.filter(Boolean);
+  }
+
+  if (typeof rawTargets === 'string') {
+    return rawTargets
+      .split(/[\s,]+/)
+      .map((id) => id.trim())
+      .filter(Boolean);
+  }
+
+  return [];
 }
 
-export default function _AggregateProgress(props) {
+/**
+ * Simple visualization component for the useReduxStates hook.
+ *
+ * Provide one or more target IDs and a field name (default: "value"). The
+ * hook reads the same field across each target and renders the results in a
+ * list for quick inspection.
+ */
+export function _AggregateProgress(props) {
   const {
-    id,
-    infer,
-    label = 'Progress',
     target,
-    fields,
+    targets,
+    ids,
+    field = 'value',
+    fallback = '',
+    asObject = false,
+    heading = 'Aggregated state values'
   } = props;
 
-  const targetIds = inferRelatedNodes(props, {
-    selector: (node) => node.blueprint?.isGrader,
-    infer,
-    targets: target,
-  });
+  const targetIds = useMemo(
+    () => normalizeTargets(targets ?? ids ?? target),
+    [targets, ids, target]
+  );
 
-  if (!targetIds.length) {
+  if (targetIds.length === 0) {
     return (
-      <DisplayError
-        props={props}
-        id={`${id}_no_targets`}
-        name="AggregateProgress"
-        message="No grader blocks found to aggregate."
-        technical={{
-          hint: 'Add grader blocks (isGrader=true) or provide explicit targets="id1,id2".',
-          infer: infer ?? 'default (parents + kids when no targets)',
-          targets: target ?? '(none provided)',
-        }}
-      />
+      <pre className="text-red-500">
+        [UseReduxStates requires at least one target id]
+      </pre>
     );
   }
 
-  const targetField = fields?.correct ?? correctnessField;
-  if (!targetField) {
-    return (
-      <DisplayError
-        props={props}
-        id={`${id}_missing_field`}
-        name="AggregateProgress"
-        message="Could not find the 'correct' field definition."
-        technical={{
-          hint: 'Ensure a grader block has registered the "correct" field.',
-        }}
-      />
-    );
-  }
+  // Validate that each target exposes the requested field; use the first
+  // field reference for the hook invocation.
+  const fieldInfo = componentFieldByName(props, targetIds[0], field);
+  targetIds.slice(1).forEach((id) => componentFieldByName(props, id, field));
 
-  const { correct, partiallyCorrect, graded, total } = useAggregate(props, targetIds, {
-    field: targetField,
-    fallback: CORRECTNESS.UNSUBMITTED,
-    selector: (values) => {
-      const gradedValues = values.filter(isGraded);
-      const correctCount = gradedValues.filter((v) => v === CORRECTNESS.CORRECT).length;
-      const partialCount = gradedValues.filter((v) => v === CORRECTNESS.PARTIALLY_CORRECT).length;
-      return {
-        total: targetIds.length,
-        graded: gradedValues.length,
-        correct: correctCount,
-        partiallyCorrect: partialCount,
-      };
-    },
-  });
+  const values = useReduxStates(props, fieldInfo, targetIds, { fallback, asObject });
 
-  const remaining = Math.max(total - graded, 0);
-  const maxValue = Math.max(total, 1);
-  const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const entries = asObject
+    ? Object.entries(values)
+    : targetIds.map((id, index) => [id, values[index]]);
 
   return (
-    <div className="lo-aggregate-progress">
-      <div className="lo-aggregate-progress__summary">
-        <strong>{label}</strong>
-        <span className="lo-aggregate-progress__ratio">{correct}/{total} correct</span>
-      </div>
-      <progress
-        className="lo-aggregate-progress__bar"
-        value={correct}
-        max={maxValue}
-        aria-label={`${label}: ${percent}% correct`}
-      />
-      <div className="lo-aggregate-progress__details">
-        <span>{graded} graded</span>
-        {partiallyCorrect > 0 && (
-          <span>{partiallyCorrect} partially correct</span>
-        )}
-        <span>{remaining} remaining</span>
-      </div>
+    <div className="space-y-2">
+      <div className="font-semibold">{heading}</div>
+      <ul className="list-disc pl-4">
+        {entries.map(([id, value]) => (
+          <li key={id}>
+            <span className="font-mono">{id}</span>: <span>{String(value ?? fallback ?? '')}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
+
+export default _AggregateProgress;

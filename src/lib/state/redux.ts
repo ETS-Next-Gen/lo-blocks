@@ -62,7 +62,6 @@ export const fieldSelector = <T>(
     fallback,
   } = options;
   const { scope } = field;
-  console.log('fieldSelector', scope, selector);
   const scopedState = state?.application_state?.[scope];
   const value: T | undefined = (() => {
     switch (scope) {
@@ -88,7 +87,6 @@ export const fieldSelector = <T>(
         throw new Error('Unrecognized scope');
     }
   })();
-  console.log('fieldSelector', value, optId)
   return value === undefined ? (fallback as T) : value;
 };
 
@@ -154,6 +152,35 @@ export function useReduxState(
   const setValue = (newValue) => updateReduxField(props, field, newValue, { id, tag });
 
   return [value, setValue];
+}
+
+type ReduxMultiStateOptions<T> = {
+  fallback?: T;
+  tag?: string;
+  asObject?: boolean;
+};
+
+/**
+ * React hook to read the same field for multiple component IDs.
+ *
+ * This mirrors `useReduxState`'s read-path but aggregates the values from
+ * several IDs into either an array (default) or an object keyed by ID.
+ */
+export function useReduxStates<T = any>(
+  props,
+  field: FieldInfo,
+  ids: string[],
+  { fallback, tag, asObject = false }: ReduxMultiStateOptions<T> = {}
+) {
+  assertValidField(field);
+
+  const values = ids.map((id) => useFieldSelector<T>(props, field, { fallback, id, tag }));
+
+  if (asObject) {
+    return Object.fromEntries(ids.map((id, index) => [id, values[index]]));
+  }
+
+  return values;
 }
 
 
@@ -357,54 +384,4 @@ export function valueSelector(props, state, id, { fallback } = {} as { fallback?
  */
 export function useValue(props, id, options = {}) {
   return useSelector((state) => valueSelector(props, state, id, options));
-}
-
-type AggregateOptions<T, R> = {
-  selector?: (values: T[]) => R;
-  field?: FieldInfo | string;
-  fallback?: T;
-};
-
-/**
- * Aggregate selector to collect multiple component values (or specific fields)
- * into a single derived value. Optionally applies a selector function to
- * compute an aggregate result (e.g., sum, count correct responses).
- */
-export function aggregateSelector<T = any, R = T[]>(
-  props,
-  state,
-  ids: (string | undefined | null)[],
-  options: AggregateOptions<T, R> = {},
-): R {
-  const { selector, field, fallback } = options;
-
-  const values = (ids ?? []).map((id) => {
-    const targetId = id ?? undefined;
-    console.log('  map', field, targetId);
-    if (field) {
-      const fieldInfo = typeof field === 'string'
-        ? componentFieldByName(props, targetId, field)
-        : field;
-      console.log('    field', fieldInfo, { id: targetId, fallback })
-      return fieldSelector(state, props, fieldInfo, { id: targetId, fallback }) as T;
-    }
-    return valueSelector(props, state, targetId, { fallback }) as T;
-  });
-  console.log('aggregateSelector', values, selector);
-  return selector ? selector(values) : (values as unknown as R);
-}
-
-/**
- * React hook to aggregate values across multiple component IDs. Re-renders
- * whenever any of the tracked values change.
- */
-export function useAggregate<T = any, R = T[]>(
-  props,
-  ids: (string | undefined | null)[],
-  options: AggregateOptions<T, R> = {},
-): R {
-  console.log('useAggregator', props, ids, options);
-  return useSelector(
-    (state) => aggregateSelector<T, R>(props, state, ids, options)
-  );
 }

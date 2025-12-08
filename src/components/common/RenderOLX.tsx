@@ -51,6 +51,38 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { InMemoryStorageProvider, StackedStorageProvider } from '@/lib/storage';
 
+/**
+ * Props for RenderOLX component.
+ *
+ * Content sources are stacked in priority order (highest to lowest):
+ *   1. inline - parsed first, overrides everything
+ *   2. files - parsed second
+ *   3. provider/providers - used for resolving src="" references during parsing
+ *   4. baseIdMap - pre-parsed content, used as fallback
+ */
+interface RenderOLXProps {
+  /** The ID to render from the merged idMap */
+  id: any;
+  /** Raw OLX string to parse and render (highest priority) */
+  inline?: string;
+  /** Virtual filesystem: { 'filename.olx': '<OLX>...</OLX>' } - all .olx/.xml files are parsed */
+  files?: Record<string, string>;
+  /** Single storage provider for resolving src="" references during parsing */
+  provider?: any;
+  /** Array of storage providers (use when you have multiple) - spread into the stack after `provider` */
+  providers?: any[];
+  /** Pre-parsed idMap to use as base content (lowest priority, overridden by parsed content) */
+  baseIdMap?: Record<string, any>;
+  /** Storage provider for resolving references - added at end of stack (lowest priority for resolution) */
+  resolveProvider?: any;
+  /** Source identifier for debugging/tracking (e.g., 'file:///path/to.olx') */
+  provenance?: string;
+  /** Called when parsing or rendering errors occur */
+  onError?: (err: any) => void;
+  /** Custom component map (defaults to COMPONENT_MAP) */
+  componentMap?: Record<string, any>;
+}
+
 export default function RenderOLX({
   id,
   inline,
@@ -62,7 +94,7 @@ export default function RenderOLX({
   provenance,
   onError,
   componentMap = COMPONENT_MAP,
-}) {
+}: RenderOLXProps) {
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState(null);
 

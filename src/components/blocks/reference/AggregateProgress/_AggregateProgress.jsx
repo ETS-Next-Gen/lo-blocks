@@ -17,16 +17,14 @@ export default function _AggregateProgress(props) {
     id,
     infer,
     label = 'Progress',
-    targets,
     target,
     fields,
   } = props;
 
-  const requestedTargets = targets ?? target;
   const targetIds = inferRelatedNodes(props, {
     selector: (node) => node.blueprint?.isGrader,
     infer,
-    targets: requestedTargets,
+    targets: target,
   });
 
   if (!targetIds.length) {
@@ -39,7 +37,7 @@ export default function _AggregateProgress(props) {
         technical={{
           hint: 'Add grader blocks (isGrader=true) or provide explicit targets="id1,id2".',
           infer: infer ?? 'default (parents + kids when no targets)',
-          targets: requestedTargets ?? '(none provided)',
+          targets: target ?? '(none provided)',
         }}
       />
     );

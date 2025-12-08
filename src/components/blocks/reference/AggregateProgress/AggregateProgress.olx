@@ -39,5 +39,5 @@
       </ChoiceInput>
     </KeyGrader>
   </CapaProblem>
-  <AggregateProgress id="triangle_progress" label="Triangle progress" target="geography_choices, biology_problem, tf_problem" />
+  <AggregateProgress id="triangle_progress" label="Triangle progress" target="geography_problem, biology_problem, tf_problem" />
 </Vertical>

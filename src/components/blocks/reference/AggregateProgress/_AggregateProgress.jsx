@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { inferRelatedNodes, getAllNodes } from '@/lib/blocks/olxdom';
 import { useReduxStates, componentFieldByName } from '@/lib/state';
 
 function normalizeTargets(rawTargets) {
@@ -19,6 +20,47 @@ function normalizeTargets(rawTargets) {
   }
 
   return [];
+}
+
+function findNodeInfoById(props, targetId) {
+  if (!props.nodeInfo) return null;
+
+  const matches = getAllNodes(props.nodeInfo, {
+    selector: (nodeInfo) => nodeInfo?.node?.id === targetId,
+    includeRoot: true
+  });
+
+  return matches[0] || null;
+}
+
+function resolveTargetIds(props, targetIds) {
+  const results = [];
+  const seen = new Set();
+
+  targetIds.forEach((targetId) => {
+    const targetNodeInfo = findNodeInfoById(props, targetId);
+
+    const graderIds = targetNodeInfo
+      ? inferRelatedNodes(
+          { ...props, nodeInfo: targetNodeInfo },
+          {
+            selector: (nodeInfo) => nodeInfo.blueprint?.isGrader,
+            infer: ['kids'],
+            targets: undefined
+          }
+        )
+      : [];
+
+    const idsToUse = graderIds.length > 0 ? graderIds : [targetId];
+
+    idsToUse.forEach((id) => {
+      if (seen.has(id)) return;
+      seen.add(id);
+      results.push(id);
+    });
+  });
+
+  return results;
 }
 
 /**
@@ -44,7 +86,12 @@ export function _AggregateProgress(props) {
     [targets, ids, target]
   );
 
-  if (targetIds.length === 0) {
+  const resolvedTargetIds = useMemo(
+    () => resolveTargetIds(props, targetIds),
+    [props, targetIds]
+  );
+
+  if (resolvedTargetIds.length === 0) {
     return (
       <pre className="text-red-500">
         [UseReduxStates requires at least one target id]
@@ -54,14 +101,14 @@ export function _AggregateProgress(props) {
 
   // Validate that each target exposes the requested field; use the first
   // field reference for the hook invocation.
-  const fieldInfo = componentFieldByName(props, targetIds[0], field);
-  targetIds.slice(1).forEach((id) => componentFieldByName(props, id, field));
+  const fieldInfo = componentFieldByName(props, resolvedTargetIds[0], field);
+  resolvedTargetIds.slice(1).forEach((id) => componentFieldByName(props, id, field));
 
-  const values = useReduxStates(props, fieldInfo, targetIds, { fallback, asObject });
+  const values = useReduxStates(props, fieldInfo, resolvedTargetIds, { fallback, asObject });
 
   const entries = asObject
     ? Object.entries(values)
-    : targetIds.map((id, index) => [id, values[index]]);
+    : resolvedTargetIds.map((id, index) => [id, values[index]]);
 
   return (
     <div className="space-y-2">

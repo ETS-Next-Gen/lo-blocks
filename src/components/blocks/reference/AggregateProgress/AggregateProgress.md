@@ -1,46 +1,41 @@
 # AggregateProgress
 
-Aggregates correctness across multiple grader blocks and renders a compact progress indicator. It is a concrete example of using `useAggregate` in a reusable block so you can drop it into a problem and watch all of the referenced graders update in real time.
-
-## Behavior
-
-- Accepts explicit targets when you want to override inference.
-- Counts fully correct, partially correct, graded, and remaining items and surfaces them in a simple summary row plus a native `<progress>` indicator.
+Visual helper block that shows how to read the same Redux field across multiple component IDs.
+It calls `AggregateProgress` under the hood and renders each ID/value pair in a list so you can
+audit state quickly while developing or debugging.
 
 ## Attributes
 
-- `label` (optional): Heading text for the indicator (defaults to `"Progress"`).
-- `target` (optional): Comma-separated string of component IDs to aggregate.
-- `infer` (optional): Override inference direction. Uses the same semantics as `inferRelatedNodes` (`"parents"`, `"kids"`, `true`, `false`).
+- `targets` / `target` / `ids`: Comma- or space-separated list of component IDs to read
+- `field`: Field name to read from each target (default: `value`)
+- `fallback`: Value to use when a target does not yet have state (default: empty string)
+- `heading`: Optional heading text displayed above the list
+- CapaProblem-aware: If you target a `CapaProblem` block, the helper will automatically
+  traverse that problem's children and use the graders it finds instead of the container
+  itself.
 
-## Usage
+## Basic Usage
 
+Render the current `value` field for three inputs:
 
 ```xml
-  <!-- Science question -->
-  <CapaProblem id="biology_problem">
-    <p>Which organelle is responsible for producing ATP in cells?</p>
-    <KeyGrader>
-      <ChoiceInput>
-        <Distractor>Nucleus</Distractor>
-        <Key>Mitochondria</Key>
-        <Distractor>Ribosome</Distractor>
-        <Distractor>Golgi apparatus</Distractor>
-      </ChoiceInput>
-    </KeyGrader>
-  </CapaProblem>
-
-  <!-- True/False format -->
-  <CapaProblem id="tf_problem">
-    <p>True or False: The sun revolves around the Earth.</p>
-    <KeyGrader>
-      <ChoiceInput>
-        <Distractor>True</Distractor>
-        <Key>False</Key>
-      </ChoiceInput>
-    </KeyGrader>
-  </CapaProblem>
-  <AggregateProgress id="aggregate_progress" label="Question progress" target="biology_problem, tf_problem" />
+<AggregateProgress targets="input_one, input_two, input_three" />
 ```
 
-Whenever any referenced grader updates its `correct` field, the progress indicator re-renders with the new totals. The accompanying `Correctness` blocks make it clear that real graders are present and emitting correctness values for aggregation.
+Use a different field and a custom heading:
+
+```xml
+<AggregateProgress targets="grader_a grader_b" field="correct" heading="Grader correctness" />
+```
+
+Use a `CapaProblem` ID to automatically inspect its graders:
+
+```xml
+<AggregateProgress targets="capa_problem" field="correct" heading="Problem grader correctness" />
+```
+
+## Notes
+
+- All targeted components must expose the requested field; otherwise, a clear error is thrown
+- When used with graders or other computed components, the block respects each component's
+  `getValue` logic via the normal Redux selectors

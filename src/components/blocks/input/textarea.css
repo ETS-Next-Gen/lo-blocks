@@ -4,7 +4,7 @@
   width: 100%;
   min-height: 120px;
   padding: var(--lo-space-lg);
-  border: 1px solid var(--lo-border);
+  border: 4px solid var(--lo-border);
   border-radius: var(--lo-radius-md);
   font-family: var(--lo-font-family);
   font-size: var(--lo-font-size-base);

@@ -3,7 +3,7 @@
 
 import React, { useMemo } from 'react';
 import { inferRelatedNodes, getAllNodes } from '@/lib/blocks/olxdom';
-import { useReduxStates, componentFieldByName } from '@/lib/state';
+import { useAggregate, componentFieldByName } from '@/lib/state';
 
 function normalizeTargets(rawTargets) {
   if (!rawTargets) return [];
@@ -64,7 +64,7 @@ function resolveTargetIds(props, targetIds) {
 }
 
 /**
- * Simple visualization component for the useReduxStates hook.
+ * Simple visualization component for the useAggregate hook.
  *
  * Provide one or more target IDs and a field name (default: "value"). The
  * hook reads the same field across each target and renders the results in a
@@ -77,6 +77,7 @@ export function _AggregatedInputs(props) {
     ids,
     field = 'value',
     fallback = '',
+    aggregate,
     asObject = false,
     heading = 'Aggregated state values'
   } = props;
@@ -94,7 +95,7 @@ export function _AggregatedInputs(props) {
   if (resolvedTargetIds.length === 0) {
     return (
       <pre className="text-red-500">
-        [UseReduxStates requires at least one target id]
+        [useAggregate requires at least one target id]
       </pre>
     );
   }
@@ -104,11 +105,14 @@ export function _AggregatedInputs(props) {
   const fieldInfo = componentFieldByName(props, resolvedTargetIds[0], field);
   resolvedTargetIds.slice(1).forEach((id) => componentFieldByName(props, id, field));
 
-  const values = useReduxStates(props, fieldInfo, resolvedTargetIds, { fallback, asObject });
+  const aggregateMode = aggregate ?? (asObject ? 'object' : 'list');
+  const values = useAggregate(props, fieldInfo, resolvedTargetIds, { fallback, aggregate: aggregateMode });
 
-  const entries = asObject
-    ? Object.entries(values)
-    : resolvedTargetIds.map((id, index) => [id, values[index]]);
+  const entries = Array.isArray(values)
+    ? resolvedTargetIds.map((id, index) => [id, values[index]])
+    : values && typeof values === 'object'
+      ? Object.entries(values)
+      : [['aggregate', values]];
 
   return (
     <div className="space-y-2">

@@ -154,10 +154,10 @@ export function useReduxState(
   return [value, setValue];
 }
 
-type ReduxMultiStateOptions<T> = {
+type ReduxAggregateOptions<T, R = any> = {
   fallback?: T;
   tag?: string;
-  asObject?: boolean;
+  aggregate?: 'list' | 'object' | ((values: T[], ids: string[]) => R);
 };
 
 /**
@@ -166,11 +166,11 @@ type ReduxMultiStateOptions<T> = {
  * This mirrors `useReduxState`'s read-path but aggregates the values from
  * several IDs into either an array (default) or an object keyed by ID.
  */
-export function useReduxStates<T = any>(
+export function useAggregate<T = any, R = any>(
   props,
   field: FieldInfo,
   ids: string[],
-  { fallback, tag, asObject = false }: ReduxMultiStateOptions<T> = {}
+  { fallback, tag, aggregate = 'list' }: ReduxAggregateOptions<T, R> = {}
 ) {
   assertValidField(field);
 
@@ -180,7 +180,11 @@ export function useReduxStates<T = any>(
         fieldSelector(state, props, field, { fallback, id, tag }),
       );
 
-      if (asObject) {
+      if (typeof aggregate === 'function') {
+        return aggregate(values, ids);
+      }
+
+      if (aggregate === 'object') {
         return Object.fromEntries(ids.map((id, index) => [id, values[index]]));
       }
 

@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { renderHook, act } from '@testing-library/react';
 
 import { fields } from './fields';
-import { useReduxState, useReduxStates, updateReduxField } from './redux';
+import { useReduxState, useAggregate, updateReduxField } from './redux';
 import { scopes } from './scopes';
 import { store } from './store';
 
@@ -116,7 +116,7 @@ describe('useReduxState integration', () => {
   });
 });
 
-describe('useReduxStates aggregate hook', () => {
+describe('useAggregate aggregate hook', () => {
   it('returns values for multiple component IDs', async () => {
     const reduxStore = store.init();
     const wrapper = ({ children }: any) => (
@@ -131,7 +131,7 @@ describe('useReduxStates aggregate hook', () => {
 
     const ids = ['first', 'second'];
     const { result } = renderHook(
-      () => useReduxStates(props, testFields.fieldInfoByField.input, ids, { fallback: '' }),
+      () => useAggregate(props, testFields.fieldInfoByField.input, ids, { fallback: '' }),
       { wrapper }
     );
 
@@ -151,10 +151,35 @@ describe('useReduxStates aggregate hook', () => {
 
     const ids = ['first', 'missing'];
     const { result } = renderHook(
-      () => useReduxStates(props, testFields.fieldInfoByField.input, ids, { fallback: 'fallback', asObject: true }),
+      () => useAggregate(props, testFields.fieldInfoByField.input, ids, { fallback: 'fallback', aggregate: 'object' }),
       { wrapper }
     );
 
     expect(result.current).toEqual({ first: 'alpha', missing: 'fallback' });
+  });
+
+  it('supports custom aggregate functions', async () => {
+    const reduxStore = store.init();
+    const wrapper = ({ children }: any) => (
+      <Provider store={reduxStore}>{children}</Provider>
+    );
+
+    await act(async () => {
+      updateReduxField(props, testFields.fieldInfoByField.input, 'hello', { id: 'first' });
+      updateReduxField(props, testFields.fieldInfoByField.input, 'world', { id: 'second' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    const ids = ['first', 'second'];
+    const { result } = renderHook(
+      () =>
+        useAggregate(props, testFields.fieldInfoByField.input, ids, {
+          fallback: '',
+          aggregate: (values) => values.join('-'),
+        }),
+      { wrapper }
+    );
+
+    expect(result.current).toEqual('hello-world');
   });
 });

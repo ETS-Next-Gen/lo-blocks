@@ -106,10 +106,16 @@ function configureStore({ extraFields = [] }: { extraFields?: ExtraFieldsParam }
     updateResponseReducer
   );
 
+  const loggers = [
+    consoleLogger(),
+    reduxLogger.reduxLogger([], {}),
+    // websocketLogger(WEBSOCKET_URL)
+  ];
+
   lo_event.init(
     'org.ets.sba',
     '0.0.1',
-    [consoleLogger(), reduxLogger.reduxLogger([], {}), websocketLogger(WEBSOCKET_URL)],
+    loggers,
     {
       debugLevel: debug.LEVEL.EXTENDED,
       debugDest: [debug.LOG_OUTPUT.CONSOLE],

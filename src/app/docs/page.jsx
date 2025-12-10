@@ -1,11 +1,25 @@
 // src/app/docs/page.jsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import RenderOLX from '@/components/common/RenderOLX';
+import CodeEditor from '@/components/common/CodeEditor';
 import Spinner from '@/components/common/Spinner';
+import { useReduxState } from '@/lib/state';
+import { editorFields } from '../edit/editorFields';
+
+// Hook for docs example editing - uses Redux state with docs-specific provenance
+function useDocsExampleState(blockName, exampleFilename, originalContent) {
+  const provenance = `docs://${blockName}/${exampleFilename}`;
+  return useReduxState(
+    {}, // No component context needed
+    editorFields.fieldInfoByField.editedContent,
+    originalContent,
+    { id: provenance }
+  );
+}
 
 // =============================================================================
 // Utilities
@@ -303,7 +317,18 @@ function QuickReference({ block }) {
   );
 }
 
-function ExamplePreview({ example, showMoreCount }) {
+function ExamplePreview({ example, showMoreCount, blockName }) {
+  const [editedContent, setEditedContent] = useDocsExampleState(
+    blockName,
+    example.filename,
+    example.content
+  );
+  const isModified = editedContent !== example.content;
+
+  const handleReset = useCallback(() => {
+    setEditedContent(example.content);
+  }, [example.content, setEditedContent]);
+
   return (
     <section className="bg-white rounded-lg border p-6">
       <h3 className="text-lg font-semibold mb-4">Example</h3>
@@ -313,19 +338,37 @@ function ExamplePreview({ example, showMoreCount }) {
           Live Preview
         </div>
         <div className="p-4 bg-white">
-          <RenderOLX inline={example.content} />
+          <RenderOLX inline={editedContent} />
         </div>
       </div>
 
       <div className="border rounded-lg overflow-hidden">
         <div className="px-3 py-2 bg-gray-100 border-b text-xs text-gray-500 flex justify-between items-center">
-          <span>OLX Source</span>
-          <span className="text-gray-400">{example.filename}</span>
+          <span className="flex items-center gap-2">
+            OLX Source
+            {isModified && (
+              <span className="text-amber-600 text-xs">(modified)</span>
+            )}
+          </span>
+          <span className="flex items-center gap-2">
+            {isModified && (
+              <button
+                onClick={handleReset}
+                className="px-2 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded"
+              >
+                Reset
+              </button>
+            )}
+            <span className="text-gray-400">{example.filename}</span>
+          </span>
         </div>
-        <div className="p-4 bg-gray-50 overflow-x-auto max-h-64">
-          <pre className="text-sm">
-            <code>{example.content}</code>
-          </pre>
+        <div className="bg-gray-50 overflow-hidden">
+          <CodeEditor
+            value={editedContent}
+            onChange={setEditedContent}
+            language="xml"
+            maxHeight="256px"
+          />
         </div>
       </div>
 
@@ -346,7 +389,7 @@ function OverviewTab({ block, details }) {
     <div className="space-y-6">
       <QuickReference block={block} />
       {firstExample && (
-        <ExamplePreview example={firstExample} showMoreCount={moreExamplesCount} />
+        <ExamplePreview example={firstExample} showMoreCount={moreExamplesCount} blockName={block.name} />
       )}
     </div>
   );
@@ -368,7 +411,18 @@ function ReadmeTab({ content, path }) {
   );
 }
 
-function ExampleTab({ example }) {
+function ExampleTab({ example, blockName }) {
+  const [editedContent, setEditedContent] = useDocsExampleState(
+    blockName,
+    example.filename,
+    example.content
+  );
+  const isModified = editedContent !== example.content;
+
+  const handleReset = useCallback(() => {
+    setEditedContent(example.content);
+  }, [example.content, setEditedContent]);
+
   return (
     <div className="space-y-6">
       <section className="bg-white rounded-lg border overflow-hidden">
@@ -377,19 +431,36 @@ function ExampleTab({ example }) {
           <code className="text-xs text-gray-500">{example.path || example.filename}</code>
         </div>
         <div className="p-6">
-          <RenderOLX inline={example.content} />
+          <RenderOLX inline={editedContent} />
         </div>
       </section>
 
       <section className="bg-white rounded-lg border overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-          <span className="font-medium text-gray-700">Source Code</span>
-          <code className="text-xs text-gray-500">{example.path || example.filename}</code>
+          <span className="flex items-center gap-2">
+            <span className="font-medium text-gray-700">Source Code</span>
+            {isModified && (
+              <span className="text-amber-600 text-xs">(modified)</span>
+            )}
+          </span>
+          <span className="flex items-center gap-2">
+            {isModified && (
+              <button
+                onClick={handleReset}
+                className="px-2 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded"
+              >
+                Reset
+              </button>
+            )}
+            <code className="text-xs text-gray-500">{example.path || example.filename}</code>
+          </span>
         </div>
-        <div className="p-4 overflow-x-auto bg-gray-50">
-          <pre className="text-sm">
-            <code>{example.content}</code>
-          </pre>
+        <div className="bg-gray-50 overflow-hidden">
+          <CodeEditor
+            value={editedContent}
+            onChange={setEditedContent}
+            language="xml"
+          />
         </div>
       </section>
     </div>
@@ -417,7 +488,7 @@ function BlockContent({ block, details, activeTab, loading }) {
     const index = parseInt(activeTab.replace('example-', ''), 10);
     const example = details?.examples?.[index];
     if (example) {
-      return <ExampleTab example={example} />;
+      return <ExampleTab example={example} blockName={block.name} />;
     }
   }
 
@@ -532,7 +603,9 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">Learning Observer Blocks</h1>
+        <a href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700">
+          <h1>Learning Observer Blocks</h1>
+        </a>
         <p className="text-sm text-gray-500">
           {docs.totalBlocks} blocks • Generated {new Date(docs.generated).toLocaleDateString()}
         </p>

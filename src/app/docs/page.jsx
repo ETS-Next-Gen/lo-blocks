@@ -2,15 +2,24 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import { xml } from '@codemirror/lang-xml';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import RenderOLX from '@/components/common/RenderOLX';
+import CodeEditor from '@/components/common/CodeEditor';
 import Spinner from '@/components/common/Spinner';
+import { useReduxState } from '@/lib/state';
+import { docsFields } from './docsFields';
 
-// Dynamic import for CodeMirror to avoid SSR issues
-const CodeMirror = dynamic(() => import('@uiw/react-codemirror').then(mod => mod.default), { ssr: false });
+// Hook for docs example editing - uses Redux state with docs-specific provenance
+function useDocsExampleState(blockName, exampleFilename, originalContent) {
+  const provenance = `docs://${blockName}/${exampleFilename}`;
+  return useReduxState(
+    {}, // No component context needed
+    docsFields.fieldInfoByField.editedContent,
+    originalContent,
+    { id: provenance }
+  );
+}
 
 // =============================================================================
 // Utilities
@@ -308,18 +317,17 @@ function QuickReference({ block }) {
   );
 }
 
-function ExamplePreview({ example, showMoreCount }) {
-  const [editedContent, setEditedContent] = useState(example.content);
+function ExamplePreview({ example, showMoreCount, blockName }) {
+  const [editedContent, setEditedContent] = useDocsExampleState(
+    blockName,
+    example.filename,
+    example.content
+  );
   const isModified = editedContent !== example.content;
-
-  // Reset when example changes
-  useEffect(() => {
-    setEditedContent(example.content);
-  }, [example.content]);
 
   const handleReset = useCallback(() => {
     setEditedContent(example.content);
-  }, [example.content]);
+  }, [example.content, setEditedContent]);
 
   return (
     <section className="bg-white rounded-lg border p-6">
@@ -355,11 +363,10 @@ function ExamplePreview({ example, showMoreCount }) {
           </span>
         </div>
         <div className="bg-gray-50 overflow-hidden">
-          <CodeMirror
+          <CodeEditor
             value={editedContent}
             onChange={setEditedContent}
-            extensions={[xml()]}
-            basicSetup={{ lineNumbers: true, foldGutter: false }}
+            language="xml"
             maxHeight="256px"
           />
         </div>
@@ -382,7 +389,7 @@ function OverviewTab({ block, details }) {
     <div className="space-y-6">
       <QuickReference block={block} />
       {firstExample && (
-        <ExamplePreview example={firstExample} showMoreCount={moreExamplesCount} />
+        <ExamplePreview example={firstExample} showMoreCount={moreExamplesCount} blockName={block.name} />
       )}
     </div>
   );
@@ -404,18 +411,17 @@ function ReadmeTab({ content, path }) {
   );
 }
 
-function ExampleTab({ example }) {
-  const [editedContent, setEditedContent] = useState(example.content);
+function ExampleTab({ example, blockName }) {
+  const [editedContent, setEditedContent] = useDocsExampleState(
+    blockName,
+    example.filename,
+    example.content
+  );
   const isModified = editedContent !== example.content;
-
-  // Reset when example changes
-  useEffect(() => {
-    setEditedContent(example.content);
-  }, [example.content]);
 
   const handleReset = useCallback(() => {
     setEditedContent(example.content);
-  }, [example.content]);
+  }, [example.content, setEditedContent]);
 
   return (
     <div className="space-y-6">
@@ -450,11 +456,10 @@ function ExampleTab({ example }) {
           </span>
         </div>
         <div className="bg-gray-50 overflow-hidden">
-          <CodeMirror
+          <CodeEditor
             value={editedContent}
             onChange={setEditedContent}
-            extensions={[xml()]}
-            basicSetup={{ lineNumbers: true, foldGutter: false }}
+            language="xml"
           />
         </div>
       </section>
@@ -483,7 +488,7 @@ function BlockContent({ block, details, activeTab, loading }) {
     const index = parseInt(activeTab.replace('example-', ''), 10);
     const example = details?.examples?.[index];
     if (example) {
-      return <ExampleTab example={example} />;
+      return <ExampleTab example={example} blockName={block.name} />;
     }
   }
 

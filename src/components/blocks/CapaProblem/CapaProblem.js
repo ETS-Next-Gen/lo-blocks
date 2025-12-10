@@ -5,12 +5,18 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import _CapaProblem from './_CapaProblem';
 
 // CapaProblem parser responsibilities:
-// 1. Assign predictable IDs to child blocks (grader_0, input_0, etc.)
+// 1. Assign predictable IDs to ALL descendant blocks (grader_0, input_0, etc.)
 // 2. Track grader-input relationships for auto-wiring the `target` attribute
 // 3. Parse mixed content (blocks + HTML + text) for rendering
 //
 // Child blocks use their own parsers (e.g., graders use blocks.allowHTML(),
 // PEG blocks use peggyParser). This parser handles the container-level concerns.
+//
+// IMPORTANT: IDs must be assigned BEFORE calling child parsers because child
+// parsers (like blocksParser) call parseNode on their children, and parseNode
+// generates hash-based IDs if no ID is in the attributes. By pre-assigning IDs
+// to ALL descendant blocks (not just immediate children), we ensure consistent
+// IDs scoped to this CapaProblem.
 async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry, parseNode }) {
   const tagParsed = rawParsed[tag];
   const rawKids = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
@@ -19,8 +25,10 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
   let nodeIndex = 0;
   const graders = [];
 
-  // Parse children, tracking grader-input relationships
-  async function parseChild(node, currentGrader = null) {
+  // Phase 1: Pre-assign IDs to ALL descendant blocks and track grader/input relationships
+  // This MUTATES the nodes to add id attributes before any parsing happens.
+  // Without this, child parsers would generate hash-based IDs for nested blocks.
+  function assignIds(node, currentGrader = null) {
     // Handle text nodes
     if (node['#text'] !== undefined) {
       const text = node['#text'];
@@ -33,7 +41,12 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
 
     const childTag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
     if (!childTag) return null;
-    const childAttrs = node[':@'] ?? {};
+
+    // Initialize attributes object if not present
+    if (!node[':@']) {
+      node[':@'] = {};
+    }
+    const childAttrs = node[':@'];
 
     /* TODO: from Open edX OLX, we need to handle cases like:
       if (childTag === 'Label')
@@ -48,16 +61,20 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
       }
       const blueprint = component?.blueprint;
 
-      // Assign predictable IDs based on block type
-      let defaultId;
-      if (blueprint && blueprint.isGrader) {
-        defaultId = `${id}_grader_${graderIndex++}`;
-      } else if (blueprint && blueprint.getValue) {
-        defaultId = `${id}_input_${inputIndex++}`;
-      } else {
-        defaultId = `${id}_${childTag.toLowerCase()}_${nodeIndex++}`;
+      // Assign predictable IDs based on block type (if not already set)
+      if (!childAttrs.id) {
+        let defaultId;
+        if (blueprint && blueprint.isGrader) {
+          defaultId = `${id}_grader_${graderIndex++}`;
+        } else if (blueprint && blueprint.getValue) {
+          defaultId = `${id}_input_${inputIndex++}`;
+        } else {
+          defaultId = `${id}_${childTag.toLowerCase()}_${nodeIndex++}`;
+        }
+        childAttrs.id = defaultId;
       }
-      const blockId = reduxId(childAttrs, defaultId);
+      const blockId = reduxId(childAttrs, childAttrs.id);
+      childAttrs.id = blockId;  // Update with resolved ID (handles idPrefix)
 
       // Track grader context
       let mapping = currentGrader;
@@ -71,38 +88,76 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
         currentGrader.inputs.push(blockId);
       }
 
-      // Recurse into children to track nested inputs
+      // Recurse into ALL children to assign IDs (critical for nested inputs)
       const kids = node[childTag];
       const kidsArray = Array.isArray(kids) ? kids : (kids ? [kids] : []);
       for (let i = 0; i < kidsArray.length; i++) {
-        await parseChild(kidsArray[i], mapping);
+        assignIds(kidsArray[i], mapping);
       }
-
-      // Invoke the block's parser with our computed ID
-      const nodeWithId = {
-        ...node,
-        ':@': { ...childAttrs, id: blockId }
-      };
-      await parseNode(nodeWithId, kidsArray, 0);
 
       return { type: 'block', id: blockId };
     }
 
-    // HTML tag - parse children recursively for grader tracking
+    // HTML tag - recurse into children for ID assignment
     const kids = node[childTag];
     const kidsArray = Array.isArray(kids) ? kids : [];
     const childKids = [];
     for (const n of kidsArray) {
-      const result = await parseChild(n, currentGrader);
+      const result = assignIds(n, currentGrader);
       if (result) childKids.push(result);
     }
     return { type: 'html', tag: childTag, attributes: childAttrs, id: childAttrs.id, kids: childKids };
   }
 
-  // Parse all children
+  // Phase 2: Parse children (now with IDs already assigned)
+  async function parseChild(node) {
+    // Handle text nodes
+    if (node['#text'] !== undefined) {
+      const text = node['#text'];
+      if (text.trim() === '') return null;
+      return { type: 'text', text };
+    }
+
+    // Skip comments
+    if (node['#comment'] !== undefined) return null;
+
+    const childTag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
+    if (!childTag) return null;
+    const childAttrs = node[':@'] ?? {};
+
+    if (isBlockTag(childTag)) {
+      const blockId = childAttrs.id;  // Already assigned in Phase 1
+      const kids = node[childTag];
+      const kidsArray = Array.isArray(kids) ? kids : (kids ? [kids] : []);
+
+      // Invoke the block's parser - ID is already in the attributes
+      await parseNode(node, kidsArray, 0);
+
+      return { type: 'block', id: blockId };
+    }
+
+    // HTML tag - parse children recursively
+    const kids = node[childTag];
+    const kidsArray = Array.isArray(kids) ? kids : [];
+    const childKids = [];
+    for (const n of kidsArray) {
+      const result = await parseChild(n);
+      if (result) childKids.push(result);
+    }
+    return { type: 'html', tag: childTag, attributes: childAttrs, id: childAttrs.id, kids: childKids };
+  }
+
+  // Phase 1: Assign IDs to all descendants (mutates nodes)
+  const kidsStructure = [];
+  for (const n of rawKids) {
+    const result = assignIds(n, null);
+    if (result) kidsStructure.push(result);
+  }
+
+  // Phase 2: Parse all children (IDs are now in attributes)
   const kidsParsed = [];
   for (const n of rawKids) {
-    const result = await parseChild(n, null);
+    const result = await parseChild(n);
     if (result) kidsParsed.push(result);
   }
 

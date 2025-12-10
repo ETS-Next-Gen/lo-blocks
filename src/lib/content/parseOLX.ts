@@ -425,7 +425,20 @@ export async function parseOLX(
       provider,
       parseNode,
       metadata,  // Pass metadata to parser so it can include in entry
-      storeEntry: (storeId, entry) => {
+      storeEntry: (storeId, entryOrUpdater) => {
+        // Support both direct entry and updater function patterns:
+        // - storeEntry(id, entry) - store/overwrite
+        // - storeEntry(id, (existing) => newEntry) - update existing
+        const entry = typeof entryOrUpdater === 'function'
+          ? entryOrUpdater(idMap[storeId])
+          : entryOrUpdater;
+
+        // If this is an update to an existing entry, just update it
+        if (typeof entryOrUpdater === 'function' && idMap[storeId]) {
+          idMap[storeId] = entry;
+          return;
+        }
+
         if (idMap[storeId]) {
           const requiresUnique = shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, provenance);
 

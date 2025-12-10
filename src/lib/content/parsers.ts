@@ -277,7 +277,6 @@ function createBlocksParser(options: { allowHTML?: boolean } = {}) {
     for (let index = 0; index < rawKids.length; index++) {
       const child = rawKids[index];
 
-      // Handle text nodes
       if (child['#text'] !== undefined) {
         if (allowHTML) {
           const text = child['#text'];
@@ -288,31 +287,22 @@ function createBlocksParser(options: { allowHTML?: boolean } = {}) {
         continue;
       }
 
-      // Skip comments
-      if (child['#comment'] !== undefined) {
-        continue;
-      }
+      if (child['#comment'] !== undefined) continue;
 
-      // Find the tag name
       const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
       if (!tag) continue;
 
-      // Check if it's a block (uppercase) or HTML (lowercase)
       const isBlock = tag[0] === tag[0].toUpperCase();
 
       if (isBlock) {
-        // Process block via parseNode
         const result = await parseNode(child, rawKids, index);
         if (result?.id) {
           results.push(allowHTML ? { type: 'block', id: result.id } : result);
         }
       } else if (allowHTML) {
-        // Process HTML tag with recursive parsing of children
         const attributes = child[':@'] ?? {};
         const htmlKids = child[tag];
         const htmlKidsArray = Array.isArray(htmlKids) ? htmlKids : (htmlKids ? [htmlKids] : []);
-
-        // Recursively parse HTML children
         const childResults = await blocksParser({ rawKids: htmlKidsArray, parseNode });
 
         results.push({
@@ -323,7 +313,6 @@ function createBlocksParser(options: { allowHTML?: boolean } = {}) {
           kids: childResults
         });
       }
-      // If not allowHTML and not a block, skip (filtered out)
     }
 
     return results;

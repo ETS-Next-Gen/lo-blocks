@@ -1,7 +1,4 @@
-<Vertical id="tabular_mcq_demo" launchable="true">
-  <Markdown>Rate each person:</Markdown>
-  <TabularMCQ id="minimal">
-    cols: love, like, neutral, dislike, hate
-    rows: Jim, Sue, Bob, Alice
-  </TabularMCQ>
-</Vertical>
+<TabularMCQ id="demo">
+cols: love, like, neutral, dislike, hate
+rows: Jim, Sue, Bob, Alice
+</TabularMCQ>

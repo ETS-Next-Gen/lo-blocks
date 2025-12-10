@@ -4,9 +4,13 @@ import { isBlockTag } from '@/lib/util';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import _CapaProblem from './_CapaProblem';
 
-// TODO: Make this parser generic to CapaProblem, HTML, and others
+// CapaProblem parser responsibilities:
+// 1. Assign predictable IDs to child blocks (grader_0, input_0, etc.)
+// 2. Track grader-input relationships for auto-wiring the `target` attribute
+// 3. Parse mixed content (blocks + HTML + text) for rendering
 //
-// This is a minimal working version. This code should not be treated as clean or canonical.
+// Child blocks use their own parsers (e.g., graders use blocks.allowHTML(),
+// PEG blocks use peggyParser). This parser handles the container-level concerns.
 async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry, parseNode }) {
   const tagParsed = rawParsed[tag];
   const rawKids = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
@@ -15,12 +19,18 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
   let nodeIndex = 0;
   const graders = [];
 
+  // Parse children, tracking grader-input relationships
   async function parseChild(node, currentGrader = null) {
+    // Handle text nodes
     if (node['#text'] !== undefined) {
       const text = node['#text'];
       if (text.trim() === '') return null;
       return { type: 'text', text };
     }
+
+    // Skip comments
+    if (node['#comment'] !== undefined) return null;
+
     const childTag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
     if (!childTag) return null;
     const childAttrs = node[':@'] ?? {};
@@ -33,21 +43,19 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
 
     if (isBlockTag(childTag)) {
       const blueprint = COMPONENT_MAP[childTag]?.blueprint;
+
+      // Assign predictable IDs based on block type
       let defaultId;
-      // TODO: These should not be special cases, but data
-      // As is, we can't reuse this for an HTML component
       if (blueprint?.isGrader) {
         defaultId = `${id}_grader_${graderIndex++}`;
       } else if (blueprint?.getValue) {
-        // TODO: Probably we should map input IDs to grader IDs. e.g.:
-        // [problem_id]_input_[grader_idx]_[input_idx]
         defaultId = `${id}_input_${inputIndex++}`;
       } else {
         defaultId = `${id}_${childTag.toLowerCase()}_${nodeIndex++}`;
       }
       const blockId = reduxId(childAttrs, defaultId);
 
-      // Track grader context for this block and its children
+      // Track grader context
       let mapping = currentGrader;
       if (blueprint?.isGrader) {
         mapping = { id: blockId, inputs: [] };
@@ -59,45 +67,24 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
         currentGrader.inputs.push(blockId);
       }
 
-      // Parse children recursively to:
-      // 1. Build mixed content for rendering (HTML + blocks)
-      // 2. Track nested inputs for grader associations
+      // Recurse into children to track nested inputs
       const kids = node[childTag];
       const kidsArray = Array.isArray(kids) ? kids : (kids ? [kids] : []);
-      const mixedKids = [];
       for (let i = 0; i < kidsArray.length; i++) {
-        const childResult = await parseChild(kidsArray[i], mapping);
-        if (childResult) mixedKids.push(childResult);
+        await parseChild(kidsArray[i], mapping);
       }
 
-      // Create wrapper node with the computed ID for parseNode
+      // Invoke the block's parser with our computed ID
       const nodeWithId = {
         ...node,
         ':@': { ...childAttrs, id: blockId }
       };
-
-      // Use parseNode to invoke the child block's parser
-      // This ensures PEG parsers, text parsers, etc. run correctly
       await parseNode(nodeWithId, kidsArray, 0);
-
-      // For container blocks (those using parsers.blocks()), override kids
-      // with our mixed content so HTML children are preserved for rendering.
-      // Blocks with custom parsers (like PEG) keep their parser's output.
-      const usesBlocksParser = !blueprint?.parser ||
-        blueprint?.parser?.name?.includes?.('blocksParser') ||
-        blueprint?.parser?.name?.includes?.('wrappedParser');
-
-      if (usesBlocksParser && mixedKids.length > 0) {
-        storeEntry(blockId, (existing) => ({
-          ...existing,
-          kids: mixedKids
-        }));
-      }
 
       return { type: 'block', id: blockId };
     }
 
-    // Non-block HTML tag - parse children recursively
+    // HTML tag - parse children recursively for grader tracking
     const kids = node[childTag];
     const kidsArray = Array.isArray(kids) ? kids : [];
     const childKids = [];
@@ -108,13 +95,14 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
     return { type: 'html', tag: childTag, attributes: childAttrs, id: childAttrs.id, kids: childKids };
   }
 
+  // Parse all children
   const kidsParsed = [];
   for (const n of rawKids) {
     const result = await parseChild(n, null);
     if (result) kidsParsed.push(result);
   }
 
-  // Set target attributes on graders after all parsing is complete
+  // Auto-wire grader targets after parsing
   graders.forEach(g => {
     if (g.inputs.length > 0) {
       storeEntry(g.id, (existing) => ({

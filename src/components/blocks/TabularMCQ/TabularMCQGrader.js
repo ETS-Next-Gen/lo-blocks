@@ -56,7 +56,7 @@ function gradeTabularMCQ(props, { input, inputApi }) {
 }
 
 const TabularMCQGrader = core({
-  ...parsers.blocks(),
+  ...parsers.blocks.allowHTML(),
   ...blocks.grader({ grader: gradeTabularMCQ }),
   name: 'TabularMCQGrader',
   description: 'Grades TabularMCQ selections against expected answers',

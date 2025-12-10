@@ -7,7 +7,7 @@ import _CapaProblem from './_CapaProblem';
 // TODO: Make this parser generic to CapaProblem, HTML, and others
 //
 // This is a minimal working version. This code should not be treated as clean or canonical.
-function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry }) {
+async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry, parseNode }) {
   const tagParsed = rawParsed[tag];
   const rawKids = Array.isArray(tagParsed) ? tagParsed : [tagParsed];
   let inputIndex = 0;
@@ -15,42 +15,24 @@ function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry }) 
   let nodeIndex = 0;
   const graders = [];
 
-  /* BUG: This is incorrect.
-     When CapaProblem encounters text content inside a block (like TextBlock), it wraps it in { type:
-    'text', text: "..." } instead of letting the block's own parser handle it.
-
-    The issue is that when CapaProblem sees <TextBlock>Venus</TextBlock>, it:
-    1. Recognizes TextBlock as a block tag
-    2. Parses the children ("Venus") with parseChild
-    3. parseChild sees text and wraps it as { type: 'text', text: 'Venus' }
-    4. This wrapped object becomes the kids for TextBlock
-
-    But TextBlock has its own text() parser that should be handling
-    this text content directly.
-
-    This is not a trivial fix, since we extract a lot of information
-    at parse time, rather than dynamically from the OLX DOM.  That's a
-    problem for other reasons too.
-  */
-  function parseChild(node, currentGrader = null) {
+  async function parseChild(node, currentGrader = null) {
     if (node['#text'] !== undefined) {
       const text = node['#text'];
       if (text.trim() === '') return null;
       return { type: 'text', text };
     }
-    const tag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
-    if (!tag) return null;
-    const attributes = node[':@'] ?? {};
-    const kids = node[tag];
+    const childTag = Object.keys(node).find(k => ![':@', '#text', '#comment'].includes(k));
+    if (!childTag) return null;
+    const childAttrs = node[':@'] ?? {};
 
     /* TODO: from Open edX OLX, we need to handle cases like:
-      if (tag === 'Label')
-      if (tag === 'Description')
-      if (tag === 'ResponseParam')
+      if (childTag === 'Label')
+      if (childTag === 'Description')
+      if (childTag === 'ResponseParam')
     */
 
-    if (isBlockTag(tag)) {
-      const blueprint = COMPONENT_MAP[tag]?.blueprint;
+    if (isBlockTag(childTag)) {
+      const blueprint = COMPONENT_MAP[childTag]?.blueprint;
       let defaultId;
       // TODO: These should not be special cases, but data
       // As is, we can't reuse this for an HTML component
@@ -61,39 +43,84 @@ function capaParser({ id, tag, attributes, provenance, rawParsed, storeEntry }) 
         // [problem_id]_input_[grader_idx]_[input_idx]
         defaultId = `${id}_input_${inputIndex++}`;
       } else {
-        defaultId = `${id}_${tag.toLowerCase()}_${nodeIndex++}`;
+        defaultId = `${id}_${childTag.toLowerCase()}_${nodeIndex++}`;
       }
-      const blockId = reduxId(attributes, defaultId);
+      const blockId = reduxId(childAttrs, defaultId);
 
-      // TODO: DRY. I'm not sure if we want to replicate how we find related graders, etc.
-      //
-      // We should probably be using inferRelatedNodes
-      const entry = { id: blockId, tag, attributes: { ...attributes, id: blockId }, provenance, rawParsed: node };
-      // Parse children with new grader context if needed
+      // Track grader context for this block and its children
       let mapping = currentGrader;
       if (blueprint?.isGrader) {
-        mapping = { id: blockId, entry, inputs: [] };
+        mapping = { id: blockId, inputs: [] };
         graders.push(mapping);
       }
-      entry.kids = Array.isArray(kids)
-        ? kids.map(n => parseChild(n, mapping)).filter(Boolean)
-        : [];
+
+      // Track inputs for grader association
       if (blueprint?.getValue && currentGrader) {
         currentGrader.inputs.push(blockId);
       }
 
-      storeEntry(blockId, entry);
+      // Parse children recursively to:
+      // 1. Build mixed content for rendering (HTML + blocks)
+      // 2. Track nested inputs for grader associations
+      const kids = node[childTag];
+      const kidsArray = Array.isArray(kids) ? kids : (kids ? [kids] : []);
+      const mixedKids = [];
+      for (let i = 0; i < kidsArray.length; i++) {
+        const childResult = await parseChild(kidsArray[i], mapping);
+        if (childResult) mixedKids.push(childResult);
+      }
+
+      // Create wrapper node with the computed ID for parseNode
+      const nodeWithId = {
+        ...node,
+        ':@': { ...childAttrs, id: blockId }
+      };
+
+      // Use parseNode to invoke the child block's parser
+      // This ensures PEG parsers, text parsers, etc. run correctly
+      await parseNode(nodeWithId, kidsArray, 0);
+
+      // For container blocks (those using parsers.blocks()), override kids
+      // with our mixed content so HTML children are preserved for rendering.
+      // Blocks with custom parsers (like PEG) keep their parser's output.
+      const usesBlocksParser = !blueprint?.parser ||
+        blueprint?.parser?.name?.includes?.('blocksParser') ||
+        blueprint?.parser?.name?.includes?.('wrappedParser');
+
+      if (usesBlocksParser && mixedKids.length > 0) {
+        storeEntry(blockId, (existing) => ({
+          ...existing,
+          kids: mixedKids
+        }));
+      }
+
       return { type: 'block', id: blockId };
     }
 
-    const childKids = Array.isArray(kids) ? kids.map(n => parseChild(n, currentGrader)).filter(Boolean) : [];
-    return { type: 'html', tag, attributes, id: attributes.id, kids: childKids };
+    // Non-block HTML tag - parse children recursively
+    const kids = node[childTag];
+    const kidsArray = Array.isArray(kids) ? kids : [];
+    const childKids = [];
+    for (const n of kidsArray) {
+      const result = await parseChild(n, currentGrader);
+      if (result) childKids.push(result);
+    }
+    return { type: 'html', tag: childTag, attributes: childAttrs, id: childAttrs.id, kids: childKids };
   }
-  const kidsParsed = rawKids.map(n => parseChild(n, null)).filter(Boolean);
 
+  const kidsParsed = [];
+  for (const n of rawKids) {
+    const result = await parseChild(n, null);
+    if (result) kidsParsed.push(result);
+  }
+
+  // Set target attributes on graders after all parsing is complete
   graders.forEach(g => {
     if (g.inputs.length > 0) {
-      g.entry.attributes.target = g.inputs.join(',');
+      storeEntry(g.id, (existing) => ({
+        ...existing,
+        attributes: { ...existing.attributes, target: g.inputs.join(',') }
+      }));
     }
   });
 

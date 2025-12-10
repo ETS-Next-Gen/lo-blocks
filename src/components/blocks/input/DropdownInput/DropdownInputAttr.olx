@@ -1,5 +1,6 @@
 <Vertical>
   <DropdownInput id="sizePicker" placeholder="Choose a size..." options="Small|s, Medium|m, Large|l" />
 
-  <p>You selected: <Ref target="sizePicker" /></p>
+  <Markdown>You selected:</Markdown>
+  <Ref target="sizePicker" />
 </Vertical>

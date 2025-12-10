@@ -1,17 +1,11 @@
-<Vertical>
-  <CapaProblem id="dropdown_graded">
-    <Markdown>
-### Graded Dropdown Example
-
-Select the correct color of the sky on a clear day:
-    </Markdown>
-    <KeyGrader>
-      <DropdownInput id="sky_color" placeholder="Choose...">
-        ( ) Red
-        ( ) Green
-        (x) Blue
-        ( ) Yellow
-      </DropdownInput>
-    </KeyGrader>
-  </CapaProblem>
-</Vertical>
+<CapaProblem id="dropdown_graded" title="Graded Dropdown with KeyGrader">
+  <Markdown>Select the color of the sky on a clear day:</Markdown>
+  <KeyGrader>
+    <DropdownInput id="sky_color" placeholder="Choose...">
+      ( ) Red
+      ( ) Green
+      (x) Blue
+      ( ) Yellow
+    </DropdownInput>
+  </KeyGrader>
+</CapaProblem>

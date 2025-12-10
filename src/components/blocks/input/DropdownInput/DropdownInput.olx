@@ -1,10 +1,5 @@
-<Vertical>
-  <DropdownInput id="colorPicker" placeholder="Choose a color...">
-    Red
-    Green
-    Blue
-  </DropdownInput>
-
-  <Markdown>You selected:</Markdown>
-  <Ref target="colorPicker" />
-</Vertical>
+<DropdownInput id="colorPicker" placeholder="Choose a color...">
+  Red
+  Green
+  Blue
+</DropdownInput>

@@ -603,7 +603,9 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">Learning Observer Blocks</h1>
+        <a href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700">
+          <h1>Learning Observer Blocks</h1>
+        </a>
         <p className="text-sm text-gray-500">
           {docs.totalBlocks} blocks • Generated {new Date(docs.generated).toLocaleDateString()}
         </p>

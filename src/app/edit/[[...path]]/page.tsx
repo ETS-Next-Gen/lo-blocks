@@ -24,6 +24,7 @@ import SearchNav from '@/components/navigation/SearchNav';
 import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
 import CodeEditor from '@/components/common/CodeEditor';
+import Spinner from '@/components/common/Spinner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReduxState } from '@/lib/state';
 import { editorFields } from '../editorFields';
@@ -219,9 +220,9 @@ export default function EditPage() {
       <div className="flex-1 overflow-hidden">
         <FourPaneLayout
           TopLeft={<NavigationPane />}
-          TopRight={ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : "Loading..."}
+          TopRight={ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : <Spinner>Loading editor...</Spinner>}
           BottomLeft={<EditorLLMChat />}
-          BottomRight={ready? <PreviewPane path={path} content={content} idMap={idMap}/> : "Loading"}
+          BottomRight={ready ? <PreviewPane path={path} content={content} idMap={idMap}/> : <Spinner>Loading preview...</Spinner>}
         />
       </div>
     </div>

@@ -44,7 +44,7 @@
 //
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
@@ -208,12 +208,16 @@ export default function RenderOLX({
     return { ...baseIdMap, ...parsed.idMap };
   }, [parsed, baseIdMap]);
 
+  // Use ref for onParsed to avoid infinite loops when caller passes inline function
+  const onParsedRef = useRef(onParsed);
+  onParsedRef.current = onParsed;
+
   // Notify parent when idMap changes
   useEffect(() => {
-    if (onParsed && mergedIdMap) {
-      onParsed({ idMap: mergedIdMap, root: parsed?.root || null });
+    if (onParsedRef.current && mergedIdMap) {
+      onParsedRef.current({ idMap: mergedIdMap, root: parsed?.root || null });
     }
-  }, [mergedIdMap, parsed?.root, onParsed]);
+  }, [mergedIdMap, parsed?.root]);
 
   // Render content
   const rendered = useMemo(() => {

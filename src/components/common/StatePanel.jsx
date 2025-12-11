@@ -4,6 +4,10 @@
 //
 // Collapsible panel showing Redux state for all stateful components in an idMap.
 // Used in docs page to help developers see component state during demos.
+//
+// Warning: This is prototype code. May contain bugs, hacks, LLM slops, abstraction violations...
+//
+// If you run into issues with it, please do a cleanup. We need to merge a PR and we'll fix later.
 
 import React, { useState, useMemo } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';

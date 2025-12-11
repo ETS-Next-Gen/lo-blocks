@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import RenderOLX from '@/components/common/RenderOLX';
@@ -617,9 +618,9 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b px-6 py-4">
-        <a href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700">
+        <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700">
           <h1>Learning Observer Blocks</h1>
-        </a>
+        </Link>
         <p className="text-sm text-gray-500">
           {docs.totalBlocks} blocks • Generated {new Date(docs.generated).toLocaleDateString()}
         </p>

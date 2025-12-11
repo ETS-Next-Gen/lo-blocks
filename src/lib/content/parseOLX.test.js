@@ -51,34 +51,27 @@ test('CRITICAL: Parser must preserve numeric text as strings (prevents "text.tri
   expect(textBlocks.length).toBeGreaterThan(0);
 
   // Every TextBlock should have text content that remains as strings, never converted to numbers/booleans
+  // TextBlock uses parsers.text() which returns a string directly
   textBlocks.forEach((block, index) => {
     const kids = block.kids;
 
-    // Kids should be an array of {type: 'text', text: string} objects
-    expect(Array.isArray(kids)).toBe(true);
+    // Kids should be a string (from parsers.text())
+    expect(typeof kids).toBe('string',
+      `TextBlock ${index}: kids should be string but got ${typeof kids} (value: ${kids}). ` +
+      `This usually means fast-xml-parser is auto-converting numbers/booleans. ` +
+      `Check parseTagValue/parseAttributeValue settings in parseOLX.ts.`
+    );
 
-    kids.forEach((kid, kidIndex) => {
-      if (kid.type === 'text') {
-        // This is the critical test - text content should be string, not number
-        expect(typeof kid.text).toBe('string',
-          `TextBlock ${index}, kid ${kidIndex}: text should be string but got ${typeof kid.text} (value: ${kid.text}). ` +
-          `This usually means fast-xml-parser is auto-converting numbers/booleans. ` +
-          `Check parseTagValue/parseAttributeValue settings in parseOLX.ts. ` +
-          `For v6 upgrade, use: tags: { valueParsers: [] }, attributes: { valueParsers: [] }`
-        );
+    // Verify we can call string methods (this would throw if kids was a number)
+    expect(() => kids.trim()).not.toThrow();
 
-        // Verify we can call string methods (this would throw if kid.text was a number)
-        expect(() => kid.text.trim()).not.toThrow();
-
-        // Test specific cases that commonly get auto-converted
-        if (['42', '-5', '0', '123', 'true'].includes(kid.text)) {
-          // These values should be strings, not their converted types
-          expect(kid.text).toEqual(expect.any(String));
-          expect(typeof kid.text).not.toBe('number');
-          expect(typeof kid.text).not.toBe('boolean');
-        }
-      }
-    });
+    // The trimmed content should match one of our test values
+    const trimmed = kids.trim();
+    if (['42', '-5', '0', '123', 'true'].includes(trimmed)) {
+      expect(typeof trimmed).toBe('string');
+      expect(typeof trimmed).not.toBe('number');
+      expect(typeof trimmed).not.toBe('boolean');
+    }
   });
 
   // Also check that index attributes remain strings

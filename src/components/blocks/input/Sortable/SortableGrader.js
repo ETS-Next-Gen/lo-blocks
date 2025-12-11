@@ -8,7 +8,7 @@ import { gradeArrangement } from './gradingUtils';
 export const fields = state.fields(['correct', 'message']);
 
 const SortableGrader = blocks.test({
-  ...parsers.blocks(),
+  ...parsers.blocks.allowHTML(),
   ...blocks.grader({
     grader: gradeArrangement,
   }),

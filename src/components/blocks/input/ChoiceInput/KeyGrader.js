@@ -21,7 +21,7 @@ function gradeKeySelected(props, { input, inputApi }) {
 }
 
 const KeyGrader = blocks.test({
-  ...parsers.blocks(),
+  ...parsers.blocks.allowHTML(),
   ...blocks.grader({ grader: gradeKeySelected }),
   name: 'KeyGrader',
   description: 'Grades multiple choice selections by checking if Key was chosen over Distractor',

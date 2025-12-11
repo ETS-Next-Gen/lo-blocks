@@ -10,7 +10,7 @@ import { z } from 'zod';
 export const fields = state.fields(['correct', 'message']);
 
 const RatioGrader = blocks.test({
-  ...parsers.blocks(),
+  ...parsers.blocks.allowHTML(),
   ...blocks.grader({
     grader: gradeRatio,
   }),

@@ -6,7 +6,6 @@ import { useFieldSelector, updateReduxField } from '@/lib/state';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
 import { reduxId } from '@/lib/blocks/idResolver';
 import { fields as choiceFields } from './ChoiceInput';
-import { renderCompiledKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 
 export default function _ChoiceItem(props) {
@@ -44,6 +43,11 @@ export default function _ChoiceItem(props) {
   // Radio button name needs the scoped ID for proper grouping
   const scopedParentId = reduxId({ ...props, id: parentId });
 
+  // TODO: Key/Distractor currently use parsers.text() which only supports string content.
+  // To support images or rich content in choices, they should use parsers.blocks() or
+  // a mixed content parser, and this component should use renderCompiledKids instead.
+  const { kids } = props;
+
   return (
     <label className="block">
       <input
@@ -52,7 +56,7 @@ export default function _ChoiceItem(props) {
         checked={checked}
         onChange={handleChange}
        />
-      {renderCompiledKids(props)}
+      {kids}
     </label>
   );
 }

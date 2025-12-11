@@ -13,9 +13,6 @@
 
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { xml } from '@codemirror/lang-xml';
-import { markdown } from '@codemirror/lang-markdown';
 import { useParams } from 'next/navigation';
 
 import { FourPaneLayout } from './FourPaneLayout';
@@ -26,19 +23,14 @@ import ComponentNav from '@/components/navigation/ComponentNav';
 import SearchNav from '@/components/navigation/SearchNav';
 import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
+import CodeEditor from '@/components/common/CodeEditor';
+import Spinner from '@/components/common/Spinner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReduxState } from '@/lib/state';
 import { editorFields } from '../editorFields';
-import { NetworkStorageProvider, fileTypes } from '@/lib/storage';
+import { NetworkStorageProvider } from '@/lib/storage';
 import { ComponentError } from '@/lib/types';
-
-// This causes CoadMirror not to load on all pages (it gets its own
-// chunk for pages that need it).
-//
-// We use it enough that if this causes problems outside of next.js, it's
-// fine to switch to:
-// import CodeMirror from '@uiw/react-codemirror';
-const CodeMirror = dynamic(() => import('@uiw/react-codemirror').then(mod => mod.default), { ssr: false });
+import { DisplayError } from '@/lib/util/debug';
 
 // TODO: This should be a new scope
 // We HACK this into useReduxState since it's there
@@ -64,23 +56,13 @@ function EditControl({ content, setContent, handleSave, path }) {
     setContent(val);
   }, [setContent]);
 
-  const cmExt = useMemo(() => {
-    if (!path) return xml();
-    // TODO: We should not assume paths. This should handle provenances.
-    // Specifically, the provider should be able to take us provenance -> type.
-    const ext = path.split('.').pop() ?? '';
-    if (ext === fileTypes.xml || ext === fileTypes.olx) return xml();
-    if (ext === fileTypes.md) return markdown();
-    return undefined;
-  }, [path]);
-
   if (!path) return <div className="p-4">No path provided</div>;
 
   return (
     <div className="p-4 flex flex-col h-full space-y-4">
       <div className="font-mono text-sm">Editing: {path}</div>
       <div className="flex-1">
-        <CodeMirror value={content} height="100%" extensions={cmExt ? [cmExt] : []} onChange={onChange} />
+        <CodeEditor value={content} onChange={onChange} path={path} />
       </div>
       <div>
         <button
@@ -233,15 +215,28 @@ export default function EditPage() {
 
   const ready = content && idMap;
 
+  // Error display for the right panes
+  const errorPane = error ? (
+    <div className="p-4">
+      <DisplayError
+        props={{ id: path || 'editor', tag: 'EditPage' }}
+        name="Failed to Load"
+        message={error || 'Unknown error'}
+        technical={error}
+        id="edit_page_error"
+      />
+    </div>
+  ) : null;
+
   return (
     <div className="flex flex-col h-screen">
       <AppHeader />
       <div className="flex-1 overflow-hidden">
         <FourPaneLayout
           TopLeft={<NavigationPane />}
-          TopRight={ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : "Loading..."}
+          TopRight={error ? errorPane : (ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : <Spinner>Loading editor...</Spinner>)}
           BottomLeft={<EditorLLMChat />}
-          BottomRight={ready? <PreviewPane path={path} content={content} idMap={idMap}/> : "Loading"}
+          BottomRight={error ? errorPane : (ready ? <PreviewPane path={path} content={content} idMap={idMap}/> : <Spinner>Loading preview...</Spinner>)}
         />
       </div>
     </div>

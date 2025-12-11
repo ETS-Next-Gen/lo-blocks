@@ -263,23 +263,80 @@ export const xml = {
 };
 
 // Assumes we have a list of OLX-style Blocks. E.g. for a learning sequence.
-const blocksFactory = childParser(async function blocksParser({ rawKids, parseNode }) {
-  // Filter out non-element nodes but keep indices aligned with rawKids
-  const childrenToProcess = rawKids.map((child, index) => ({ child, index }))
-    .filter(({ child }) => {
-      const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
-      return !!tag;
-    });
+// Options:
+//   allowHTML: true - include HTML tags and text as mixed content for rendering
+//                     Returns: [{ type: 'block', id }, { type: 'html', tag, ... }, { type: 'text', text }, ...]
+//   allowHTML: false (default) - only process block tags, filter out HTML/text
+//                     Returns: [{ id }, { id }, ...]
+function createBlocksParser(options: { allowHTML?: boolean } = {}) {
+  const { allowHTML = false } = options;
 
-  let promises = childrenToProcess.map(({ child, index }) =>
-    parseNode(child, rawKids, index)
-  );
-  let awaited = await Promise.all(promises);
-  return awaited.filter(entry => entry.id);
-});
+  async function blocksParser({ rawKids, parseNode }) {
+    const results: any[] = [];
+
+    for (let index = 0; index < rawKids.length; index++) {
+      const child = rawKids[index];
+
+      if (child['#text'] !== undefined) {
+        if (allowHTML) {
+          const text = child['#text'];
+          if (text.trim() !== '') {
+            results.push({ type: 'text', text });
+          }
+        }
+        continue;
+      }
+
+      if (child['#comment'] !== undefined) continue;
+
+      const tag = Object.keys(child).find(k => !['#text', '#comment', ':@'].includes(k));
+      if (!tag) continue;
+
+      const isBlock = tag[0] === tag[0].toUpperCase();
+
+      if (isBlock) {
+        const result = await parseNode(child, rawKids, index);
+        if (result?.id) {
+          results.push(allowHTML ? { type: 'block', id: result.id } : result);
+        }
+      } else if (allowHTML) {
+        const attributes = child[':@'] ?? {};
+        const htmlKids = child[tag];
+        const htmlKidsArray = Array.isArray(htmlKids) ? htmlKids : (htmlKids ? [htmlKids] : []);
+        const childResults = await blocksParser({ rawKids: htmlKidsArray, parseNode });
+
+        results.push({
+          type: 'html',
+          tag,
+          attributes,
+          id: attributes.id,
+          kids: childResults
+        });
+      }
+    }
+
+    return results;
+  }
+
+  const factory = childParser(blocksParser, 'blocksParser');
+  factory.staticKids = (entry) => {
+    if (!Array.isArray(entry.kids)) return [];
+    return entry.kids
+      .filter(k => k && (k.id || (k.type === 'block' && k.id)))
+      .map(k => k.id);
+  };
+
+  return factory;
+}
+
+// Default blocks parser (no HTML)
+const blocksFactory = createBlocksParser();
 blocksFactory.staticKids = (entry) =>
   (Array.isArray(entry.kids) ? entry.kids : []).filter(k => k && k.id).map(k => k.id);
-export const blocks = blocksFactory;
+export const blocks = Object.assign(blocksFactory, {
+  // blocks.allowHTML() returns parser that includes HTML/text as mixed content
+  allowHTML: () => createBlocksParser({ allowHTML: true })()
+});
 
 // Pass through the parsed XML, in the fast-xml-parser format
 const xmljsonFactory = childParser(({ rawParsed }) => [
@@ -431,6 +488,7 @@ export function peggyParser(
           found: parseError.found,
           name: parseError.name,
           originalTag: tag,
+          originalId: id,
           fullError: parseError
         }
       };

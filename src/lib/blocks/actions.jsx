@@ -85,7 +85,8 @@ export function grader({ grader, infer = true } = {}) {
       const inst = props.idMap[id];
       const blueprint = map[inst.tag];
       const inputNodeInfo = getNodeById(props, id);
-      const inputProps = { ...props, nodeInfo: inputNodeInfo, id, target: inst.attributes?.target };
+      // HACK: We don't have the input's full props, so copy over fields that downstream code needs
+      const inputProps = { ...props, nodeInfo: inputNodeInfo, id, target: inst.attributes?.target, kids: inst.kids };
 
       const value = blueprint.getValue(inputProps, state, id);
 

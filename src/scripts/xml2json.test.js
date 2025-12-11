@@ -15,14 +15,25 @@ afterEach(async () => {
 test('xml2json script outputs valid JSON', async () => {
   // Run the script with --out flag
   const proc = spawn('npx', ['tsx', 'src/scripts/xml2json.js', '--out', OUTPUT_FILE], {
-    stdio: 'ignore', // or 'inherit' to see output
+    stdio: ['ignore', 'pipe', 'pipe']
   });
 
+  let stdout = '';
+  let stderr = '';
+  proc.stdout.on('data', (data) => { stdout += data.toString(); });
+  proc.stderr.on('data', (data) => { stderr += data.toString(); });
+
   // Wait for it to finish
-  await new Promise((resolve, reject) => {
-    proc.on('exit', code => code === 0 ? resolve() : reject(new Error('Script failed')));
-    proc.on('error', reject);
+  const exitCode = await new Promise((resolve) => {
+    proc.on('exit', resolve);
   });
+
+  if (exitCode !== 0) {
+    console.error('xml2json failed with exit code:', exitCode);
+    console.error('stdout:', stdout);
+    console.error('stderr:', stderr);
+    throw new Error(`Script failed with exit code ${exitCode}`);
+  }
 
   // Read and parse the output file
   const fileContent = await fs.readFile(OUTPUT_FILE, 'utf8');

@@ -1,4 +1,10 @@
-<!-- content/demos/tabular-mcq-demo.xml -->
+<!--
+---
+description: Survey exploring students' writing habits across different contexts—school, social media, creative, and everyday communication
+category: writing
+---
+-->
+<!-- content/sba/writing/writing_process_journal_1.olx -->
 <Sequential id="writing_frequency_demo" title="Writing Process Journal 1" launchable="true">
    <Vertical id="Introduction">
        <Markdown>

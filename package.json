@@ -25,7 +25,7 @@
     "clean": "firejail --whitelist=$(pwd) rm -rf .next node_modules .turbo out public/content",
     "clean-zombies": "pkill -f next-server; pkill -f transform.js; pkill -f 'node dev'",
     "_comment_test_automation": "build-automation and test-automation are for automated build environments (e.g. ChatGPT sandbox, GitHub Actions, etc.), which are already sandboxed and might not have firejail",
-    "build-automation": "node src/scripts/compile-grammars.js; node src/scripts/generateRegistry.js; npx tsx content/sba/psychology/convert-psych-mcq.js content/sba/psychology/operant-questions.json",
+    "build-automation": "node src/scripts/compile-grammars.js && node src/scripts/generate-parser-registry.js && node src/scripts/generateRegistry.js && npx tsx content/sba/psychology/convert-psych-mcq.js content/sba/psychology/operant-questions.json",
     "test-automation": " vitest run",
     "test": "firejail --noprofile --whitelist=$(pwd) vitest",
     "test:unit": "firejail --noprofile --whitelist=$(pwd) vitest --exclude='**/integration/**'",

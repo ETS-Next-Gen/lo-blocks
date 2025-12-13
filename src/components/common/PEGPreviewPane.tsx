@@ -99,18 +99,16 @@ export default function PEGPreviewPane({ path, content }: PEGPreviewPaneProps) {
   const hasPreview = previewOLX !== null;
 
   // Inject content into the preview OLX
-  // The preview OLX should have an empty block that we fill with content
-  const previewWithContent = useMemo(() => {
+  // The preview OLX must use {{CONTENT}} as placeholder
+  const previewWithContent = useMemo((): { olx: string } | { error: string } | null => {
     if (!previewOLX || !content) return null;
-    // Simple injection: replace empty block content or CDATA placeholder
-    // The preview OLX should use <![CDATA[{{CONTENT}}]]> as placeholder
-    if (previewOLX.includes('{{CONTENT}}')) {
-      return previewOLX.replace('{{CONTENT}}', content);
+
+    if (!previewOLX.includes('{{CONTENT}}')) {
+      return { error: `Preview OLX is missing {{CONTENT}} placeholder. File: ${previewPath}` };
     }
-    // Or if it has an empty block, we could try to inject... but that's complex
-    // For now, just use the placeholder approach
-    return previewOLX;
-  }, [previewOLX, content]);
+
+    return { olx: previewOLX.replace('{{CONTENT}}', content) };
+  }, [previewOLX, content, previewPath]);
 
   return (
     <div className="h-full flex flex-col">
@@ -187,10 +185,12 @@ export default function PEGPreviewPane({ path, content }: PEGPreviewPaneProps) {
           <div className="p-4">
             {previewError ? (
               <div className="text-red-600">Error loading preview: {previewError}</div>
-            ) : previewWithContent ? (
+            ) : previewWithContent && 'error' in previewWithContent ? (
+              <div className="text-red-600">{previewWithContent.error}</div>
+            ) : previewWithContent && 'olx' in previewWithContent ? (
               <RenderOLX
                 id={`peg-preview-${ext}`}
-                inline={previewWithContent}
+                inline={previewWithContent.olx}
               />
             ) : (
               <div className="text-gray-500">Loading preview...</div>

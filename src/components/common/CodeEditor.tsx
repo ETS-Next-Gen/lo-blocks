@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';
 import { markdown } from '@codemirror/lang-markdown';
-import { javascript } from '@codemirror/lang-javascript';
 import { linter, lintGutter, Diagnostic } from '@codemirror/lint';
 import { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
@@ -21,22 +20,20 @@ const CodeMirror = dynamic(
   { ssr: false }
 );
 
-export type CodeLanguage = 'xml' | 'olx' | 'md' | 'markdown' | 'pegjs' | PEGContentExtension;
+export type CodeLanguage = 'xml' | 'olx' | 'md' | 'markdown' | PEGContentExtension;
 
-// PEG compilation error type (from Peggy)
-interface PEGLocation {
-  start: { line: number; column: number; offset: number };
-  end?: { line: number; column: number; offset: number };
-}
-
-interface PEGCompileError extends Error {
-  location?: PEGLocation;
+// PEG parse error type
+interface PEGParseError extends Error {
+  location?: {
+    start: { line: number; column: number; offset: number };
+    end?: { line: number; column: number; offset: number };
+  };
   expected?: Array<{ type: string; text?: string; description?: string }>;
   found?: string;
 }
 
-// Custom theme for error highlighting in PEG files
-const pegErrorTheme = EditorView.baseTheme({
+// Custom theme for error highlighting
+const errorTheme = EditorView.baseTheme({
   '.cm-lintRange-error': {
     backgroundImage: 'none',
     backgroundColor: 'rgba(255, 0, 0, 0.15)',
@@ -58,16 +55,13 @@ const pegErrorTheme = EditorView.baseTheme({
 });
 
 /**
- * Creates diagnostics from a PEG parse/compile error.
- * Shared between grammar linter and content linter.
+ * Creates diagnostics from a PEG parse error.
  */
 function createPEGDiagnostics(
-  error: PEGCompileError,
+  error: PEGParseError,
   content: string,
   source: string
 ): Diagnostic[] {
-  const diagnostics: Diagnostic[] = [];
-
   if (error.location) {
     const { start, end } = error.location;
     const fromOffset = start.offset;
@@ -87,48 +81,26 @@ function createPEGDiagnostics(
       message += `\nFound: "${error.found}"`;
     }
 
-    diagnostics.push({
+    return [{
       from: fromOffset,
       to: toOffset,
       severity: 'error',
       message,
       source,
-    });
-  } else {
-    diagnostics.push({
-      from: 0,
-      to: Math.min(10, content.length),
-      severity: 'error',
-      message: error.message || 'Parse error',
-      source,
-    });
+    }];
   }
 
-  return diagnostics;
+  return [{
+    from: 0,
+    to: Math.min(10, content.length),
+    severity: 'error',
+    message: error.message || 'Parse error',
+    source,
+  }];
 }
 
 /**
- * Creates a linter that compiles PEG grammars using Peggy.
- * Returns diagnostics for compilation errors.
- */
-function createPEGGrammarLinter(): Extension {
-  return linter(async (view) => {
-    const content = view.state.doc.toString();
-    if (!content.trim()) return [];
-
-    try {
-      const peggy = await import('peggy');
-      peggy.generate(content, { output: 'source', format: 'es' });
-      return [];
-    } catch (e) {
-      return createPEGDiagnostics(e as PEGCompileError, content, 'Peggy Compiler');
-    }
-  });
-}
-
-/**
- * Creates a linter for PEG content files using a specific parser.
- * Returns diagnostics for parse errors.
+ * Creates a linter for PEG content files using the parser for that extension.
  */
 function createPEGContentLinter(extension: string): Extension {
   return linter((view) => {
@@ -142,7 +114,7 @@ function createPEGContentLinter(extension: string): Extension {
       parser.parse(content);
       return [];
     } catch (e) {
-      return createPEGDiagnostics(e as PEGCompileError, content, `${extension} Parser`);
+      return createPEGDiagnostics(e as PEGParseError, content, `${extension} Parser`);
     }
   });
 }
@@ -176,10 +148,8 @@ function getLanguageExtension(language?: CodeLanguage): Extension | undefined {
     case 'md':
     case 'markdown':
       return markdown();
-    case 'pegjs':
-      // PEG grammars contain JavaScript in actions - use JS highlighting
-      return javascript();
     default:
+      // PEG content files don't have specific syntax highlighting
       return undefined;
   }
 }
@@ -188,7 +158,7 @@ function detectLanguageFromPath(path?: string): CodeLanguage | undefined {
   if (!path) return undefined;
   const ext = path.split('.').pop()?.toLowerCase();
 
-  // Check for PEG content extensions first (e.g., .chatpeg, .sortpeg)
+  // Check for PEG content extensions (e.g., .chatpeg, .sortpeg)
   if (ext && isPEGContentExtension(ext)) {
     return ext as PEGContentExtension;
   }
@@ -199,18 +169,9 @@ function detectLanguageFromPath(path?: string): CodeLanguage | undefined {
       return 'xml';
     case 'md':
       return 'md';
-    case 'pegjs':
-      return 'pegjs';
     default:
       return undefined;
   }
-}
-
-/** Check if a language/path indicates a PEG grammar file (.pegjs) */
-export function isPEGGrammarFile(path?: string, language?: CodeLanguage): boolean {
-  if (language === 'pegjs') return true;
-  if (!path) return false;
-  return path.endsWith('.pegjs');
 }
 
 /** Check if a language/path indicates a PEG content file (.chatpeg, .sortpeg, etc.) */
@@ -227,15 +188,15 @@ function getExtensionFromPath(path?: string): string | undefined {
   return path.split('.').pop()?.toLowerCase();
 }
 
-// Legacy export for backwards compatibility
-export const isPEGFile = isPEGGrammarFile;
-
 /**
  * A CodeMirror-based code editor with automatic language detection.
  *
  * Handles the dynamic import of CodeMirror to avoid SSR issues and
  * provides automatic syntax highlighting based on file extension or
  * explicit language prop.
+ *
+ * For PEG content files (.chatpeg, .sortpeg, etc.), provides inline
+ * error highlighting using the appropriate parser.
  */
 export default function CodeEditor({
   value,
@@ -248,7 +209,6 @@ export default function CodeEditor({
   extensions: additionalExtensions = [],
 }: CodeEditorProps) {
   const effectiveLanguage = language ?? detectLanguageFromPath(path);
-  const isPegGrammar = isPEGGrammarFile(path, effectiveLanguage);
   const isPegContent = isPEGContentFile(path, effectiveLanguage);
   const ext = getExtensionFromPath(path);
 
@@ -259,25 +219,18 @@ export default function CodeEditor({
     const langExt = getLanguageExtension(effectiveLanguage);
     if (langExt) exts.push(langExt);
 
-    // PEG grammar files (.pegjs): compile with Peggy to validate
-    if (isPegGrammar) {
-      exts.push(createPEGGrammarLinter());
-      exts.push(lintGutter());
-      exts.push(pegErrorTheme);
-    }
-
-    // PEG content files (.chatpeg, .sortpeg, etc.): parse with the specific parser
+    // PEG content files: parse with the specific parser for inline errors
     if (isPegContent && ext) {
       exts.push(createPEGContentLinter(ext));
       exts.push(lintGutter());
-      exts.push(pegErrorTheme);
+      exts.push(errorTheme);
     }
 
     // User-provided extensions
     exts.push(...additionalExtensions);
 
     return exts;
-  }, [effectiveLanguage, isPegGrammar, isPegContent, ext, additionalExtensions]);
+  }, [effectiveLanguage, isPegContent, ext, additionalExtensions]);
 
   return (
     <CodeMirror

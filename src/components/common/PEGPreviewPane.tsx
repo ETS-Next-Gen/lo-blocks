@@ -1,9 +1,9 @@
 // src/components/common/PEGPreviewPane.tsx
-// Preview pane for PEG grammar and content files
+// Preview pane for PEG content files (.chatpeg, .sortpeg, etc.)
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { getParserForExtension, isPEGContentExtension } from '@/generated/parserRegistry';
+import { useMemo } from 'react';
+import { getParserForExtension } from '@/generated/parserRegistry';
 
 interface PEGPreviewPaneProps {
   path: string;
@@ -18,7 +18,6 @@ interface ParseResult {
     location?: {
       line: number;
       column: number;
-      offset: number;
     };
   };
 }
@@ -28,92 +27,41 @@ function getExtension(path: string): string {
 }
 
 /**
- * Preview pane for PEG files.
- * - For .pegjs files: Shows grammar compilation result
- * - For PEG content files (.chatpeg, etc.): Shows parsed AST
+ * Preview pane for PEG content files (.chatpeg, .sortpeg, etc.)
+ * Shows parsed AST or parse errors.
  */
 export default function PEGPreviewPane({ path, content }: PEGPreviewPaneProps) {
-  const [parseResult, setParseResult] = useState<ParseResult | null>(null);
-  const [compileResult, setCompileResult] = useState<ParseResult | null>(null);
-
   const ext = useMemo(() => getExtension(path), [path]);
-  const isPegGrammar = ext === 'pegjs';
-  const isPegContent = isPEGContentExtension(ext);
 
-  // Compile .pegjs grammar files
-  useEffect(() => {
-    if (!isPegGrammar || !content.trim()) {
-      setCompileResult(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function compile() {
-      try {
-        const peggy = await import('peggy');
-        // Compile and get the generated parser source
-        const parserSource = peggy.generate(content, { output: 'source', format: 'es' });
-        if (!cancelled) {
-          setCompileResult({
-            success: true,
-            data: `Grammar compiled successfully.\nGenerated parser: ${parserSource.length} characters`
-          });
-        }
-      } catch (e: any) {
-        if (!cancelled) {
-          setCompileResult({
-            success: false,
-            error: {
-              message: e.message,
-              location: e.location?.start
-            }
-          });
-        }
-      }
-    }
-
-    compile();
-    return () => { cancelled = true; };
-  }, [isPegGrammar, content]);
-
-  // Parse PEG content files
-  useEffect(() => {
-    if (!isPegContent || !content.trim()) {
-      setParseResult(null);
-      return;
-    }
+  const result = useMemo((): ParseResult | null => {
+    if (!content.trim()) return null;
 
     const parser = getParserForExtension(ext);
     if (!parser) {
-      setParseResult({
+      return {
         success: false,
         error: { message: `No parser found for extension: ${ext}` }
-      });
-      return;
+      };
     }
 
     try {
-      const result = parser.parse(content);
-      setParseResult({ success: true, data: result });
+      const data = parser.parse(content);
+      return { success: true, data };
     } catch (e: any) {
-      setParseResult({
+      return {
         success: false,
         error: {
           message: e.message,
           location: e.location?.start
         }
-      });
+      };
     }
-  }, [isPegContent, ext, content]);
-
-  const result = isPegGrammar ? compileResult : parseResult;
-  const title = isPegGrammar ? 'Grammar Compilation' : 'Parse Result';
+  }, [ext, content]);
 
   if (!result) {
     return (
       <div className="p-4 text-gray-500">
-        {content.trim() ? 'Processing...' : 'Enter content to see preview'}
+        Enter content to see parse result
       </div>
     );
   }
@@ -126,14 +74,12 @@ export default function PEGPreviewPane({ path, content }: PEGPreviewPaneProps) {
         ) : (
           <span className="text-red-600">✗</span>
         )}
-        {title}
+        Parse Result
       </div>
 
       {result.success ? (
         <pre className="flex-1 overflow-auto bg-gray-900 text-green-400 p-4 rounded text-xs font-mono whitespace-pre-wrap">
-          {typeof result.data === 'string'
-            ? result.data
-            : JSON.stringify(result.data, null, 2)}
+          {JSON.stringify(result.data, null, 2)}
         </pre>
       ) : (
         <div className="flex-1 overflow-auto">

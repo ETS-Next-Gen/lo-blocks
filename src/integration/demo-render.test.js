@@ -70,7 +70,27 @@ describe('Demo OLX files render without errors', () => {
 
       try {
         // Read the file
-        const content = await fs.readFile(filePath, 'utf-8');
+        let content = await fs.readFile(filePath, 'utf-8');
+
+        // For .pegjs.preview.olx files, inject sample content from companion file
+        if (filePath.endsWith('.pegjs.preview.olx')) {
+          // Find companion sample file (e.g., sort.pegjs.preview.sortpeg)
+          const dir = path.dirname(filePath);
+          const baseName = path.basename(filePath, '.olx'); // e.g., "sort.pegjs.preview"
+          const files = await fs.readdir(dir);
+          const sampleFile = files.find(f => f.startsWith(baseName) && !f.endsWith('.olx'));
+
+          if (sampleFile) {
+            const sampleContent = await fs.readFile(path.join(dir, sampleFile), 'utf-8');
+            content = content.replace('{{CONTENT}}', sampleContent);
+          } else {
+            errors.push({
+              file: relativePath,
+              error: `No sample content file found for preview (expected ${baseName}.*)`
+            });
+            continue;
+          }
+        }
 
         // Parse the OLX
         const { idMap, root } = await parseOLX(content, [`file://${filePath}`]);

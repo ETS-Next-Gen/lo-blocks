@@ -4,6 +4,43 @@ import * as parsers from '@/lib/content/parsers';
 import { valueSelector, fieldByName, fieldSelector } from '@/lib/state';
 import _Ref from './_Ref';
 
+/**
+ * Convert any value to a string representation for display.
+ * Used by both getValue (for programmatic access) and _Ref (for rendering).
+ */
+export function formatRefValue(val, fallback = '') {
+  if (val === null || val === undefined) {
+    return fallback;
+  }
+  if (typeof val === 'string') {
+    return val;
+  }
+  if (typeof val === 'number' || typeof val === 'boolean') {
+    return String(val);
+  }
+  // Arrays of primitives - join with comma
+  if (Array.isArray(val)) {
+    const allPrimitive = val.every(
+      item => item === null || typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
+    );
+    if (allPrimitive) {
+      return val.join(', ');
+    }
+  }
+  // Objects, arrays with objects, or other complex types - JSON stringify
+  if (typeof val === 'object') {
+    try {
+      return JSON.stringify(val, null, 2);
+    } catch (e) {
+      return '[unserializable]';
+    }
+  }
+  if (typeof val === 'function') {
+    return '[function]';
+  }
+  return '[unknown]';
+}
+
 const Ref = core({
   ...parsers.text(), // Support text content like Element
   name: 'Ref',
@@ -23,15 +60,18 @@ const Ref = core({
     // Check if a specific field is requested
     const field = refNode.attributes?.field;
 
+    let rawValue;
     if (field) {
       // Access specific field using fieldSelector
       const fieldInfo = fieldByName(field);
       if (!fieldInfo) return '';
-      return fieldSelector(state, { ...props, id: targetId }, fieldInfo, { fallback: '' });
+      rawValue = fieldSelector(state, { ...props, id: targetId }, fieldInfo, { fallback: '' });
     } else {
       // Use valueSelector to get the target's value (calls getValue if available)
-      return valueSelector(props, state, targetId, { fallback: '' });
+      rawValue = valueSelector(props, state, targetId, { fallback: '' });
     }
+
+    return formatRefValue(rawValue, '');
   }
 });
 

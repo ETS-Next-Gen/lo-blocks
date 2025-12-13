@@ -6,27 +6,20 @@ import { useValue } from '@/lib/state';
 import { DisplayError } from '@/lib/util/debug';
 
 export default function _Ref(props) {
-  const { target, visible = true, fallback = '', kids = '' } = props;
-
-  // Target can come from attribute or children text (like Element)
-  const targetId = target || (typeof kids === 'string' ? kids : String(kids)).trim();
-
-  if (!targetId) {
-    return <DisplayError name="Ref" message="No target specified. Use target attribute or provide component ID as content." data={{props}} />;
-  }
-
-  // Check if target block exists
-  if (!props.idMap || !props.idMap[targetId]) {
-    return <DisplayError name="Ref" message={`Target block "${targetId}" not found`} data={{targetId, availableIds: Object.keys(props.idMap || {})}} />;
-  }
+  const { visible = true, fallback = '' } = props;
 
   // Call Ref's own getValue via useValue - this is the single source of truth
-  // for value formatting and field access
+  // for value formatting, field access, and validation
   const value = useValue(props, props.id, { fallback });
 
   if (String(visible) === 'false') {
     // Still subscribe to value but render nothing
     return <></>;
+  }
+
+  // Check if getValue returned an error object (objects are system-generated, strings are user data)
+  if (typeof value === 'object' && value?.error) {
+    return <DisplayError props={props} name="Ref" message={value.message} />;
   }
 
   // getValue returns a string - check if it's JSON for code styling

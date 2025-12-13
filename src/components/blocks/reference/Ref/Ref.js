@@ -49,13 +49,22 @@ const Ref = core({
   getValue: (props, state, id) => {
     // Get the Ref block from idMap to access its attributes and content
     const refNode = props.idMap[id];
-    if (!refNode) return '';
+    if (!refNode) {
+      return { error: true, message: 'Component not found' };
+    }
 
     // Target can come from attribute or text content (kids)
     const targetId = refNode.attributes?.target ||
                      (typeof refNode.kids === 'string' ? refNode.kids : String(refNode.kids || '')).trim();
 
-    if (!targetId) return '';
+    if (!targetId) {
+      return { error: true, message: 'No target specified. Use target attribute or provide ID as content.' };
+    }
+
+    // Check if target exists in idMap
+    if (!props.idMap[targetId]) {
+      return { error: true, message: `Target "${targetId}" not found` };
+    }
 
     // Check if a specific field is requested
     const field = refNode.attributes?.field;
@@ -64,13 +73,16 @@ const Ref = core({
     if (field) {
       // Access specific field using fieldSelector
       const fieldInfo = fieldByName(field);
-      if (!fieldInfo) return '';
+      if (!fieldInfo) {
+        return { error: true, message: `Unknown field "${field}"` };
+      }
       rawValue = fieldSelector(state, { ...props, id: targetId }, fieldInfo, { fallback: '' });
     } else {
       // Use valueSelector to get the target's value (calls getValue if available)
       rawValue = valueSelector(props, state, targetId, { fallback: '' });
     }
 
+    // Always return a string for valid values
     return formatRefValue(rawValue, '');
   }
 });

@@ -28,11 +28,12 @@ Ref displays the current value of another component, updating live as it changes
 Ref is commonly used inside LLMAction to include user responses in prompts:
   </Markdown>
   <TextArea id="essay" rows="3" placeholder="Write a short response..." />
-  <LLMAction target="feedback">
-    Provide feedback on this response:
-    <Ref target="essay" />
-  </LLMAction>
   <LLMFeedback id="feedback" />
-  <ActionButton>Get Feedback</ActionButton>
+  <ActionButton label="Get Feedback">
+    <LLMAction target="feedback">
+      Provide feedback on this response:
+      <Ref target="essay" />
+    </LLMAction>
+  </ActionButton>
 
 </Vertical>

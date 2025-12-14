@@ -8,7 +8,7 @@ description: CAPA-style multiple choice problems (prototype)
 }
 
 document
-  = _ blocks:(block _)* {
+  = __ blocks:(block __)* {
       return blocks.map(b => b[0]);
     }
 
@@ -35,14 +35,14 @@ hint
     }
 
 choiceBlock
-  = choices:(choiceLine+ newline?) {
+  = choices:choiceLine+ {
       return { type: "choices", options: choices };
     }
 
 choiceLine
-  = c:('(' marker:('x' / ' ') ')' _ t:lineText newline {
+  = '(' marker:('x' / ' ') ')' _ t:lineText newline {
       return { selected: marker === 'x', text: t };
-    })
+    }
 
 paragraph
   = t:lineText newline {
@@ -56,3 +56,4 @@ lineText
 
 newline = '\r\n' / '\n' / '\r'
 _       = [ \t]*
+__      = [ \t\n\r]*

@@ -3,7 +3,7 @@
 import React from 'react';
 import * as state from '@/lib/state';
 import { useFieldSelector } from '@/lib/state';
-import { CORRECTNESS } from '@/lib/blocks';
+import { CORRECTNESS, VISIBILITY_HANDLERS, computeVisibility } from '@/lib/blocks';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
 import { renderCompiledKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
@@ -11,13 +11,17 @@ import { DisplayError } from '@/lib/util/debug';
 /**
  * Explanation displays its children conditionally based on grader state.
  *
- * showWhen options:
- * - "correct" (default): Show when answer is correct
- * - "answered": Show after any submission (correct or incorrect)
+ * showWhen options (see VISIBILITY_HANDLERS):
+ * - "correct": Show when answer is correct
+ * - "answered": Show after valid submission (not invalid)
+ * - "attempted": Alias for answered
  * - "always": Always show (useful for debugging)
  * - "never": Never show (hide explanation)
+ *
+ * Default should be inherited from CapaProblem; currently defaults to 'correct'.
  */
 function _Explanation(props) {
+  // TODO: Inherit default showWhen from parent CapaProblem
   const { id, kids = [], target, infer, showWhen = 'correct', title } = props;
 
   // Find related grader
@@ -59,25 +63,24 @@ function _Explanation(props) {
     correctness = CORRECTNESS.UNSUBMITTED;
   }
 
-  // Determine visibility
-  let visible = false;
-  switch (showWhen) {
-    case 'always':
-      visible = true;
-      break;
-    case 'never':
-      visible = false;
-      break;
-    case 'answered':
-      visible = correctness !== CORRECTNESS.UNSUBMITTED;
-      break;
-    case 'correct':
-    default:
-      visible = correctness === CORRECTNESS.CORRECT;
-      break;
+  // Validate showWhen and compute visibility (throws on invalid option)
+  if (!VISIBILITY_HANDLERS[showWhen]) {
+    const validOptions = Object.keys(VISIBILITY_HANDLERS).join(', ');
+    return (
+      <DisplayError
+        props={props}
+        id={`${id}_invalid_showWhen`}
+        name="Explanation"
+        message={`Invalid showWhen="${showWhen}".`}
+        technical={{
+          hint: `Valid options: ${validOptions}`,
+          blockId: id
+        }}
+      />
+    );
   }
 
-  if (!visible) {
+  if (!computeVisibility(showWhen, { correctness })) {
     return null;
   }
 

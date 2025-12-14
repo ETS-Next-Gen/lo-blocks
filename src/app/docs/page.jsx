@@ -1,4 +1,10 @@
 // src/app/docs/page.jsx
+//
+// Block and Grammar documentation page.
+// NOTE: Currently grammars are shown inline with blocks in a "Grammars" category.
+// As we add more resource types (templates, archives, etc.), consider migrating
+// to a tabbed interface: "Blocks | Grammars | Templates | ..."
+//
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -37,12 +43,13 @@ const CATEGORY_MAP = {
   'specialized': 'Specialized',
   'utility': 'Utility',
   'CapaProblem': 'CAPA Problems',
-  '_test': 'Test Blocks'
+  '_test': 'Test Blocks',
+  'grammar': 'Grammars'
 };
 
 const CATEGORY_ORDER = [
   'Layout', 'Display', 'Input', 'Grading', 'Action',
-  'Reference', 'Specialized', 'Utility', 'CAPA Problems', 'Test Blocks', 'Other'
+  'Reference', 'Specialized', 'Utility', 'CAPA Problems', 'Test Blocks', 'Grammars', 'Other'
 ];
 
 function getCategory(block) {
@@ -56,17 +63,27 @@ function getCategory(block) {
   return match ? (CATEGORY_MAP[match[1]] || match[1]) : 'Other';
 }
 
-function buildTabs(blockDetails) {
+function buildTabs(blockDetails, isGrammar = false) {
   const tabs = [{ id: 'overview', label: 'Overview' }];
 
   if (blockDetails?.readme?.content) {
     tabs.push({ id: 'readme', label: 'README' });
   }
 
+  // For grammars, add grammar source tab
+  if (isGrammar && blockDetails?.grammar) {
+    tabs.push({ id: 'grammar-source', label: 'Grammar' });
+  }
+
   blockDetails?.examples?.forEach((example, index) => {
+    // For grammars, remove the extension from label
+    const ext = isGrammar ? blockDetails.extension : null;
+    const label = isGrammar
+      ? example.filename.replace(new RegExp(`\\.${ext}$`), '')
+      : example.filename.replace(/\.(olx|xml)$/, '');
     tabs.push({
       id: `example-${index}`,
-      label: example.filename.replace(/\.(olx|xml)$/, ''),
+      label,
     });
   });
 
@@ -114,7 +131,7 @@ function BlockSidebar({
       <div className="p-3 border-b">
         <input
           type="text"
-          placeholder="Search blocks..."
+          placeholder="Search blocks & grammars..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -165,33 +182,48 @@ function BlockSidebar({
                       onMouseLeave={() => setHoveredBlock(null)}
                     >
                       <button
-                        onClick={() => onSelectBlock(block.name)}
+                        onClick={() => onSelectBlock(block.name, block._isGrammar)}
                         className={`w-full text-left px-2 py-1 text-sm rounded flex items-center gap-1.5 ${
                           selectedBlock === block.name
                             ? 'bg-blue-100 text-blue-800'
                             : 'text-gray-600 hover:bg-gray-100'
                         } ${anyUncommitted ? 'bg-amber-50' : ''}`}
                       >
-                        <span className={`truncate ${blockUncommitted ? 'italic' : ''}`}>{block.name}</span>
-                        {block.readme && (
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              docsUncommitted ? 'bg-amber-400' : 'bg-blue-500'
-                            }`}
-                            title={docsUncommitted
-                              ? `README (${block.readmeGitStatus})`
-                              : 'README (committed)'
-                            }
-                          />
+                        <span className={`truncate ${blockUncommitted ? 'italic' : ''}`}>
+                          {block.name}
+                          {block._isGrammar && (
+                            <span className="text-gray-400 text-xs ml-1">.{block.extension}</span>
+                          )}
+                        </span>
+                        {/* For grammars, show preview indicator instead of readme */}
+                        {block._isGrammar ? (
+                          block.hasPreview && (
+                            <span
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-green-500"
+                              title="Has preview"
+                            />
+                          )
+                        ) : (
+                          block.readme && (
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                docsUncommitted ? 'bg-amber-400' : 'bg-blue-500'
+                              }`}
+                              title={docsUncommitted
+                                ? `README (${block.readmeGitStatus})`
+                                : 'README (committed)'
+                              }
+                            />
+                          )
                         )}
-                        {block.examples?.length > 0 && (
+                        {(block.examples?.length > 0 || block.exampleCount > 0) && (
                           <span
                             className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                               examplesUncommitted ? 'bg-amber-400' : 'bg-purple-500'
                             }`}
                             title={examplesUncommitted
                               ? `Examples (some uncommitted)`
-                              : 'Examples (committed)'
+                              : 'Examples'
                             }
                           />
                         )}
@@ -233,28 +265,55 @@ function BlockSidebar({
   );
 }
 
-function BlockHeader({ block }) {
+function BlockHeader({ block, isGrammar = false }) {
   return (
     <div className="bg-white border-b px-6 py-4">
-      <h2 className="text-xl font-bold text-gray-900">{block.name}</h2>
+      <h2 className="text-xl font-bold text-gray-900">
+        {block.name}
+        {isGrammar && (
+          <span className="text-gray-400 font-normal ml-2">.{block.extension}</span>
+        )}
+      </h2>
       {block.description && (
         <p className="text-gray-600 mt-1">{block.description}</p>
       )}
       <div className="flex flex-wrap gap-2 mt-2">
-        {block.hasAction && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            Action
-          </span>
-        )}
-        {block.hasParser && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-            Parser
-          </span>
-        )}
-        {block.fields?.length > 0 && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            Fields: {block.fields.join(', ')}
-          </span>
+        {isGrammar ? (
+          // Grammar badges
+          <>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+              PEG Grammar
+            </span>
+            {block.hasPreview && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Preview
+              </span>
+            )}
+            {block.exampleCount > 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                {block.exampleCount} example{block.exampleCount > 1 ? 's' : ''}
+              </span>
+            )}
+          </>
+        ) : (
+          // Block badges
+          <>
+            {block.hasAction && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Action
+              </span>
+            )}
+            {block.hasParser && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                Parser
+              </span>
+            )}
+            {block.fields?.length > 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Fields: {block.fields.join(', ')}
+              </span>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -316,6 +375,151 @@ function QuickReference({ block }) {
         )}
       </dl>
     </section>
+  );
+}
+
+function GrammarQuickReference({ grammar }) {
+  return (
+    <section className="bg-white rounded-lg border p-6">
+      <h3 className="text-lg font-semibold mb-4">Quick Reference</h3>
+      <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+        <div>
+          <dt className="text-gray-500">File Extension</dt>
+          <dd className="font-mono text-lg">.{grammar.extension}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Grammar Source</dt>
+          <dd className="font-mono text-xs text-gray-600 break-all">
+            {grammar.source || 'Unknown'}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Grammar Name</dt>
+          <dd className="font-mono text-sm">{grammar.name}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Directory</dt>
+          <dd className="font-mono text-xs text-gray-600 break-all">
+            {grammar.grammarDir}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+function GrammarExamplePreview({ example, grammarName, extension }) {
+  const [editedContent, setEditedContent] = useDocsExampleState(
+    grammarName,
+    example.filename,
+    example.content
+  );
+  const isModified = editedContent !== example.content;
+
+  const handleReset = useCallback(() => {
+    setEditedContent(example.content);
+  }, [example.content, setEditedContent]);
+
+  return (
+    <section className="bg-white rounded-lg border p-6">
+      <h3 className="text-lg font-semibold mb-4">Example</h3>
+
+      <div className="border rounded-lg overflow-hidden">
+        <div className="px-3 py-2 bg-gray-100 border-b text-xs text-gray-500 flex justify-between items-center">
+          <span className="flex items-center gap-2">
+            Content Source
+            {isModified && (
+              <span className="text-amber-600 text-xs">(modified)</span>
+            )}
+          </span>
+          <span className="flex items-center gap-2">
+            {isModified && (
+              <button
+                onClick={handleReset}
+                className="px-2 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded"
+              >
+                Reset
+              </button>
+            )}
+            <span className="text-gray-400">{example.path}</span>
+          </span>
+        </div>
+        <div className="bg-gray-50 overflow-hidden">
+          <CodeEditor
+            value={editedContent}
+            onChange={setEditedContent}
+            path={`example.${extension}`}
+            maxHeight="256px"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GrammarSourceTab({ grammar }) {
+  return (
+    <div className="bg-white rounded-lg border overflow-hidden">
+      <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+        <span className="font-medium text-gray-700">Grammar Definition</span>
+        <code className="text-xs text-gray-500">{grammar.source}</code>
+      </div>
+      <div className="overflow-hidden">
+        <CodeEditor
+          value={grammar.grammar || '// Grammar not available'}
+          onChange={() => {}} // Read-only
+          path={`${grammar.name}.pegjs`}
+          maxHeight="600px"
+        />
+      </div>
+    </div>
+  );
+}
+
+function GrammarExampleTab({ example, grammarName, extension }) {
+  const [editedContent, setEditedContent] = useDocsExampleState(
+    grammarName,
+    example.filename,
+    example.content
+  );
+  const isModified = editedContent !== example.content;
+
+  const handleReset = useCallback(() => {
+    setEditedContent(example.content);
+  }, [example.content, setEditedContent]);
+
+  return (
+    <div className="space-y-6">
+      <section className="bg-white rounded-lg border overflow-hidden">
+        <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+          <span className="font-medium text-gray-700 flex items-center gap-2">
+            Content
+            {isModified && (
+              <span className="text-amber-600 text-xs">(modified)</span>
+            )}
+          </span>
+          <div className="flex items-center gap-2">
+            {isModified && (
+              <button
+                onClick={handleReset}
+                className="px-2 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded"
+              >
+                Reset
+              </button>
+            )}
+            <code className="text-xs text-gray-500">{example.path || example.filename}</code>
+          </div>
+        </div>
+        <div className="overflow-hidden">
+          <CodeEditor
+            value={editedContent}
+            onChange={setEditedContent}
+            path={`example.${extension}`}
+            maxHeight="400px"
+          />
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -482,7 +686,30 @@ function ExampleTab({ example, blockName }) {
   );
 }
 
-function BlockContent({ block, details, activeTab, loading }) {
+function GrammarOverviewTab({ grammar, details }) {
+  const firstExample = details?.examples?.[0];
+  const moreExamplesCount = (details?.examples?.length || 0) - 1;
+
+  return (
+    <div className="space-y-6">
+      <GrammarQuickReference grammar={grammar} />
+      {firstExample && (
+        <GrammarExamplePreview
+          example={firstExample}
+          grammarName={grammar.name}
+          extension={details.extension}
+        />
+      )}
+      {moreExamplesCount > 0 && (
+        <p className="text-sm text-gray-500">
+          {moreExamplesCount} more example{moreExamplesCount > 1 ? 's' : ''} available in the tabs above.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function BlockContent({ block, details, activeTab, loading, isGrammar = false }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
@@ -491,6 +718,38 @@ function BlockContent({ block, details, activeTab, loading }) {
     );
   }
 
+  // Grammar-specific content
+  if (isGrammar) {
+    if (activeTab === 'overview') {
+      return <GrammarOverviewTab grammar={block} details={details} />;
+    }
+
+    if (activeTab === 'readme' && details?.readme?.content) {
+      return <ReadmeTab content={details.readme.content} path={details.readme.path} />;
+    }
+
+    if (activeTab === 'grammar-source' && details?.grammar) {
+      return <GrammarSourceTab grammar={details} />;
+    }
+
+    if (activeTab.startsWith('example-')) {
+      const index = parseInt(activeTab.replace('example-', ''), 10);
+      const example = details?.examples?.[index];
+      if (example) {
+        return (
+          <GrammarExampleTab
+            example={example}
+            grammarName={block.name}
+            extension={details.extension}
+          />
+        );
+      }
+    }
+
+    return null;
+  }
+
+  // Block content (original behavior)
   if (activeTab === 'overview') {
     return <OverviewTab block={block} details={details} />;
   }
@@ -516,28 +775,70 @@ function BlockContent({ block, details, activeTab, loading }) {
 
 export default function DocsPage() {
   const [docs, setDocs] = useState(null);
+  const [grammars, setGrammars] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
+  const [selectedIsGrammar, setSelectedIsGrammar] = useState(false);
   const [blockDetails, setBlockDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
-  const [collapsedCategories, setCollapsedCategories] = useState({});
+  // Start with all categories collapsed for cleaner initial view
+  const [collapsedCategories, setCollapsedCategories] = useState(() => {
+    const collapsed = {};
+    CATEGORY_ORDER.forEach(cat => { collapsed[cat] = true; });
+    return collapsed;
+  });
   const [showInternal, setShowInternal] = useState(false);
 
-  // Fetch block list on mount
+  // Fetch block and grammar lists on mount
   useEffect(() => {
-    fetch('/api/docs')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok) {
-          setDocs(data.documentation);
-          const hash = window.location.hash.slice(1);
-          const blockFromHash = hash && data.documentation.blocks.find(b => b.name === hash);
-          setSelectedBlock(blockFromHash?.name || data.documentation.blocks[0]?.name || null);
+    Promise.all([
+      fetch('/api/docs').then(res => res.json()),
+      fetch('/api/docs/grammars').then(res => res.json())
+    ])
+      .then(([blocksData, grammarsData]) => {
+        if (blocksData.ok) {
+          setDocs(blocksData.documentation);
         } else {
-          setError(data.error);
+          setError(blocksData.error);
+          return;
+        }
+        if (grammarsData.ok) {
+          setGrammars(grammarsData.documentation);
+        }
+        // Handle URL hash for initial selection
+        const hash = window.location.hash.slice(1);
+        if (hash) {
+          // Check if hash matches a grammar first
+          const grammarMatch = grammarsData.ok &&
+            grammarsData.documentation.grammars.find(g => g.name === hash || g.extension === hash);
+          if (grammarMatch) {
+            setSelectedBlock(grammarMatch.name);
+            setSelectedIsGrammar(true);
+            // Expand Grammars category
+            setCollapsedCategories(prev => ({ ...prev, 'Grammars': false }));
+            return;
+          }
+          // Check blocks
+          const blockMatch = blocksData.ok &&
+            blocksData.documentation.blocks.find(b => b.name === hash);
+          if (blockMatch) {
+            setSelectedBlock(blockMatch.name);
+            setSelectedIsGrammar(false);
+            // Expand the category containing this block
+            const category = getCategory(blockMatch);
+            setCollapsedCategories(prev => ({ ...prev, [category]: false }));
+            return;
+          }
+        }
+        // Default: select first block and expand its category
+        const firstBlock = blocksData.documentation?.blocks[0];
+        if (firstBlock) {
+          setSelectedBlock(firstBlock.name);
+          const category = getCategory(firstBlock);
+          setCollapsedCategories(prev => ({ ...prev, [category]: false }));
         }
       })
       .catch(err => setError(err.message))
@@ -551,33 +852,58 @@ export default function DocsPage() {
     }
   }, [selectedBlock]);
 
-  // Fetch block details when selection changes
+  // Fetch block or grammar details when selection changes
   useEffect(() => {
     if (!selectedBlock) return;
     setLoadingDetails(true);
-    fetch(`/api/docs/${selectedBlock}`)
+    const endpoint = selectedIsGrammar
+      ? `/api/docs/grammar/${selectedBlock}`
+      : `/api/docs/${selectedBlock}`;
+    fetch(endpoint)
       .then(res => res.json())
-      .then(data => data.ok && setBlockDetails(data.block))
-      .catch(err => console.error('Error loading block details:', err))
+      .then(data => {
+        if (data.ok) {
+          setBlockDetails(selectedIsGrammar ? data.grammar : data.block);
+        }
+      })
+      .catch(err => console.error('Error loading details:', err))
       .finally(() => setLoadingDetails(false));
-  }, [selectedBlock]);
+  }, [selectedBlock, selectedIsGrammar]);
 
   const categorizedBlocks = useMemo(() => {
-    if (!docs?.blocks) return {};
-    const visibleBlocks = showInternal
-      ? docs.blocks
-      : docs.blocks.filter(b => !b.internal);
-    return groupBlocksByCategory(visibleBlocks);
-  }, [docs, showInternal]);
+    const result = {};
+
+    // Add blocks
+    if (docs?.blocks) {
+      const visibleBlocks = showInternal
+        ? docs.blocks
+        : docs.blocks.filter(b => !b.internal);
+      Object.assign(result, groupBlocksByCategory(visibleBlocks));
+    }
+
+    // Add grammars as a separate category
+    if (grammars?.grammars) {
+      // Mark grammars with _isGrammar for sidebar to differentiate
+      result['Grammars'] = grammars.grammars.map(g => ({
+        ...g,
+        _isGrammar: true,
+        category: 'grammar'
+      }));
+    }
+
+    return result;
+  }, [docs, grammars, showInternal]);
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categorizedBlocks;
     const query = searchQuery.toLowerCase();
     const filtered = {};
-    Object.entries(categorizedBlocks).forEach(([category, blocks]) => {
-      const matching = blocks.filter(b =>
-        b.name.toLowerCase().includes(query) ||
-        b.description?.toLowerCase().includes(query)
+    Object.entries(categorizedBlocks).forEach(([category, items]) => {
+      const matching = items.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        // For grammars, also search by extension
+        (item._isGrammar && item.extension?.toLowerCase().includes(query))
       );
       if (matching.length) filtered[category] = matching;
     });
@@ -585,13 +911,17 @@ export default function DocsPage() {
   }, [categorizedBlocks, searchQuery]);
 
   const currentBlockMeta = useMemo(() => {
+    if (selectedIsGrammar) {
+      return grammars?.grammars?.find(g => g.name === selectedBlock) || null;
+    }
     return docs?.blocks?.find(b => b.name === selectedBlock) || null;
-  }, [docs, selectedBlock]);
+  }, [docs, grammars, selectedBlock, selectedIsGrammar]);
 
-  const tabs = useMemo(() => buildTabs(blockDetails), [blockDetails]);
+  const tabs = useMemo(() => buildTabs(blockDetails, selectedIsGrammar), [blockDetails, selectedIsGrammar]);
 
-  const handleSelectBlock = (name) => {
+  const handleSelectBlock = (name, isGrammar = false) => {
     setSelectedBlock(name);
+    setSelectedIsGrammar(isGrammar);
     setActiveTab('overview');
   };
 
@@ -622,7 +952,9 @@ export default function DocsPage() {
           <h1>Learning Observer Blocks</h1>
         </Link>
         <p className="text-sm text-gray-500">
-          {docs.totalBlocks} blocks • Generated {new Date(docs.generated).toLocaleDateString()}
+          {docs.totalBlocks} blocks
+          {grammars?.totalGrammars > 0 && ` • ${grammars.totalGrammars} grammars`}
+          {' • '}Generated {new Date(docs.generated).toLocaleDateString()}
         </p>
       </header>
 
@@ -642,7 +974,7 @@ export default function DocsPage() {
         <main className="flex-1 overflow-hidden flex flex-col">
           {selectedBlock && currentBlockMeta ? (
             <>
-              <BlockHeader block={currentBlockMeta} />
+              <BlockHeader block={currentBlockMeta} isGrammar={selectedIsGrammar} />
               <BlockTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
               <div className="flex-1 overflow-y-auto p-6">
                 <BlockContent
@@ -650,12 +982,13 @@ export default function DocsPage() {
                   details={blockDetails}
                   activeTab={activeTab}
                   loading={loadingDetails}
+                  isGrammar={selectedIsGrammar}
                 />
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">
-              Select a block from the sidebar to view details
+              Select a block or grammar from the sidebar to view details
             </div>
           )}
         </main>

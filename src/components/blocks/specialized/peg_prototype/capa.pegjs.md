@@ -158,61 +158,111 @@ Python code blocks for randomization, with `$variable` substitution.
 
 ---
 
-## Currently Supported Subset
+## Currently Supported
 
-Our `capa.pegjs` grammar currently supports a minimal subset for prototyping:
+Our `capa.pegjs` grammar supports most core features:
 
 | Feature | Syntax | Supported |
 |---------|--------|-----------|
 | Headers | `Text` + newline + `===` | ✅ |
 | Questions | `>>question<<` | ✅ |
 | Multiple Choice | `(x)` / `( )` | ✅ |
+| Checkbox | `[x]` / `[ ]` | ✅ |
+| Text Input | `=answer`, `or=alt`, `not=wrong` | ✅ |
+| Numerical Input | `=3.14`, `=3.14 +- 0.01`, `=[1,10]` | ✅ |
+| Dropdown | `[[wrong, (correct), wrong]]` | ✅ |
+| Inline Dropdown | `>>Question [[a, (b)]] more<<` | ✅ |
+| Explanation | `[explanation]...[/explanation]` | ✅ |
+| Multiple Questions | `---` separator | ✅ |
+| Inline Feedback | `{{ feedback }}` | ✅ |
 | Hints | `\|\|hint\|\|` | ✅ |
 | Paragraphs | Plain text | ✅ |
-| Checkbox | `[x]` / `[ ]` | ❌ |
-| Text Input | `= answer`, `or=`, `not=` | ❌ |
-| Numerical Input | `= number` | ❌ |
-| Dropdown | `[[options]]` | ❌ |
-| Explanation | `[explanation]...[/explanation]` | ❌ |
-| Multiple Questions | `---` separator | ❌ |
-| Inline Feedback | `{{ feedback }}` | ❌ |
 | Demand Hints | `{{ hint ==== hint }}` | ❌ |
 | Scripts | `[code]...[/code]` | ❌ |
 | Variable Substitution | `$variable` | ❌ |
 
-### Example (Supported)
+### Comprehensive Example
 
 ```
-Newton's Laws
+Comprehensive CAPA Test
 ===
 
-Consider a ball thrown straight up into the air.
+This example tests all supported syntax features.
 
->>At the highest point of its trajectory, what is the net force on the ball?<<
+>>Question 1: What is the capital of Japan?<<
 
-( ) Zero - the ball is momentarily at rest
-(x) Downward - gravity acts continuously
-( ) Upward - residual force from the throw
-( ) Undefined - forces cancel out
+( ) Beijing {{That's the capital of China.}}
+( ) Seoul {{That's the capital of South Korea.}}
+(x) Tokyo {{Correct!}}
+( ) Bangkok {{That's the capital of Thailand.}}
 
-||Think about what force is always acting on objects near Earth's surface.||
+||Think about the island nation in East Asia.||
+
+---
+
+>>Question 2: Select all even numbers.<<
+
+[x] 2
+[ ] 3
+[x] 4
+[ ] 5
+[x] 6
+
+---
+
+>>Question 3: What is the chemical formula for table salt?<<
+
+=NaCl
+or=nacl
+or=Sodium Chloride
+
+---
+
+>>Question 4: What is the speed of light in m/s?<<
+
+=299792458 +- 1000
+
+---
+
+>>Question 5: The Earth is [[round, flat, (spherical), cubic]].<<
+
+[explanation]
+The Earth is an oblate spheroid - slightly flattened at the poles
+and bulging at the equator due to its rotation.
+[/explanation]
 ```
 
 ### AST Output
 
-The parser produces a flat array of block objects:
+The parser produces a flat array of typed block objects:
 
 ```json
 [
-  { "type": "h3", "content": "Newton's Laws" },
-  { "type": "p", "content": "Consider a ball thrown straight up into the air." },
-  { "type": "question", "label": "At the highest point..." },
+  { "type": "h3", "content": "Comprehensive CAPA Test" },
+  { "type": "p", "content": "This example tests all supported syntax features." },
+  { "type": "question", "label": "Question 1: What is the capital of Japan?" },
   { "type": "choices", "options": [
-    { "selected": false, "text": "Zero - the ball is momentarily at rest" },
-    { "selected": true, "text": "Downward - gravity acts continuously" },
+    { "selected": false, "text": "Beijing", "feedback": "That's the capital of China." },
+    { "selected": true, "text": "Tokyo", "feedback": "Correct!" },
     ...
   ]},
-  { "type": "hint", "content": "Think about what force..." }
+  { "type": "hint", "content": "Think about the island nation in East Asia." },
+  { "type": "separator" },
+  { "type": "question", "label": "Question 2: Select all even numbers." },
+  { "type": "checkboxes", "options": [
+    { "checked": true, "text": "2" },
+    { "checked": false, "text": "3" },
+    ...
+  ]},
+  { "type": "separator" },
+  { "type": "question", "label": "Question 3: What is the chemical formula for table salt?" },
+  { "type": "textInput", "answer": "NaCl", "alternatives": ["nacl", "Sodium Chloride"] },
+  { "type": "separator" },
+  { "type": "question", "label": "Question 4: What is the speed of light in m/s?" },
+  { "type": "numericalInput", "value": 299792458, "tolerance": 1000 },
+  { "type": "separator" },
+  { "type": "question", "label": ["Question 5: The Earth is ", {"type": "dropdown", "options": [...]}, "."] },
+  { "type": "explanation", "content": "The Earth is an oblate spheroid..." }
 ]
 ```
 

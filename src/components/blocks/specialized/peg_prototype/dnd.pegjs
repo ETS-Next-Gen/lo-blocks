@@ -1,3 +1,6 @@
+/*---
+description: Drag-and-drop image labeling activities (prototype)
+---*/
 /*
  * Drag-and-Drop Problem Format Grammar
  * ------------------------------------

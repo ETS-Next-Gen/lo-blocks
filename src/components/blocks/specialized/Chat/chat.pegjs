@@ -1,3 +1,6 @@
+/*---
+description: Format for dialogue-driven scenarios, simulations, and training modules
+---*/
 // src/components/blocks/Chat/chat.pegjs
 /*
  * Conversation Format Grammar

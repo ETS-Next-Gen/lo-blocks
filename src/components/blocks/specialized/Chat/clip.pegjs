@@ -1,3 +1,6 @@
+/*---
+description: Range notation for selecting portions of content (e.g., sections, timestamps)
+---*/
 /*
  * Grammar for parsing clip syntax.
  * Examples:

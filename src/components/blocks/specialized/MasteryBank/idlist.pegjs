@@ -1,3 +1,6 @@
+/*---
+description: List of OLX IDs, e.g. for item banks as used in MasteryBlock
+---*/
 // PEG grammar for parsing ID lists
 // Accepts comma, space, tab, and newline as delimiters
 // Example: "id1, id2, id3" or "id1\nid2\nid3" or "id1 id2 id3"

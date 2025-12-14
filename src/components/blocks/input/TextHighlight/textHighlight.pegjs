@@ -1,3 +1,6 @@
+/*---
+description: Text highlighting exercises where students select words or phrases
+---*/
 // TextHighlight PEG Grammar
 // Parses text highlighting exercises with required, optional, and feedback-trigger segments
 

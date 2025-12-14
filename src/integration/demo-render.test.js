@@ -16,6 +16,7 @@ import { store } from '@/lib/state/store';
 import { render as rtlRender, cleanup } from '@testing-library/react';
 import fs from 'fs/promises';
 import path from 'path';
+import { injectPreviewContent } from '@/lib/template/previewTemplate';
 
 // Mock scrollTo for jsdom (Chat components use this)
 if (typeof Element !== 'undefined' && !Element.prototype.scrollTo) {
@@ -82,7 +83,12 @@ describe('Demo OLX files render without errors', () => {
 
           if (sampleFile) {
             const sampleContent = await fs.readFile(path.join(dir, sampleFile), 'utf-8');
-            content = content.replace('{{CONTENT}}', sampleContent);
+            const result = injectPreviewContent(content, sampleContent);
+            if ('error' in result) {
+              errors.push({ file: relativePath, error: result.error });
+              continue;
+            }
+            content = result.olx;
           } else {
             errors.push({
               file: relativePath,

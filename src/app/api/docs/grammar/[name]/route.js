@@ -1,32 +1,7 @@
 // src/app/api/docs/grammar/[name]/route.js
 //
 // Grammar documentation API - serves metadata and content for PEG grammars.
-//
-// DESIGN NOTE (December 2024):
-// This route follows the pattern /api/docs/[resource-type]/[name] to serve
-// documented resources. We chose type-prefixed routes over a single /api/docs/[name]
-// to avoid naming collisions (e.g., "Chat" block vs "chat" grammar) and to allow
-// type-specific response structures.
-//
-// ALTERNATIVES CONSIDERED:
-// 1. Single route with disambiguation - /api/docs/[name]?type=grammar
-//    Rejected: query params feel wrong for resource identity
-//
-// 2. POST with search parameters - POST /api/docs { type: "grammar", name: "chat" }
-//    Rejected: harder to debug (can't inspect in browser), less REST-like
-//
-// 3. Namespace-based organization - /api/docs/[namespace]/[type]/[name]
-//    e.g., /api/docs/mit.edu/grammar/chat
-//    Not implemented yet, but may be needed when we support external block archives
-//
-// 4. Direct file serving - /api/src?path=...
-//    Rejected: breaks abstraction if we move to database/git/archive storage.
-//    The provenance system exists to handle multiple sources.
-//
-// This structure may be re-evaluated as we add support for:
-// - External block/grammar archives
-// - Database-backed resources
-// - Namespace/organization hierarchies
+// See ../DESIGN.md for architectural decisions and alternatives considered.
 //
 import { promises as fs } from 'fs';
 import { resolveSafeReadPath } from '@/lib/storage/providers/file';

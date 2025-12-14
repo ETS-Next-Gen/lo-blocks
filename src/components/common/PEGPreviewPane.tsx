@@ -4,6 +4,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { getParserForExtension } from '@/generated/parserRegistry';
+import { injectPreviewContent } from '@/lib/template/previewTemplate';
 import RenderOLX from '@/components/common/RenderOLX';
 
 interface PEGPreviewPaneProps {
@@ -101,17 +102,11 @@ export default function PEGPreviewPane({ path, content }: PEGPreviewPaneProps) {
 
   const hasPreview = previewOLX !== null;
 
-  // Inject content into the preview OLX
-  // The preview OLX must use {{CONTENT}} as placeholder
+  // Inject content into the preview OLX using shared template logic
   const previewWithContent = useMemo((): { olx: string } | { error: string } | null => {
     if (!previewOLX || !content) return null;
-
-    if (!previewOLX.includes('{{CONTENT}}')) {
-      return { error: `Preview OLX is missing {{CONTENT}} placeholder for grammar: ${ext}` };
-    }
-
-    return { olx: previewOLX.replace('{{CONTENT}}', content) };
-  }, [previewOLX, content, ext]);
+    return injectPreviewContent(previewOLX, content);
+  }, [previewOLX, content]);
 
   return (
     <div className="h-full flex flex-col">

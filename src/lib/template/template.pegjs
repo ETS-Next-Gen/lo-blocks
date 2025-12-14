@@ -1,3 +1,6 @@
+/*---
+description: Template syntax with {{placeholder}} substitution
+---*/
 // Template.pegjs
 
 Template

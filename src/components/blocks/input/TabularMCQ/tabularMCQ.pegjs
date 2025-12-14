@@ -1,3 +1,6 @@
+/*---
+description: Matrix-style multiple choice for surveys, Likert scales, and assessments
+---*/
 // src/components/blocks/TabularMCQ/tabularMCQ.pegjs
 // PEG grammar for parsing TabularMCQ content
 //

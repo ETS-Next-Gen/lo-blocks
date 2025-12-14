@@ -1,3 +1,6 @@
+/*---
+description: Dropdown select options with optional grading markers
+---*/
 // src/components/blocks/input/DropdownInput/dropdown.pegjs
 // PEG grammar for parsing DropdownInput content
 //

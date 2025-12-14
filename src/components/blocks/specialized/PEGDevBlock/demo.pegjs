@@ -1,3 +1,6 @@
+/*---
+description: Demo arithmetic expression parser for PEG grammar development
+---*/
 // src/components/blocks/PEGDevBlock/demo.pegjs
 {
   // Helper to build nodes

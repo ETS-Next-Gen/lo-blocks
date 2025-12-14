@@ -1,3 +1,6 @@
+/*---
+description: Drag-and-drop ordering exercises where learners arrange items in sequence
+---*/
 // src/components/blocks/Sortable/sortable.pegjs
 // PEG grammar for parsing .sortpeg files
 

@@ -1,3 +1,6 @@
+/*---
+description: CAPA-style multiple choice problems (prototype)
+---*/
 {
   function trimText(chars) {
     return chars.join("").trim();

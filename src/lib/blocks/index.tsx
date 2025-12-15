@@ -12,7 +12,7 @@
 //
 export { blocks } from './factory';
 export { core, dev, test } from './namespaces';
-export { getAllNodes, getKidsBFS, getKidsDFS, getParents, inferRelatedNodes, getValueById, extractChildText } from './olxdom';
+export { getAllNodes, getKidsBFS, getKidsDFS, getParents, inferRelatedNodes, getGrader, getInputs, getValueById, extractChildText } from './olxdom';
 export { displayName, htmlId, nodeId, reactKey, reduxId, urlName } from './idResolver';
 export { action, executeNodeActions, grader, input, isAction, isInput } from './actions';
 export { CORRECTNESS, VISIBILITY_HANDLERS, computeVisibility } from './correctness';

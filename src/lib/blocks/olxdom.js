@@ -221,6 +221,45 @@ export function inferRelatedNodes(props, {
   return [...new Set([...explicitTargets, ...parents, ...kids])];
 }
 
+/**
+ * Get the related grader ID. Expects exactly one grader.
+ *
+ * @param {Object} props - Component props with nodeInfo and optional target attribute
+ * @returns {string} Grader ID
+ * @throws {Error} If no grader found or multiple graders found
+ */
+export function getGrader(props) {
+  const ids = inferRelatedNodes(props, {
+    selector: n => n.blueprint?.isGrader,
+    targets: props.target
+  });
+  if (ids.length === 0) {
+    throw new Error(
+      `No grader found. Place this block inside a grader, or add target="grader_id".`
+    );
+  }
+  if (ids.length > 1) {
+    throw new Error(
+      `Ambiguous grader reference: found ${ids.length} graders (${ids.join(', ')}). ` +
+      `Add target="grader_id" to specify which one.`
+    );
+  }
+  return ids[0];
+}
+
+/**
+ * Get all related input IDs.
+ *
+ * @param {Object} props - Component props with nodeInfo and optional target attribute
+ * @returns {string[]} Array of input IDs (may be empty)
+ */
+export function getInputs(props) {
+  return inferRelatedNodes(props, {
+    selector: n => n.blueprint?.isInput,
+    targets: props.target
+  });
+}
+
 // TODO: These functions belong in a new utility module (perhaps blocks/util.js)
 // They handle runtime value resolution and mixed content processing, which
 // is distinct from the DOM traversal utilities above.

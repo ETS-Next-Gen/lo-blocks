@@ -3,8 +3,7 @@
 import React from 'react';
 import * as state from '@/lib/state';
 import { useFieldSelector } from '@/lib/state';
-import { CORRECTNESS, VISIBILITY_HANDLERS, computeVisibility } from '@/lib/blocks';
-import { inferRelatedNodes } from '@/lib/blocks/olxdom';
+import { CORRECTNESS, VISIBILITY_HANDLERS, computeVisibility, getGrader } from '@/lib/blocks';
 import { renderCompiledKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 
@@ -22,30 +21,19 @@ import { DisplayError } from '@/lib/util/debug';
  */
 function _Explanation(props) {
   // TODO: Inherit default showWhen from parent CapaProblem
-  const { id, kids = [], target, infer, showWhen = 'correct', title } = props;
+  const { id, kids = [], showWhen = 'correct', title } = props;
 
-  // Find related grader
-  const graderIds = inferRelatedNodes(props, {
-    selector: n => n.blueprint?.isGrader,
-    infer,
-    targets: target
-  });
-  const targetId = graderIds[0];
-
-  // Fail fast if no grader found
-  if (!targetId) {
+  // Find related grader (throws on zero or multiple)
+  let targetId;
+  try {
+    targetId = getGrader(props);
+  } catch (e) {
     return (
       <DisplayError
         props={props}
-        id={`${id}_no_grader`}
+        id={`${id}_grader_error`}
         name="Explanation"
-        message="No grader found. Explanation must be nested inside a grader."
-        technical={{
-          hint: 'Place Explanation inside a grader block (e.g., NumericalGrader, KeyGrader).',
-          target: target || '(none specified)',
-          infer: infer ?? 'default (parents, kids)',
-          blockId: id
-        }}
+        message={e.message}
       />
     );
   }

@@ -225,13 +225,16 @@ export function inferRelatedNodes(props, {
  * Get the related grader ID. Expects exactly one grader.
  *
  * @param {Object} props - Component props with nodeInfo and optional target attribute
+ * @param {Object} [options] - Optional overrides
+ * @param {string|string[]} [options.infer] - Override inference direction ('parents', 'kids', or both)
  * @returns {string} Grader ID
  * @throws {Error} If no grader found or multiple graders found
  */
-export function getGrader(props) {
+export function getGrader(props, { infer } = {}) {
   const ids = inferRelatedNodes(props, {
     selector: n => n.blueprint?.isGrader,
-    targets: props.target
+    targets: props.target,
+    infer
   });
   if (ids.length === 0) {
     throw new Error(
@@ -251,12 +254,15 @@ export function getGrader(props) {
  * Get all related input IDs.
  *
  * @param {Object} props - Component props with nodeInfo and optional target attribute
+ * @param {Object} [options] - Optional overrides
+ * @param {string|string[]} [options.infer] - Override inference direction ('parents', 'kids', or both)
  * @returns {string[]} Array of input IDs (may be empty)
  */
-export function getInputs(props) {
+export function getInputs(props, { infer } = {}) {
   return inferRelatedNodes(props, {
     selector: n => n.blueprint?.isInput,
-    targets: props.target
+    targets: props.target,
+    infer
   });
 }
 

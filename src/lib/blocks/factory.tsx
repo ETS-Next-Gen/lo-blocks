@@ -66,6 +66,7 @@ function createBlock(config: BlockBlueprint): Block {
     category: config.category,
     requiresUniqueId: config.requiresUniqueId,
     attributeSchema: config.attributeSchema,
+    requiresGrader: config.requiresGrader,
 
     blueprint: config
   }

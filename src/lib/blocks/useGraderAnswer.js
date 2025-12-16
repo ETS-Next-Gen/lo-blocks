@@ -10,24 +10,28 @@
 'use client';
 import * as state from '@/lib/state';
 import { useFieldSelector } from '@/lib/state';
-import { getGrader } from './olxdom';
+import { getGrader, getAllNodes } from './olxdom';
 
 /**
- * Find a grader that targets this input (for sibling grader patterns)
+ * Find a grader that targets this input (for sibling grader patterns).
+ * Searches the dynamic OLX DOM (rendered tree), not the static idMap.
+ *
+ * Note: OLX DOM is a DAG - nodes can be reached multiple ways. getAllNodes
+ * may return duplicates, but we return on first match so this is benign.
+ * If performance becomes an issue, add a visited set.
  */
 function findTargetingGrader(props) {
-  const { id, idMap, componentMap } = props;
-  if (!idMap || !componentMap) return null;
+  const { id, nodeInfo } = props;
+  if (!nodeInfo) return null;
 
-  // Search all nodes for graders that target this input
-  for (const [nodeId, node] of Object.entries(idMap)) {
-    const blueprint = componentMap[node.tag];
-    if (blueprint?.isGrader && node.attributes?.target) {
-      // Check if this grader's target includes our input
-      const targets = node.attributes.target.split(',').map(t => t.trim());
-      if (targets.includes(id)) {
-        return nodeId;
-      }
+  const graderNodes = getAllNodes(nodeInfo, {
+    selector: (n) => n.blueprint?.isGrader && n.node?.attributes?.target
+  });
+
+  for (const graderNodeInfo of graderNodes) {
+    const targets = graderNodeInfo.node.attributes.target.split(',').map(t => t.trim());
+    if (targets.includes(id)) {
+      return graderNodeInfo.node.id;
     }
   }
   return null;

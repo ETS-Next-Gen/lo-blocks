@@ -1,37 +1,53 @@
 // src/components/blocks/CapaProblem/_CapaProblem.jsx
 'use client';
 import React, { useEffect } from 'react';
-import { CORRECTNESS, aggregateCorrectness } from '@/lib/blocks';
+import { CORRECTNESS, worstCaseCorrectness } from '@/lib/blocks';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
 import * as state from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 import { renderBlock } from '@/lib/renderHelpers';
 import { DisplayError } from '@/lib/util/debug';
 
-export default function _CapaProblem(props) {
-  const { id, kids = [], fields } = props;
+// --- Logic Functions ---
 
-  // First render problem content to populate dynamic OLX DOM (renderedKids)
-  const content = renderCompiledKids({ ...props, kids });
-
-  // Find child graders (not self - we search kids only to avoid finding parent CapaProblems)
-  const childGraderIds = inferRelatedNodes(props, {
+/**
+ * Find child grader IDs within this CapaProblem.
+ * Excludes self to avoid finding parent CapaProblems in nested structures.
+ */
+function findChildGraderIds(props) {
+  const { id, target } = props;
+  return inferRelatedNodes(props, {
     selector: n => n.blueprint?.isGrader && n.node?.id !== id,
     infer: ['kids'],
-    targets: props.target
+    targets: target
   });
+}
 
-  // For rendering header/footer, we don't pass target - they'll find CapaProblem as their grader
-  const headerNode = renderBlock(props, 'Correctness', { id: `${id}_header_status` });
-  const footerNode = renderBlock(props, 'CapaButton', { id: `${id}_footer_controls`, target: childGraderIds.join(',') });
+/**
+ * Map CORRECTNESS to CSS modifier class.
+ */
+function getHeaderStateClass(correctness) {
+  switch (correctness) {
+    case CORRECTNESS.CORRECT: return 'lo-problem__header--correct';
+    case CORRECTNESS.PARTIALLY_CORRECT: return 'lo-problem__header--partial';
+    case CORRECTNESS.INVALID: return 'lo-problem__header--invalid';
+    case CORRECTNESS.INCORRECT: return 'lo-problem__header--incorrect';
+    default: return '';
+  }
+}
 
-  const title = props.title || props.displayName || props.id || 'Problem';
+// --- Hooks ---
 
-  // Aggregate correctness from all child graders
-  // Note: We need a valid field even if empty to satisfy hook rules
+/**
+ * Aggregate correctness and messages from child graders.
+ * Updates CapaProblem's own fields with aggregated values.
+ */
+function useGraderAggregation(props, childGraderIds) {
+  const { id, fields } = props;
   const hasChildGraders = childGraderIds.length > 0;
-  const sampleGraderId = childGraderIds[0] || id; // Use own id as fallback for field lookup
+  const sampleGraderId = childGraderIds[0] || id;
 
+  // Subscribe to child grader correctness values
   const correctField = state.componentFieldByName(props, sampleGraderId, 'correct');
   const childCorrectnessValues = state.useAggregate(
     props,
@@ -44,10 +60,10 @@ export default function _CapaProblem(props) {
   );
 
   const correctness = hasChildGraders
-    ? aggregateCorrectness(childCorrectnessValues)
+    ? worstCaseCorrectness(childCorrectnessValues)
     : CORRECTNESS.UNSUBMITTED;
 
-  // Aggregate messages from child graders (combine non-empty messages)
+  // Subscribe to child grader messages
   const messageField = state.componentFieldByName(props, sampleGraderId, 'message');
   const childMessages = state.useAggregate(
     props,
@@ -73,39 +89,77 @@ export default function _CapaProblem(props) {
     }
   }, [message, props.id, fields]);
 
-  // No child graders is valid if this is a display-only problem or a survey
-  // But typically we want at least one grader
+  return { correctness, message };
+}
+
+// --- Presentation Components ---
+
+function CapaHeader({ title, correctness, headerNode }) {
+  const stateClass = getHeaderStateClass(correctness);
+  return (
+    <div className={`lo-problem__header ${stateClass}`}>
+      <div className="lo-problem__title">{title}</div>
+      <div className="lo-problem__status">{headerNode}</div>
+    </div>
+  );
+}
+
+function CapaContent({ children }) {
+  return (
+    <div className="lo-problem__content">
+      {children}
+    </div>
+  );
+}
+
+function CapaFooter({ footerNode }) {
+  return (
+    <div className="lo-problem__footer">
+      <div className="lo-problem__actions">{footerNode}</div>
+    </div>
+  );
+}
+
+// --- Main Component ---
+
+export default function _CapaProblem(props) {
+  const { id, kids = [] } = props;
+
+  // Render content first to populate dynamic OLX DOM
+  const content = renderCompiledKids({ ...props, kids });
+
+  // Find child graders
+  const childGraderIds = findChildGraderIds(props);
+
+  // Aggregate state from child graders
+  const { correctness } = useGraderAggregation(props, childGraderIds);
+
+  // Validate: require at least one grader unless explicitly allowed
   if (childGraderIds.length === 0 && !props.allowEmpty) {
     return (
       <DisplayError
         props={props}
         id={`${id}_no_grader`}
         name="CapaProblem"
-        message="No grader found. Add a grader block (e.g., NumericalGrader, RatioGrader) to this problem."
+        message="No grader found. Add a grader block (e.g., NumericalGrader, KeyGrader) to this problem."
         technical={{ hint: 'CapaProblem expects at least one child block with isGrader=true' }}
       />
     );
   }
 
-  const headerStateClass =
-    correctness === CORRECTNESS.CORRECT ? 'lo-problem__header--correct' :
-    correctness === CORRECTNESS.PARTIALLY_CORRECT ? 'lo-problem__header--partial' :
-    correctness === CORRECTNESS.INVALID ? 'lo-problem__header--invalid' :
-    correctness === CORRECTNESS.INCORRECT ? 'lo-problem__header--incorrect' :
-    '';
+  // Build header/footer nodes (they find CapaProblem via parent inference)
+  const title = props.title || props.displayName || props.id || 'Problem';
+  const headerNode = renderBlock(props, 'Correctness', { id: `${id}_header_status` });
+  const footerNode = renderBlock(props, 'CapaButton', {
+    id: `${id}_footer_controls`,
+    target: childGraderIds.join(',')
+  });
 
   return (
     <div className="lo-problem">
-      <div className={`lo-problem__header ${headerStateClass}`}>
-        <div className="lo-problem__title">{title}</div>
-        <div className="lo-problem__status">{headerNode}</div>
-      </div>
-      <div className="lo-problem__content">
-        {content}
-      </div>
-      <div className="lo-problem__footer">
-        <div className="lo-problem__actions">{footerNode}</div>
-      </div>
+      <CapaHeader title={title} correctness={correctness} headerNode={headerNode} />
+      <CapaContent>{content}</CapaContent>
+      <CapaFooter footerNode={footerNode} />
     </div>
   );
 }

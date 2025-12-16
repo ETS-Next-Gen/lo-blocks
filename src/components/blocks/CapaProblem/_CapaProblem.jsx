@@ -55,7 +55,7 @@ function useGraderAggregation(props, childGraderIds) {
     hasChildGraders ? childGraderIds : [],
     {
       fallback: CORRECTNESS.UNSUBMITTED,
-      aggregate: (values) => values.map(v => v?.correct ?? v ?? CORRECTNESS.UNSUBMITTED)
+      aggregate: (values) => values.map(v => v ?? CORRECTNESS.UNSUBMITTED)
     }
   );
 
@@ -71,7 +71,7 @@ function useGraderAggregation(props, childGraderIds) {
     hasChildGraders ? childGraderIds : [],
     {
       fallback: '',
-      aggregate: (values) => values.map(v => v?.message ?? v ?? '')
+      aggregate: (values) => values.map(v => v ?? '')
     }
   );
   const message = childMessages.filter(m => m).join(' ');

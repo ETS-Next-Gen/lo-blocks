@@ -24,18 +24,12 @@ function _Explanation(props) {
   // showWhen validated by attributeSchema
   const { kids = [], showWhen = 'correct', title, graderId } = props;
 
-  let correctness = CORRECTNESS.UNSUBMITTED;
-  try {
-    const correctField = state.componentFieldByName(props, graderId, 'correct');
-    correctness = useFieldSelector(
-      props,
-      correctField,
-      { id: graderId, fallback: CORRECTNESS.UNSUBMITTED, selector: s => s?.correct }
-    );
-    if (correctness == null) correctness = CORRECTNESS.UNSUBMITTED;
-  } catch (e) {
-    correctness = CORRECTNESS.UNSUBMITTED;
-  }
+  const correctField = state.componentFieldByName(props, graderId, 'correct');
+  const correctness = useFieldSelector(
+    props,
+    correctField,
+    { id: graderId, fallback: CORRECTNESS.UNSUBMITTED, selector: s => s?.correct }
+  ) ?? CORRECTNESS.UNSUBMITTED;
 
   if (!computeVisibility(showWhen, { correctness })) {
     return null;

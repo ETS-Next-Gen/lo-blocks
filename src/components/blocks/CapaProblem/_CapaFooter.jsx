@@ -1,4 +1,8 @@
-// src/components/blocks/CapaProblem/_CapaButton.jsx
+// src/components/blocks/CapaProblem/_CapaFooter.jsx
+//
+// Footer component for CapaProblem containing action buttons and status display.
+// Renders: Check/Grade button, Show Answer button, correctness icon, status text.
+//
 'use client';
 import React from 'react';
 import { renderBlock } from '@/lib/renderHelpers';
@@ -10,7 +14,7 @@ import { renderBlock } from '@/lib/renderHelpers';
 // Black box submission (e.g. teacher-graded): Submit
 //
 // teacherScored is wrong. TODO: Align structure to Open edX, as closely as reasonable
-function computeLabel(props) {
+function computeCheckLabel(props) {
   const { label, teacherScored, attemptsMax, attemptsUsed } = props;
   if (label) return label;
   const max = attemptsMax != null ? Number(attemptsMax) : undefined;
@@ -24,23 +28,27 @@ function computeLabel(props) {
   return 'Check';
 }
 
-export default function _CapaButton(props) {
-  const { id, idMap, nodeInfo, componentMap, idPrefix } = props;
+export default function _CapaFooter(props) {
+  const { id } = props;
   const target = props.target;
-  const label = computeLabel(props);
+  const checkLabel = computeCheckLabel(props);
+  const showAnswerEnabled = props.showAnswer !== 'never';
 
   const buttonId = `${id}_action`;
+  const showAnswerId = `${id}_show_answer`;
   const statusIconId = `${id}_status_icon`;
   const statusTextId = `${id}_status_text`;
 
   // ActionButton needs target to trigger child grader actions
+  // ShowAnswerButton targets same graders to toggle showAnswer state
   // Correctness/StatusText find CapaProblem (metagrader) via parent inference
   return (
-    <div className="lo-capabutton">
-      <div className="lo-capabutton__primary">
-        {renderBlock(props, 'ActionButton', { id: buttonId, label, target })}
+    <div className="lo-capafooter">
+      <div className="lo-capafooter__actions">
+        {renderBlock(props, 'ActionButton', { id: buttonId, label: checkLabel, target })}
+        {showAnswerEnabled && renderBlock(props, 'ShowAnswerButton', { id: showAnswerId, target })}
       </div>
-      <div className="lo-capabutton__status">
+      <div className="lo-capafooter__status">
         {renderBlock(props, 'Correctness', { id: statusIconId })}
         {renderBlock(props, 'StatusText', { id: statusTextId, field: 'message' })}
       </div>

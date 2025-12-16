@@ -112,10 +112,10 @@ function CapaContent({ children }) {
   );
 }
 
-function CapaFooter({ footerNode }) {
+function FooterWrapper({ children }) {
   return (
     <div className="lo-problem__footer">
-      <div className="lo-problem__actions">{footerNode}</div>
+      <div className="lo-problem__actions">{children}</div>
     </div>
   );
 }
@@ -150,7 +150,7 @@ export default function _CapaProblem(props) {
   // Build header/footer nodes (they find CapaProblem via parent inference)
   const title = props.title || props.displayName || props.id || 'Problem';
   const headerNode = renderBlock(props, 'Correctness', { id: `${id}_header_status` });
-  const footerNode = renderBlock(props, 'CapaButton', {
+  const footerNode = renderBlock(props, 'CapaFooter', {
     id: `${id}_footer_controls`,
     target: childGraderIds.join(',')
   });
@@ -159,7 +159,7 @@ export default function _CapaProblem(props) {
     <div className="lo-problem">
       <CapaHeader title={title} correctness={correctness} headerNode={headerNode} />
       <CapaContent>{content}</CapaContent>
-      <CapaFooter footerNode={footerNode} />
+      <FooterWrapper>{footerNode}</FooterWrapper>
     </div>
   );
 }

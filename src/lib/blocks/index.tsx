@@ -19,3 +19,4 @@ export { CORRECTNESS, CORRECTNESS_PRIORITY, VISIBILITY_HANDLERS, computeVisibili
 export { worstCaseCorrectness, proportionalCorrectness, computeScore, formatScore, countCorrectness } from '@/lib/grading';
 export { isInputReadOnly } from './inputInteraction';
 export { baseAttributes } from './attributeSchemas';
+export { useGraderAnswer } from './useGraderAnswer';

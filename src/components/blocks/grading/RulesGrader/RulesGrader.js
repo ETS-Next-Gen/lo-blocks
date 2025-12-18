@@ -27,13 +27,6 @@ function isMatchBlock(blueprint) {
 }
 
 /**
- * Check if a block is DefaultMatch
- */
-function isDefaultMatch(tag) {
-  return tag === 'DefaultMatch';
-}
-
-/**
  * Grade by evaluating child Match rules top-to-bottom, returning first match.
  *
  * @param {Object} props - RulesGrader props including kids
@@ -59,23 +52,11 @@ function gradeRules(props, context) {
     const childBlueprint = componentMap[childEntry.tag];
 
     // Skip non-Match blocks (like LineInput)
-    if (!isMatchBlock(childBlueprint) && !isDefaultMatch(childEntry.tag)) {
+    if (!isMatchBlock(childBlueprint)) {
       continue;
     }
 
     const attrs = childEntry.attributes || {};
-
-    // DefaultMatch always matches
-    if (isDefaultMatch(childEntry.tag)) {
-      const score = attrs.score !== undefined ? parseFloat(attrs.score) : 0;
-      return {
-        correct: score >= 1 ? CORRECTNESS.CORRECT :
-                 score > 0 ? CORRECTNESS.PARTIALLY_CORRECT : CORRECTNESS.INCORRECT,
-        message: attrs.feedback || '',
-        score,
-        feedbackBlock: attrs.feedbackBlock,
-      };
-    }
 
     // Call the match function
     // Parse attributes through the Match block's schema to get proper types
@@ -95,16 +76,16 @@ function gradeRules(props, context) {
     const matched = result.correct === CORRECTNESS.CORRECT || result.correct === true;
 
     if (matched) {
-      // Use score/feedback from attributes
-      const score = attrs.score !== undefined ? parseFloat(attrs.score) : 1;
-      const feedback = attrs.feedback || result.message || '';
+      // Use score/feedback from attributes (parsed for proper types)
+      const score = parsedAttrs.score !== undefined ? parsedAttrs.score : 1;
+      const feedback = parsedAttrs.feedback || result.message || '';
 
       return {
         correct: score >= 1 ? CORRECTNESS.CORRECT :
                  score > 0 ? CORRECTNESS.PARTIALLY_CORRECT : CORRECTNESS.INCORRECT,
         message: feedback,
         score,
-        feedbackBlock: attrs.feedbackBlock,
+        feedbackBlock: parsedAttrs.feedbackBlock,
       };
     }
   }

@@ -14,17 +14,10 @@
 //   </RulesGrader>
 //
 import { z } from 'zod';
-import { core, grader, baseAttributes } from '@/lib/blocks';
+import { core, grader, baseAttributes, isMatch } from '@/lib/blocks';
 import { CORRECTNESS } from '@/lib/blocks/correctness.js';
 import * as parsers from '@/lib/content/parsers';
 import _Noop from '@/components/blocks/layout/_Noop';
-
-/**
- * Check if a block is a Match rule (has locals.match function)
- */
-function isMatchBlock(blueprint) {
-  return typeof blueprint?.locals?.match === 'function';
-}
 
 /**
  * Grade by evaluating child Match rules top-to-bottom, returning first match.
@@ -52,40 +45,32 @@ function gradeRules(props, context) {
     const childBlueprint = componentMap[childEntry.tag];
 
     // Skip non-Match blocks (like LineInput)
-    if (!isMatchBlock(childBlueprint)) {
+    if (!isMatch(childBlueprint)) {
       continue;
     }
 
+    // Attributes are already parsed/transformed at parse time by parseOLX
     const attrs = childEntry.attributes || {};
 
     // Call the match function
-    // Parse attributes through the Match block's schema to get proper types
-    // (e.g., "true" -> true for booleans)
     const matchFn = childBlueprint.locals.match;
-    let parsedAttrs = attrs;
-    if (childBlueprint.blueprint?.attributes?.safeParse) {
-      const parseResult = childBlueprint.blueprint.attributes.safeParse(attrs);
-      if (parseResult.success) {
-        parsedAttrs = parseResult.data;
-      }
-    }
-    const matchProps = { ...props, ...parsedAttrs };
+    const matchProps = { ...props, ...attrs };
     const result = matchFn(matchProps, context);
 
     // Check if this rule matched (correct === CORRECT or true)
     const matched = result.correct === CORRECTNESS.CORRECT || result.correct === true;
 
     if (matched) {
-      // Use score/feedback from attributes (parsed for proper types)
-      const score = parsedAttrs.score !== undefined ? parsedAttrs.score : 1;
-      const feedback = parsedAttrs.feedback || result.message || '';
+      // Use score/feedback from attributes
+      const score = attrs.score !== undefined ? attrs.score : 1;
+      const feedback = attrs.feedback || result.message || '';
 
       return {
         correct: score >= 1 ? CORRECTNESS.CORRECT :
                  score > 0 ? CORRECTNESS.PARTIALLY_CORRECT : CORRECTNESS.INCORRECT,
         message: feedback,
         score,
-        feedbackBlock: parsedAttrs.feedbackBlock,
+        feedbackBlock: attrs.feedbackBlock,
       };
     }
   }
@@ -119,11 +104,12 @@ const RulesGrader = core({
       if (!childEntry) continue;
 
       const childBlueprint = componentMap?.[childEntry.tag];
-      if (!isMatchBlock(childBlueprint)) continue;
+      if (!isMatch(childBlueprint)) continue;
 
       const attrs = childEntry.attributes || {};
       // Return first rule with score=1 (or no score, implying correct)
-      if (attrs.score === '1' || attrs.score === 1 || attrs.score === undefined) {
+      // Attributes are now parsed, so score is a number not a string
+      if (attrs.score === 1 || attrs.score === undefined) {
         return attrs.answer || attrs.displayAnswer;
       }
     }

@@ -33,12 +33,13 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 // Standard fields for graders
 const GRADER_FIELDS = ['correct', 'message', 'showAnswer'];
 
-// Standard attributes for graders
+// Standard attributes for graders - passthrough preserves additional attrs (like src for PEG parsers)
+// Individual graders can use .strict() on their schema to catch attribute typos
 const GRADER_ATTRIBUTES = baseAttributes.extend({
   answer: z.string().optional(),
   displayAnswer: z.string().optional(),
   target: z.string().optional(),
-});
+}).passthrough();
 
 /**
  * Extend config for grader blocks.

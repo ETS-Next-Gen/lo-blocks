@@ -390,9 +390,11 @@ export async function parseOLX(
       console.warn(`[OLX] No component found for tag: <${tag}> — using defaultParser`);
     }
 
-    // Validate attributes - use component schema if defined, else base with passthrough
+    // Validate and transform attributes - use component schema if defined, else base with passthrough
+    // Passthrough preserves unknown attrs; strict() rejects unknown (catching typos like scr= vs src=)
     const schema = Component?.attributes ?? baseAttributes.passthrough();
     const result = schema.safeParse(attributes);
+    let parsedAttributes = attributes;
     if (!result.success) {
       const zodErrors = result.error.issues.map(i => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
       errors.push({
@@ -407,6 +409,9 @@ export async function parseOLX(
           zodError: result.error
         }
       });
+    } else {
+      // Use transformed attributes (e.g., "true" -> true for booleans)
+      parsedAttributes = result.data;
     }
 
     const parser = Component?.parser || defaultParser;
@@ -420,7 +425,7 @@ export async function parseOLX(
       id,
       rawParsed: node,
       tag,
-      attributes,
+      attributes: parsedAttributes,
       provenance,
       provider,
       parseNode,

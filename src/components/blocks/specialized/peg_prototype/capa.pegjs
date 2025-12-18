@@ -114,6 +114,7 @@ explanationContent
     }
 
 // Multiple choice: (x) or ( )
+// Outputs format compatible with ChoiceInput: { text, value, tag: 'Key'/'Distractor', feedback? }
 choiceBlock
   = choices:choiceLine+ {
       return { type: "choices", options: choices };
@@ -121,12 +122,17 @@ choiceBlock
 
 choiceLine
   = '(' marker:('x' / ' ') ')' _ t:choiceText feedback:inlineFeedback? _ newline {
-      const result = { selected: marker === 'x', text: t };
+      const result = {
+        text: t,
+        value: t,
+        tag: marker === 'x' ? 'Key' : 'Distractor'
+      };
       if (feedback) result.feedback = feedback;
       return result;
     }
 
 // Checkbox: [x] or [ ]
+// Outputs format compatible with ChoiceInput: { text, value, tag: 'Key'/'Distractor', feedback? }
 checkboxBlock
   = choices:checkboxLine+ {
       return { type: "checkboxes", options: choices };
@@ -134,7 +140,11 @@ checkboxBlock
 
 checkboxLine
   = '[' marker:('x' / ' ') ']' _ t:choiceText feedback:inlineFeedback? _ newline {
-      const result = { checked: marker === 'x', text: t };
+      const result = {
+        text: t,
+        value: t,
+        tag: marker === 'x' ? 'Key' : 'Distractor'
+      };
       if (feedback) result.feedback = feedback;
       return result;
     }
@@ -157,18 +167,30 @@ feedbackContent
     }
 
 // Text input: = answer, or= alternative, not= wrong answer with feedback
+// Outputs rules in StringMatch format: { answer, score, feedback? }
 textInput
   = primary:textAnswer alternatives:textAlternative* {
-      const result = { type: "textInput", answer: primary.answer };
-      if (primary.feedback) result.feedback = primary.feedback;
-      if (alternatives.length > 0) {
-        result.alternatives = alternatives.filter(a => a.type === 'or').map(a => a.answer);
-        const wrongAnswers = alternatives.filter(a => a.type === 'not');
-        if (wrongAnswers.length > 0) {
-          result.wrongAnswers = wrongAnswers.map(a => ({ answer: a.answer, feedback: a.feedback }));
-        }
-      }
-      return result;
+      // Build rules array in StringMatch format
+      const rules = [];
+
+      // Primary answer (score 1)
+      rules.push({
+        answer: primary.answer,
+        score: 1,
+        feedback: primary.feedback || 'Correct!'
+      });
+
+      // Alternative correct answers (score 1)
+      alternatives.filter(a => a.type === 'or').forEach(a => {
+        rules.push({ answer: a.answer, score: 1, feedback: 'Correct!' });
+      });
+
+      // Wrong answers with targeted feedback (score 0)
+      alternatives.filter(a => a.type === 'not').forEach(a => {
+        rules.push({ answer: a.answer, score: 0, feedback: a.feedback || 'Incorrect' });
+      });
+
+      return { type: "textInput", rules: rules };
     }
 
 textAnswer

@@ -137,16 +137,15 @@ function generateProblemComponents({ parsed, storeEntry, id, attributes }) {
 
       case 'choices': {
         // Multiple choice - KeyGrader with ChoiceInput
+        // Grammar outputs { text, value, tag: 'Key'/'Distractor', feedback? } directly
         const graderId = `${id}_grader_${graderIndex++}`;
         const inputId = `${id}_input_${inputIndex++}`;
 
-        // Create choice items (Key for correct, Distractor for incorrect)
         const choiceKids = block.options.map((opt, i) => {
           const choiceId = `${id}_choice_${inputIndex - 1}_${i}`;
-          const tag = opt.selected ? 'Key' : 'Distractor';
           storeEntry(choiceId, {
             id: choiceId,
-            tag,
+            tag: opt.tag,
             attributes: { id: choiceId },
             kids: opt.text
           });
@@ -175,16 +174,15 @@ function generateProblemComponents({ parsed, storeEntry, id, attributes }) {
 
       case 'checkboxes': {
         // Checkboxes - similar to choices but multi-select
-        // TODO: Implement checkbox grader
+        // Grammar outputs { text, value, tag: 'Key'/'Distractor', feedback? } directly
         const graderId = `${id}_grader_${graderIndex++}`;
         const inputId = `${id}_input_${inputIndex++}`;
 
         const choiceKids = block.options.map((opt, i) => {
           const choiceId = `${id}_checkbox_${inputIndex - 1}_${i}`;
-          const tag = opt.checked ? 'Key' : 'Distractor';
           storeEntry(choiceId, {
             id: choiceId,
-            tag,
+            tag: opt.tag,
             attributes: { id: choiceId },
             kids: opt.text
           });
@@ -211,63 +209,28 @@ function generateProblemComponents({ parsed, storeEntry, id, attributes }) {
 
       case 'textInput': {
         // Text input - RulesGrader with StringMatch rules
+        // Grammar outputs rules array: [{ answer, score, feedback }, ...]
         const graderId = `${id}_grader_${graderIndex++}`;
         const inputId = `${id}_input_${inputIndex++}`;
 
         const matchKids = [];
 
-        // Primary answer
-        const primaryMatchId = `${id}_match_${graderIndex - 1}_0`;
-        storeEntry(primaryMatchId, {
-          id: primaryMatchId,
-          tag: 'StringMatch',
-          attributes: {
-            id: primaryMatchId,
-            answer: block.answer,
-            score: '1',
-            feedback: block.feedback || 'Correct!'
-          },
-          kids: []
+        // Create StringMatch for each rule from grammar
+        block.rules.forEach((rule, i) => {
+          const matchId = `${id}_match_${graderIndex - 1}_${i}`;
+          storeEntry(matchId, {
+            id: matchId,
+            tag: 'StringMatch',
+            attributes: {
+              id: matchId,
+              answer: rule.answer,
+              score: String(rule.score),
+              feedback: rule.feedback
+            },
+            kids: []
+          });
+          matchKids.push({ type: 'block', id: matchId });
         });
-        matchKids.push({ type: 'block', id: primaryMatchId });
-
-        // Alternative correct answers
-        if (block.alternatives) {
-          block.alternatives.forEach((alt, i) => {
-            const altMatchId = `${id}_match_${graderIndex - 1}_alt_${i}`;
-            storeEntry(altMatchId, {
-              id: altMatchId,
-              tag: 'StringMatch',
-              attributes: {
-                id: altMatchId,
-                answer: alt,
-                score: '1',
-                feedback: 'Correct!'
-              },
-              kids: []
-            });
-            matchKids.push({ type: 'block', id: altMatchId });
-          });
-        }
-
-        // Wrong answers with feedback
-        if (block.wrongAnswers) {
-          block.wrongAnswers.forEach((wrong, i) => {
-            const wrongMatchId = `${id}_match_${graderIndex - 1}_wrong_${i}`;
-            storeEntry(wrongMatchId, {
-              id: wrongMatchId,
-              tag: 'StringMatch',
-              attributes: {
-                id: wrongMatchId,
-                answer: wrong.answer,
-                score: '0',
-                feedback: wrong.feedback || 'Incorrect'
-              },
-              kids: []
-            });
-            matchKids.push({ type: 'block', id: wrongMatchId });
-          });
-        }
 
         // Default catch-all
         const defaultMatchId = `${id}_match_${graderIndex - 1}_default`;

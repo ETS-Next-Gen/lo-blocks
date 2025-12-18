@@ -4,7 +4,7 @@ import * as state from '@/lib/state';
 import { ignore } from '@/lib/content/parsers';
 import _Correctness from './_Correctness';
 
-const fields = state.fields(['correct']);
+const fields = state.fields(['correct', 'submitCount']);
 
 const Correctness = dev({
   ...ignore(),

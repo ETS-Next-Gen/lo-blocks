@@ -31,7 +31,7 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 // These functions extend config based on mixin flags (isGrader, isInput, etc.)
 
 // Standard fields for graders
-const GRADER_FIELDS = ['correct', 'message', 'showAnswer'];
+const GRADER_FIELDS = ['correct', 'message', 'showAnswer', 'submitCount'];
 
 // Standard attributes for graders - passthrough preserves additional attrs (like src for PEG parsers)
 // Individual graders can use .strict() on their schema to catch attribute typos

@@ -28,12 +28,9 @@ import _Noop from '@/components/blocks/layout/_Noop';
  */
 function gradeRules(props, context) {
   const { kids = [], idMap, componentMap } = props;
-  const { input } = context;
 
-  // Handle empty input
-  if (input === undefined || input === null || input === '') {
-    return { correct: CORRECTNESS.UNSUBMITTED, message: '' };
-  }
+  // TODO: Handle other CORRECTNESS states (UNSUBMITTED, INCOMPLETE, etc.)
+  // Currently delegated to Match rules, but may need RulesGrader-level logic
 
   // Evaluate child Match rules in order
   for (const kid of kids) {

@@ -87,6 +87,20 @@ function useGraderAggregation(props, childGraderIds) {
   );
   const message = childMessages.filter(m => m).join(' ');
 
+  // Subscribe to child grader submitCounts - sum them for flash animation
+  // TODO: Wire this more cleanly?
+  const submitCountField = state.componentFieldByName(props, sampleGraderId, 'submitCount');
+  const childSubmitCounts = state.useAggregate(
+    props,
+    submitCountField,
+    hasChildGraders ? childGraderIds : [],
+    {
+      fallback: 0,
+      aggregate: (values) => values.map(v => v ?? 0)
+    }
+  );
+  const totalSubmitCount = Math.max(...childSubmitCounts, 0);
+
   // Update CapaProblem's own fields with aggregated values
   useEffect(() => {
     if (fields?.correct) {
@@ -99,6 +113,12 @@ function useGraderAggregation(props, childGraderIds) {
       state.updateReduxField(props, fields.message, message);
     }
   }, [message, props.id, fields]);
+
+  useEffect(() => {
+    if (fields?.submitCount) {
+      state.updateReduxField(props, fields.submitCount, totalSubmitCount);
+    }
+  }, [totalSubmitCount, props.id, fields]);
 
   return { correctness, message };
 }

@@ -66,8 +66,17 @@ describe('Demo OLX files render without errors', () => {
   it('all demo files parse and render without throwing', async () => {
     const errors = [];
 
+    // Files that intentionally render DisplayError for testing purposes
+    const intentionalErrorFiles = [
+      'ErrorNode.olx', // Tests the error display component itself
+    ];
+
     for (const filePath of demoFiles) {
       const relativePath = path.relative(process.cwd(), filePath);
+      const fileName = path.basename(filePath);
+
+      // Skip files that are meant to demonstrate errors
+      const isIntentionalError = intentionalErrorFiles.some(f => fileName === f);
 
       try {
         // Read the file
@@ -122,9 +131,25 @@ describe('Demo OLX files render without errors', () => {
 
         // Use React Testing Library to actually mount the component
         // This will catch React errors that only occur during render
-        const { unmount } = rtlRender(
+        const { unmount, container } = rtlRender(
           React.createElement(Provider, { store: reduxStore }, element)
         );
+
+        // Check for DisplayError components in the rendered output (skip intentional error files)
+        if (!isIntentionalError) {
+          const displayErrors = container.querySelectorAll('.lo-display-error');
+          if (displayErrors.length > 0) {
+            const errorMessages = Array.from(displayErrors).map(el => {
+              const strong = el.querySelector('strong')?.textContent || 'Unknown';
+              const text = el.textContent.split(':')[1]?.trim().split('\n')[0] || '';
+              return `${strong}: ${text}`;
+            });
+            errors.push({
+              file: relativePath,
+              error: `DisplayError rendered: ${errorMessages.join('; ')}`
+            });
+          }
+        }
 
         // Clean up
         unmount();

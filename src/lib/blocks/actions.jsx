@@ -147,18 +147,20 @@ export function grader({ grader, infer = true } = {}) {
                        correct === false ? CORRECTNESS.INCORRECT :
                        correct; // In case it's already a CORRECTNESS value
 
-    // TODO: Add number of attempts
-    // TODO Should we copy:
-    // https://edx.readthedocs.io/projects/devdata/en/stable/internal_data_formats/tracking_logs/student_event_types.html#problem-check
-    //
     // Use reduxId to get scoped ID (applies idPrefix for list/repeated contexts)
     const scopedTargetId = reduxId({ ...props, id: targetId });
+
+    // Get current submitCount and increment it for UI flash feedback
+    const currentState = state.application_state?.component?.[scopedTargetId] || {};
+    const submitCount = (currentState.submitCount || 0) + 1;
+
     lo_event.logEvent('UPDATE_CORRECT', {
       id: scopedTargetId,
       correct: correctness,
       message,
       score,
-      answers: values  // Key-value pair?
+      submitCount,
+      answers: values
     });
     return correct;
   };

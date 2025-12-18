@@ -130,7 +130,7 @@ export function DisplayError({ props={}, name = 'Error', message, technical, dat
 
   // In production / non-debug mode, render friendly box
   return (
-    <div key={id} className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded border border-yellow-200 whitespace-pre-wrap overflow-auto">
+    <div key={id} className="lo-display-error bg-yellow-50 text-yellow-800 text-sm p-3 rounded border border-yellow-200 whitespace-pre-wrap overflow-auto">
       <div><strong>{name}</strong>: {message}</div>
 
       {technical && (

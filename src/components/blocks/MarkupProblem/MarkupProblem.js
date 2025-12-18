@@ -288,15 +288,15 @@ function generateProblemComponents({ parsed, storeEntry, id, attributes }) {
       }
 
       case 'hint': {
-        // Single hint - becomes Explanation or similar
+        // Single hint - add to demand hints (revealed on request)
         const hintId = `${id}_hint_${hintIndex++}`;
         storeEntry(hintId, {
           id: hintId,
           tag: 'Markdown',
-          attributes: { id: hintId, class: 'hint' },
-          kids: `💡 ${block.content}`
+          attributes: { id: hintId },
+          kids: block.content
         });
-        problemKids.push({ type: 'block', id: hintId });
+        demandHints.push({ type: 'block', id: hintId });
         break;
       }
 

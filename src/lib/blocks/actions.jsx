@@ -41,6 +41,10 @@ export function isInput(blueprint) {
   return typeof blueprint?.getValue === "function";
 }
 
+export function isMatch(blueprint) {
+  return typeof blueprint?.locals?.match === 'function';
+}
+
 // This does a full tree search, which is not performant. Probably doesn't matter
 // right now, but in the future, it may.
 //

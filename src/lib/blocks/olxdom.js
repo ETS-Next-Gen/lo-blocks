@@ -282,6 +282,7 @@ export function getInputs(props, { infer } = {}) {
   });
 }
 
+
 // TODO: These functions belong in a new utility module (perhaps blocks/util.js)
 // They handle runtime value resolution and mixed content processing, which
 // is distinct from the DOM traversal utilities above.

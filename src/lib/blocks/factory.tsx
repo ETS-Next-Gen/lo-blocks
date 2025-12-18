@@ -33,12 +33,13 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 // Standard fields for graders
 const GRADER_FIELDS = ['correct', 'message', 'showAnswer'];
 
-// Standard attributes for graders
+// Standard attributes for graders - passthrough preserves additional attrs (like src for PEG parsers)
+// Individual graders can use .strict() on their schema to catch attribute typos
 const GRADER_ATTRIBUTES = baseAttributes.extend({
   answer: z.string().optional(),
   displayAnswer: z.string().optional(),
   target: z.string().optional(),
-});
+}).passthrough();
 
 /**
  * Extend config for grader blocks.
@@ -59,15 +60,15 @@ function applyGraderExtensions(config: BlockBlueprint): BlockBlueprint {
       : newFields;
   }
 
-  // Extend attributeSchema - merge with grader attributes
-  const extendedSchema = config.attributeSchema
-    ? config.attributeSchema.and(GRADER_ATTRIBUTES)
+  // Extend attributes - merge with grader attributes
+  const extendedSchema = config.attributes
+    ? config.attributes.and(GRADER_ATTRIBUTES)
     : GRADER_ATTRIBUTES;
 
   return {
     ...config,
     fields: extendedFields,
-    attributeSchema: extendedSchema,
+    attributes: extendedSchema,
   };
 }
 
@@ -117,7 +118,7 @@ function createBlock(config: BlockBlueprint): Block {
     internal: effectiveConfig.internal,
     category: effectiveConfig.category,
     requiresUniqueId: effectiveConfig.requiresUniqueId,
-    attributeSchema: effectiveConfig.attributeSchema,
+    attributes: effectiveConfig.attributes,
     requiresGrader: effectiveConfig.requiresGrader,
     isGrader: effectiveConfig.isGrader,
     getDisplayAnswer: effectiveConfig.getDisplayAnswer,

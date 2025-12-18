@@ -60,10 +60,18 @@ function applyGraderExtensions(config: BlockBlueprint): BlockBlueprint {
       : newFields;
   }
 
-  // Extend attributes - merge with grader attributes
-  const extendedSchema = config.attributes
-    ? config.attributes.and(GRADER_ATTRIBUTES)
-    : GRADER_ATTRIBUTES;
+  // Extend attributes - merge grader attributes by combining shapes
+  // Note: We can't use .and() because it fails when schemas contain transforms
+  // (e.g., strictBoolean) combined with passthrough. Instead, merge shapes manually.
+  let extendedSchema = config.attributes ?? GRADER_ATTRIBUTES;
+  if (config.attributes && config.attributes._def?.typeName === 'ZodObject') {
+    // Get existing shape and merge with grader attributes shape
+    const existingShape = (config.attributes as z.ZodObject<any>).shape;
+    const graderShape = GRADER_ATTRIBUTES.shape;
+    // Existing attrs take precedence (grader-specific overrides base)
+    const mergedShape = { ...graderShape, ...existingShape };
+    extendedSchema = z.object(mergedShape).passthrough();
+  }
 
   return {
     ...config,

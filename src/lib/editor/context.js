@@ -26,6 +26,7 @@ Type: {fileType}
 You can use these tools:
 - applyEdit: Make changes to the current file (applied immediately)
 - getBlockInfo: Get detailed docs for a specific block
+- readFile: Read another file from the content library
 `;
 
 // ============================================================

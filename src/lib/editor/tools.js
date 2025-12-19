@@ -134,6 +134,36 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
           return `Error fetching block info: ${err.message}`;
         }
       }
-    }
+    },
+    {
+      type: "function",
+      function: {
+        name: "readFile",
+        description: "Read another file from the content library. Use this to see how other files are structured or to reference their content.",
+        parameters: {
+          type: "object",
+          properties: {
+            path: {
+              type: "string",
+              description: "Path to the file, e.g. 'sba/psychology/operant-mastery.olx' or 'demos/text-changer-demo.olx'"
+            }
+          },
+          required: ["path"]
+        }
+      },
+      callback: async ({ path }) => {
+        try {
+          const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
+          if (!res.ok) {
+            const err = await res.json();
+            return `Error reading file: ${err.error || res.statusText}`;
+          }
+          const content = await res.text();
+          return `# ${path}\n\n\`\`\`\n${content}\n\`\`\``;
+        } catch (err) {
+          return `Error reading file: ${err.message}`;
+        }
+      }
+    },
   ];
 }

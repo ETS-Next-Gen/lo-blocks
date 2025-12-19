@@ -86,6 +86,45 @@ const DateSeparator = ({ message }) => {
   );
 };
 
+// Tool call component - shows what tool the LLM called
+const ToolCallMessage = ({ message }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  // Truncate long args for display
+  const argsPreview = JSON.stringify(message.args || {});
+  const truncatedArgs = argsPreview.length > 60
+    ? argsPreview.slice(0, 60) + '...'
+    : argsPreview;
+
+  return (
+    <div className="my-2 mx-10">
+      <div
+        className="text-xs bg-gray-50 border border-gray-200 rounded p-2 cursor-pointer hover:bg-gray-100"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span className="text-gray-500">🔧</span>
+        <span className="font-mono ml-1 text-blue-600">{message.name}</span>
+        {!expanded && (
+          <span className="text-gray-400 ml-2">{truncatedArgs}</span>
+        )}
+        <span className="text-gray-400 ml-2">{expanded ? '▼' : '▶'}</span>
+      </div>
+      {expanded && (
+        <div className="mt-1 p-2 bg-gray-50 border border-gray-200 rounded text-xs font-mono overflow-x-auto">
+          <div className="text-gray-600">Args:</div>
+          <pre className="text-gray-800 whitespace-pre-wrap">{JSON.stringify(message.args, null, 2)}</pre>
+          {message.result && (
+            <>
+              <div className="text-gray-600 mt-2">Result:</div>
+              <pre className="text-gray-800 whitespace-pre-wrap">{message.result}</pre>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const InputFooter = ({ onSendMessage, disabled = false, placeholder = 'Type a message...' }) => {
   const [message, setMessage] = useState('');
 
@@ -229,6 +268,12 @@ export function ChatComponent({
         return (
           <div key={index} className="message-item">
             <DateSeparator message={message} />
+          </div>
+        );
+      case 'ToolCall':
+        return (
+          <div key={index} className="message-item">
+            <ToolCallMessage message={message} />
           </div>
         );
       default:

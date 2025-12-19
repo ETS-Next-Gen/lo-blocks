@@ -277,7 +277,7 @@ export default function EditPage() {
         <FourPaneLayout
           TopLeft={<NavigationPane />}
           TopRight={error ? errorPane : (ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : <Spinner>Loading editor...</Spinner>)}
-          BottomLeft={<EditorLLMChat path={path} content={content} onProposeEdit={handleProposeEdit} />}
+          BottomLeft={<EditorLLMChat path={path} content={content} onApplyEdit={handleProposeEdit} />}
           BottomRight={renderPreview()}
         />
       </div>

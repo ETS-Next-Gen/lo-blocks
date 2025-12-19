@@ -3,14 +3,30 @@
 // Tools for the editor LLM assistant.
 //
 
+import { XMLValidator } from 'fast-xml-parser';
+
+/**
+ * Validate XML content and return errors if any.
+ */
+function validateXML(content) {
+  const result = XMLValidator.validate(content, {
+    allowBooleanAttributes: true,
+  });
+  if (result === true) {
+    return null; // Valid
+  }
+  return result.err; // { code, msg, line, col }
+}
+
 /**
  * Create the tools array for useChat().
  *
  * @param {object} params
- * @param {function} params.onProposeEdit - Called when LLM proposes an edit
- * @param {string} params.currentContent - Current file content (for validation)
+ * @param {function} params.onApplyEdit - Called when LLM applies an edit
+ * @param {function} params.getCurrentContent - Returns current file content
+ * @param {function} params.getFileType - Returns current file type
  */
-export function createEditorTools({ onProposeEdit }) {
+export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType }) {
   return [
     {
       type: "function",
@@ -42,8 +58,28 @@ export function createEditorTools({ onProposeEdit }) {
           return 'Error: oldText cannot be empty. You must specify exact text to replace.';
         }
 
-        if (onProposeEdit) {
-          onProposeEdit({ oldText, newText, explanation });
+        const currentContent = getCurrentContent?.() || '';
+        const fileType = getFileType?.() || 'olx';
+
+        // Check if oldText exists in content
+        if (!currentContent.includes(oldText)) {
+          return `Error: Could not find the text to replace. Make sure oldText exactly matches text in the file.`;
+        }
+
+        // Apply the edit
+        const newContent = currentContent.replace(oldText, newText);
+
+        // Validate XML for OLX files
+        if (fileType === 'olx' || fileType === 'xml') {
+          const xmlError = validateXML(newContent);
+          if (xmlError) {
+            return `Error: The edit would create invalid XML. Line ${xmlError.line}, column ${xmlError.col}: ${xmlError.msg}. Please fix and try again.`;
+          }
+        }
+
+        // All good - apply the edit
+        if (onApplyEdit) {
+          onApplyEdit({ oldText, newText, explanation });
         }
         return `Edit applied: ${explanation || 'change made'}`;
       }

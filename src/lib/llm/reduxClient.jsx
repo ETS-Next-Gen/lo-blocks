@@ -17,20 +17,36 @@ export const LLM_STATUS = {
 
 async function handleToolCalls(toolCalls, tools) {
   // Collect promises for all tool calls in parallel
-  return Promise.all(toolCalls.map(async (call) => {
+  const results = await Promise.all(toolCalls.map(async (call) => {
     const tool = findToolByName(tools, call.function.name);
+    let args = {};
+    try { args = JSON.parse(call.function.arguments || '{}'); } catch {}
+
     let result = '';
     if (tool) {
-      let args = {};
-      try { args = JSON.parse(call.function.arguments || '{}'); } catch {}
       result = await tool.callback(args);
     }
+
     return {
-      role: 'tool',
-      content: result,
-      tool_call_id: call.id,
+      toolResponse: {
+        role: 'tool',
+        content: result,
+        tool_call_id: call.id,
+      },
+      // For display in chat
+      displayMessage: {
+        type: 'ToolCall',
+        name: call.function.name,
+        args,
+        result,
+      }
     };
   }));
+
+  return {
+    toolResponses: results.map(r => r.toolResponse),
+    displayMessages: results.map(r => r.displayMessage),
+  };
 }
 
 // Small helper to find tool in a list of tools
@@ -60,6 +76,7 @@ export async function callLLM(params) {
 
   let loopCount = 0;
   let newMessages = [];
+  let displayMessagesAccum = [];  // Tool calls to show in chat
   while (loopCount++ < 10) {
     try {
       const res = await fetch('/api/openai/chat/completions', {
@@ -78,17 +95,23 @@ export async function callLLM(params) {
       // Handle tool calls if present
       if (toolCalls?.length) {
         statusCallback(LLM_STATUS.TOOL_RUNNING);
-        const toolResponses = await handleToolCalls(toolCalls, tools);
+        const { toolResponses, displayMessages } = await handleToolCalls(toolCalls, tools);
+
+        // Add to API history (for next request)
         newMessages = [
           ...newMessages,
           json.message,
           ...toolResponses
         ];
+
+        // Add to display messages
+        displayMessagesAccum = [...displayMessagesAccum, ...displayMessages];
+
         // If there's also content, return it (some models send both)
         if (content) {
           statusCallback(LLM_STATUS.RESPONSE_READY);
           return {
-            messages: [...newMessages, { type: 'Line', speaker: 'LLM', text: content }],
+            messages: [...displayMessagesAccum, { type: 'Line', speaker: 'LLM', text: content }],
             error: false,
           };
         }
@@ -99,20 +122,20 @@ export async function callLLM(params) {
       if (content) {
         statusCallback(LLM_STATUS.RESPONSE_READY);
         return {
-          messages: [...newMessages, { type: 'Line', speaker: 'LLM', text: content }],
+          messages: [...displayMessagesAccum, { type: 'Line', speaker: 'LLM', text: content }],
           error: false,
         };
       } else {
         statusCallback(LLM_STATUS.ERROR);
         return {
-          messages: [...newMessages, { type: 'SystemMessage', text: 'No response from LLM' }],
+          messages: [...displayMessagesAccum, { type: 'SystemMessage', text: 'No response from LLM' }],
           error: true,
         };
       }
     } catch (err) {
       statusCallback(LLM_STATUS.ERROR);
       return {
-        messages: [...newMessages, { type: 'SystemMessage', text: 'Error contacting LLM' }],
+        messages: [...displayMessagesAccum, { type: 'SystemMessage', text: 'Error contacting LLM' }],
         error: true,
       };
     }
@@ -120,7 +143,7 @@ export async function callLLM(params) {
   // If loop exceeds
   statusCallback(LLM_STATUS.ERROR);
   return {
-    messages: [...newMessages, { type: 'SystemMessage', text: 'Too many tool calls without a final response. Try asking again.' }],
+    messages: [...displayMessagesAccum, { type: 'SystemMessage', text: 'Too many tool calls without a final response. Try asking again.' }],
     error: true,
   };
 }

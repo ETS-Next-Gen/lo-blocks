@@ -1,10 +1,10 @@
 // src/components/chat/EditorLLMChat.jsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ChatComponent, InputFooter } from '@/components/common/ChatComponent';
 import { useChat } from '@/lib/llm/reduxClient.jsx';
-import { buildSystemPrompt } from '@/lib/editor/context';
+import { buildSystemPrompt, getFileType } from '@/lib/editor/context';
 import { createEditorTools } from '@/lib/editor/tools';
 
 /**
@@ -13,10 +13,16 @@ import { createEditorTools } from '@/lib/editor/tools';
  * @param {object} props
  * @param {string} props.path - Current file path
  * @param {string} props.content - Current file content
- * @param {function} props.onProposeEdit - Called when LLM proposes an edit
+ * @param {function} props.onApplyEdit - Called when LLM applies an edit
  */
-export default function EditorLLMChat({ path, content, onProposeEdit }) {
+export default function EditorLLMChat({ path, content, onApplyEdit }) {
   const [systemPrompt, setSystemPrompt] = useState(null);
+
+  // Keep refs to current values for tool callbacks
+  const contentRef = useRef(content);
+  const pathRef = useRef(path);
+  useEffect(() => { contentRef.current = content; }, [content]);
+  useEffect(() => { pathRef.current = path; }, [path]);
 
   // Build system prompt when path/content changes
   useEffect(() => {
@@ -25,10 +31,18 @@ export default function EditorLLMChat({ path, content, onProposeEdit }) {
       .catch(err => console.error('Failed to build system prompt:', err));
   }, [path, content]);
 
-  // Create tools with edit callback
+  // Callbacks for tools
+  const getCurrentContent = useCallback(() => contentRef.current, []);
+  const getCurrentFileType = useCallback(() => getFileType(pathRef.current), []);
+
+  // Create tools with callbacks
   const tools = useMemo(
-    () => createEditorTools({ onProposeEdit }),
-    [onProposeEdit]
+    () => createEditorTools({
+      onApplyEdit,
+      getCurrentContent,
+      getFileType: getCurrentFileType,
+    }),
+    [onApplyEdit, getCurrentContent, getCurrentFileType]
   );
 
   const initialMessage = path

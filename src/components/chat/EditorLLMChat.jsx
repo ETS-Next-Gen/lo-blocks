@@ -55,7 +55,19 @@ export default function EditorLLMChat({ path, content, onApplyEdit }) {
     initialMessage,
   });
 
-  const footer = <InputFooter onSendMessage={sendMessage} />;
+  // Wrap sendMessage to handle file attachments
+  const handleSendMessage = useCallback((text, attachedFile) => {
+    if (attachedFile) {
+      // Full content goes to LLM, short version displayed in chat
+      const fullMessage = `${text}\n\n[Attached file: ${attachedFile.name}]\n\`\`\`\n${attachedFile.content}\n\`\`\``;
+      const displayText = text ? `${text}\n\n📎 ${attachedFile.name}` : `📎 ${attachedFile.name}`;
+      sendMessage(fullMessage, { displayText });
+    } else {
+      sendMessage(text);
+    }
+  }, [sendMessage]);
+
+  const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload />;
 
   return (
     <ChatComponent

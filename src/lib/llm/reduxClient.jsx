@@ -161,14 +161,16 @@ export function useChat(params = {}) {
   ]);
   const [status, setStatus] = useState(LLM_STATUS.INIT);
 
-  const sendMessage = async (text) => {
+  // sendMessage accepts optional displayText for showing a shorter version in chat
+  const sendMessage = async (text, { displayText } = {}) => {
     setStatus(LLM_STATUS.RUNNING);
 
-    const userMessage = { type: 'Line', speaker: 'You', text };
+    // Show displayText in chat, but send full text to LLM
+    const userMessage = { type: 'Line', speaker: 'You', text: displayText || text };
     setMessages(m => [...m, userMessage]);
 
-    // Build history from messages
-    let history = [...messages, userMessage]
+    // Build history from messages (use full text for LLM)
+    let history = [...messages, { ...userMessage, text }]
       .filter((msg) => msg.type === 'Line')
       .map((msg) => ({
         role: msg.speaker === 'You' ? 'user' : 'assistant',

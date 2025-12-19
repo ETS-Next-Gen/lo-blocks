@@ -120,6 +120,7 @@ export default function _SortableInput(props) {
   }
 
   // Initialize arrangement if empty
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when arrangement/kids change, props used for initial build only
   React.useEffect(() => {
     if (arrangement.length === 0 && kids.length > 0) {
       const initialOrder = buildInitialArrangement(props);

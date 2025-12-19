@@ -102,18 +102,21 @@ function useGraderAggregation(props, childGraderIds) {
   const totalSubmitCount = Math.max(...childSubmitCounts, 0);
 
   // Update CapaProblem's own fields with aggregated values
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- props object changes on every render, only re-run when values change
   useEffect(() => {
     if (fields?.correct) {
       state.updateReduxField(props, fields.correct, correctness);
     }
   }, [correctness, props.id, fields]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- props object changes on every render, only re-run when values change
   useEffect(() => {
     if (fields?.message) {
       state.updateReduxField(props, fields.message, message);
     }
   }, [message, props.id, fields]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- props object changes on every render, only re-run when values change
   useEffect(() => {
     if (fields?.submitCount) {
       state.updateReduxField(props, fields.submitCount, totalSubmitCount);

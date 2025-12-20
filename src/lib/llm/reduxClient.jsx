@@ -152,19 +152,30 @@ export function useChat(params = {}) {
   // This allows building fresh tools with current values at call time
   const sendMessage = async (text, options = {}) => {
     const {
-      displayText,
+      attachments = [],
       tools = defaultTools,
       systemPrompt = defaultSystemPrompt,
     } = options;
 
     setStatus(LLM_STATUS.RUNNING);
 
-    // Show displayText in chat, but send full text to LLM
-    const userMessage = { type: 'Line', speaker: 'You', text: displayText || text };
+    // Build display text (what user sees in chat)
+    const attachmentSuffix = attachments.length > 0
+      ? '\n\n' + attachments.map(a => `📎 ${a.name}`).join('\n')
+      : '';
+    const displayText = (text || '') + attachmentSuffix;
+
+    // Build API text (what LLM sees - includes full file content)
+    const attachmentContent = attachments.length > 0
+      ? '\n\n' + attachments.map(a => `[Attached file: ${a.name}]\n\`\`\`\n${a.content}\n\`\`\``).join('\n\n')
+      : '';
+    const apiText = (text || '') + attachmentContent;
+
+    const userMessage = { type: 'Line', speaker: 'You', text: displayText };
     setMessages(m => [...m, userMessage]);
 
-    // Build history from messages (use full text for LLM)
-    let history = [...messages, { ...userMessage, text }]
+    // Build history from messages (use apiText for the current message)
+    let history = [...messages, { type: 'Line', speaker: 'You', text: apiText }]
       .filter((msg) => msg.type === 'Line')
       .map((msg) => ({
         role: msg.speaker === 'You' ? 'user' : 'assistant',

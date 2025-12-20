@@ -24,26 +24,15 @@ export default function EditorLLMChat({ path, content, onApplyEdit }) {
 
   // Build tools and context fresh at call time - no stale closures
   const handleSendMessage = useCallback(async (text, attachedFile) => {
-    // Build tools with current values
     const tools = createEditorTools({
       onApplyEdit,
       getCurrentContent: () => content,
       getFileType: () => getFileType(path),
     });
-
-    // Build system prompt with current values
     const systemPrompt = await buildSystemPrompt({ path, content });
+    const attachments = attachedFile ? [attachedFile] : [];
 
-    // Prepare message text
-    let fullMessage = text;
-    let displayText;
-
-    if (attachedFile) {
-      fullMessage = `${text}\n\n[Attached file: ${attachedFile.name}]\n\`\`\`\n${attachedFile.content}\n\`\`\``;
-      displayText = text ? `${text}\n\n📎 ${attachedFile.name}` : `📎 ${attachedFile.name}`;
-    }
-
-    sendMessage(fullMessage, { displayText, tools, systemPrompt });
+    sendMessage(text, { attachments, tools, systemPrompt });
   }, [path, content, onApplyEdit, sendMessage]);
 
   const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload />;

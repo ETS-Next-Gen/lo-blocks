@@ -38,21 +38,25 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
           properties: {
             oldText: {
               type: "string",
-              description: "The exact text to find and replace. Must be non-empty and must exist in the file."
+              description: "The exact text to find and replace. Must be non-empty and unique in the file (include surrounding context if needed)."
             },
             newText: {
               type: "string",
               description: "The replacement text"
             },
+            replaceAll: {
+              type: "boolean",
+              description: "If true, replace ALL occurrences (use for global renames). Default: false (requires unique match)."
+            },
             explanation: {
               type: "string",
-              description: "Brief explanation of why this change is being made"
+              description: "Brief explanation of why this change is being made (like a commit message)"
             }
           },
           required: ["oldText", "newText"]
         }
       },
-      callback: async ({ oldText, newText, explanation }) => {
+      callback: async ({ oldText, newText, replaceAll = false, explanation }) => {
         // Validate oldText is not empty
         if (!oldText || oldText.trim() === '') {
           return 'Error: oldText cannot be empty. You must specify exact text to replace.';
@@ -61,13 +65,21 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
         const currentContent = getCurrentContent?.() || '';
         const fileType = getFileType?.() || 'olx';
 
-        // Check if oldText exists in content
-        if (!currentContent.includes(oldText)) {
+        // Count occurrences
+        const occurrences = currentContent.split(oldText).length - 1;
+
+        if (occurrences === 0) {
           return `Error: Could not find the text to replace. Make sure oldText exactly matches text in the file.`;
         }
 
+        if (occurrences > 1 && !replaceAll) {
+          return `Error: Found ${occurrences} occurrences of that text. Either include more surrounding context to make it unique, or set replaceAll: true for a global rename.`;
+        }
+
         // Apply the edit
-        const newContent = currentContent.replace(oldText, newText);
+        const newContent = replaceAll
+          ? currentContent.replaceAll(oldText, newText)
+          : currentContent.replace(oldText, newText);
 
         // Validate XML for OLX files
         if (fileType === 'olx' || fileType === 'xml') {
@@ -79,9 +91,12 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
 
         // All good - apply the edit
         if (onApplyEdit) {
-          onApplyEdit({ oldText, newText, explanation });
+          onApplyEdit({ oldText, newText, replaceAll });
         }
-        return `Edit applied: ${explanation || 'change made'}`;
+        const msg = replaceAll
+          ? `Replaced ${occurrences} occurrences`
+          : `Edit applied`;
+        return explanation ? `${msg}: ${explanation}` : msg;
       }
     },
     {

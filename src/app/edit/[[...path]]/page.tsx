@@ -214,29 +214,13 @@ export default function EditPage() {
     }
   };
 
-  // Handle edit proposals from the LLM
-  const handleProposeEdit = useCallback(({ oldText, newText, explanation }) => {
-    if (!content) return;
-
-    // Validate inputs
-    if (!oldText || oldText.trim() === '') {
-      console.warn('LLM proposed edit with empty oldText - ignoring');
-      return;
-    }
-
-    // Check if oldText exists in content
-    if (!content.includes(oldText)) {
-      console.warn('LLM proposed edit but oldText not found in content');
-      // TODO: Show error to user via chat
-      return;
-    }
-
-    // Apply the edit
-    // TODO: Show diff UI for approval instead of auto-applying
-    const newContent = content.replace(oldText, newText);
+  // Handle edits from the LLM (validation already done in tool callback)
+  const handleApplyEdit = useCallback(({ oldText, newText, replaceAll }) => {
+    if (!content || !oldText) return;
+    const newContent = replaceAll
+      ? content.replaceAll(oldText, newText)
+      : content.replace(oldText, newText);
     setContent(newContent);
-
-    console.log('Edit applied:', explanation);
   }, [content, setContent]);
 
   const ready = content && idMap;
@@ -277,7 +261,7 @@ export default function EditPage() {
         <FourPaneLayout
           TopLeft={<NavigationPane />}
           TopRight={error ? errorPane : (ready ? <EditControl path={path} content={content} setContent={setContent} handleSave={handleSave} /> : <Spinner>Loading editor...</Spinner>)}
-          BottomLeft={<EditorLLMChat path={path} content={content} onApplyEdit={handleProposeEdit} />}
+          BottomLeft={<EditorLLMChat path={path} content={content} onApplyEdit={handleApplyEdit} />}
           BottomRight={renderPreview()}
         />
       </div>

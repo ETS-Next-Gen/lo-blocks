@@ -12,7 +12,7 @@
 // would allow us to have students authoring content!
 
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 
 import { FourPaneLayout } from './FourPaneLayout';
@@ -215,13 +215,9 @@ export default function EditPage() {
   };
 
   // Handle edits from the LLM (validation already done in tool callback)
-  const handleApplyEdit = useCallback(({ oldText, newText, replaceAll }) => {
-    if (!content || !oldText) return;
-    const newContent = replaceAll
-      ? content.replaceAll(oldText, newText)
-      : content.replace(oldText, newText);
+  const handleApplyEdit = useCallback((newContent) => {
     setContent(newContent);
-  }, [content, setContent]);
+  }, [setContent]);
 
   const ready = content && idMap;
   const isPegFile = isPEGContentFile(path);

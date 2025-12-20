@@ -22,7 +22,7 @@ function validateXML(content) {
  * Create the tools array for useChat().
  *
  * @param {object} params
- * @param {function} params.onApplyEdit - Called when LLM applies an edit
+ * @param {function} params.onApplyEdit - Called with new content string when LLM applies an edit
  * @param {function} params.getCurrentContent - Returns current file content
  * @param {function} params.getFileType - Returns current file type
  */
@@ -91,7 +91,7 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
 
         // All good - apply the edit
         if (onApplyEdit) {
-          onApplyEdit({ oldText, newText, replaceAll });
+          onApplyEdit(newContent);
         }
         const msg = replaceAll
           ? `Replaced ${occurrences} occurrences`

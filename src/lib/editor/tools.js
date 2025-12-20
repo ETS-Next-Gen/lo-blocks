@@ -3,20 +3,8 @@
 // Tools for the editor LLM assistant.
 //
 
-import { XMLValidator } from 'fast-xml-parser';
-
-/**
- * Validate XML content and return errors if any.
- */
-function validateXML(content) {
-  const result = XMLValidator.validate(content, {
-    allowBooleanAttributes: true,
-  });
-  if (result === true) {
-    return null; // Valid
-  }
-  return result.err; // { code, msg, line, col }
-}
+import { parseOLX } from '@/lib/content/parseOLX';
+import { isPEGContentExtension, getParserForExtension } from '@/generated/parserRegistry';
 
 /**
  * Create the tools array for useChat().
@@ -81,11 +69,30 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
           ? currentContent.replaceAll(oldText, newText)
           : currentContent.replace(oldText, newText);
 
-        // Validate XML for OLX files
+        // Validate content by parsing it
         if (fileType === 'olx' || fileType === 'xml') {
-          const xmlError = validateXML(newContent);
-          if (xmlError) {
-            return `Error: The edit would create invalid XML. Line ${xmlError.line}, column ${xmlError.col}: ${xmlError.msg}. Please fix and try again.`;
+          // OLX files - full parse with nice error messages
+          try {
+            const { errors } = await parseOLX(newContent, ['editor']);
+            if (errors.length > 0) {
+              const errorMessages = errors.map(e => e.message).join('\n\n---\n\n');
+              return `Error (${errors.length} issue${errors.length > 1 ? 's' : ''}):\n\n${errorMessages}`;
+            }
+          } catch (err) {
+            // parseOLX throws on XML syntax errors
+            return `Error: ${err.message}`;
+          }
+        } else if (isPEGContentExtension(fileType)) {
+          // PEG content files (.chatpeg, .sortpeg, etc.)
+          const parser = getParserForExtension(fileType);
+          if (parser) {
+            try {
+              parser.parse(newContent);
+            } catch (err) {
+              const loc = err.location?.start;
+              const locStr = loc ? ` (line ${loc.line}, column ${loc.column})` : '';
+              return `Error${locStr}: ${err.message}`;
+            }
           }
         }
 

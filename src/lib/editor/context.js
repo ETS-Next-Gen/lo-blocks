@@ -1,37 +1,11 @@
 // src/lib/editor/context.js
 //
 // Context building for LLM editor assistant.
-// Separates template from data retrieval.
 //
-
-// ============================================================
-// PROMPT TEMPLATE
-// ============================================================
-
-export const EDITOR_PROMPT_TEMPLATE = `
-You are an educational content authoring assistant for the lo-blocks system.
-
-## Current File
-Path: {path}
-Type: {fileType}
-
-\`\`\`
-{content}
-\`\`\`
-
-## Available Blocks
-{blockList}
-
-## Tools
-You can use these tools:
-- applyEdit: Make changes to the current file (applied immediately)
-- getBlockInfo: Get detailed docs for a specific block
-- readFile: Read another file from the content library
-`;
-
-// ============================================================
-// DATA RETRIEVAL (small, focused functions)
-// ============================================================
+// NOTE: Currently using template literals for simplicity. If this grows to need
+// loops, conditionals, or user-editable prompts, consider using src/lib/template
+// or a proper templating system.
+//
 
 /**
  * Get file type from path extension.
@@ -63,31 +37,31 @@ export function formatBlockList(blocks) {
     .join('\n');
 }
 
-// ============================================================
-// TEMPLATE APPLICATION
-// ============================================================
-
-/**
- * Simple template formatter.
- */
-export function applyTemplate(template, values) {
-  let result = template;
-  for (const [key, value] of Object.entries(values)) {
-    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value ?? '');
-  }
-  return result;
-}
-
 /**
  * Build the system prompt for the editor LLM.
  */
 export async function buildSystemPrompt({ path, content }) {
   const blocks = await fetchBlockList();
+  const blockList = formatBlockList(blocks);
 
-  return applyTemplate(EDITOR_PROMPT_TEMPLATE, {
-    path: path || '(no file selected)',
-    fileType: getFileType(path),
-    content: content || '',
-    blockList: formatBlockList(blocks),
-  });
+  return `
+You are an educational content authoring assistant for the lo-blocks system.
+
+## Current File
+Path: ${path || '(no file selected)'}
+Type: ${getFileType(path)}
+
+\`\`\`
+${content || ''}
+\`\`\`
+
+## Available Blocks
+${blockList}
+
+## Tools
+You can use these tools:
+- applyEdit: Make changes to the current file (applied immediately)
+- getBlockInfo: Get detailed docs for a specific block
+- readFile: Read another file from the content library
+`;
 }

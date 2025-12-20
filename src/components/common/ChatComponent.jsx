@@ -133,6 +133,7 @@ export const InputFooter = ({
 }) => {
   const [message, setMessage] = useState('');
   const [attachedFile, setAttachedFile] = useState(null); // { name, content }
+  const [fileError, setFileError] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleSend = () => {
@@ -155,12 +156,12 @@ export const InputFooter = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read text files directly
+    setFileError(null);
     try {
       const content = await file.text();
       setAttachedFile({ name: file.name, content });
     } catch (err) {
-      console.error('Failed to read file:', err);
+      setFileError(`Failed to read ${file.name}`);
     }
 
     // Reset input so same file can be selected again
@@ -177,6 +178,18 @@ export const InputFooter = ({
           <button
             className="ml-2 text-gray-400 hover:text-red-500"
             onClick={() => setAttachedFile(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {/* Show file error */}
+      {fileError && (
+        <div className="mb-2 flex items-center text-sm text-red-600 bg-red-50 rounded px-2 py-1">
+          <span className="flex-1">{fileError}</span>
+          <button
+            className="ml-2 text-red-400 hover:text-red-600"
+            onClick={() => setFileError(null)}
           >
             ✕
           </button>

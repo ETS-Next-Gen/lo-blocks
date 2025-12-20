@@ -1,7 +1,7 @@
 // src/components/chat/EditorLLMChat.jsx
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { ChatComponent, InputFooter } from '@/components/common/ChatComponent';
 import { useChat } from '@/lib/llm/reduxClient.jsx';
 import { buildSystemPrompt, getFileType } from '@/lib/editor/context';
@@ -16,56 +16,35 @@ import { createEditorTools } from '@/lib/editor/tools';
  * @param {function} props.onApplyEdit - Called when LLM applies an edit
  */
 export default function EditorLLMChat({ path, content, onApplyEdit }) {
-  const [systemPrompt, setSystemPrompt] = useState(null);
-
-  // Keep refs to current values for tool callbacks
-  const contentRef = useRef(content);
-  const pathRef = useRef(path);
-  useEffect(() => { contentRef.current = content; }, [content]);
-  useEffect(() => { pathRef.current = path; }, [path]);
-
-  // Build system prompt when path/content changes
-  useEffect(() => {
-    buildSystemPrompt({ path, content })
-      .then(setSystemPrompt)
-      .catch(err => console.error('Failed to build system prompt:', err));
-  }, [path, content]);
-
-  // Callbacks for tools
-  const getCurrentContent = useCallback(() => contentRef.current, []);
-  const getCurrentFileType = useCallback(() => getFileType(pathRef.current), []);
-
-  // Create tools with callbacks
-  const tools = useMemo(
-    () => createEditorTools({
-      onApplyEdit,
-      getCurrentContent,
-      getFileType: getCurrentFileType,
-    }),
-    [onApplyEdit, getCurrentContent, getCurrentFileType]
-  );
-
   const initialMessage = path
     ? `Editing: ${path}. Ask me to help with this content.`
     : 'Select a file to edit, then ask me for help.';
 
-  const { messages, sendMessage } = useChat({
-    tools,
-    systemPrompt,
-    initialMessage,
-  });
+  const { messages, sendMessage } = useChat({ initialMessage });
 
-  // Wrap sendMessage to handle file attachments
-  const handleSendMessage = useCallback((text, attachedFile) => {
+  // Build tools and context fresh at call time - no stale closures
+  const handleSendMessage = useCallback(async (text, attachedFile) => {
+    // Build tools with current values
+    const tools = createEditorTools({
+      onApplyEdit,
+      getCurrentContent: () => content,
+      getFileType: () => getFileType(path),
+    });
+
+    // Build system prompt with current values
+    const systemPrompt = await buildSystemPrompt({ path, content });
+
+    // Prepare message text
+    let fullMessage = text;
+    let displayText;
+
     if (attachedFile) {
-      // Full content goes to LLM, short version displayed in chat
-      const fullMessage = `${text}\n\n[Attached file: ${attachedFile.name}]\n\`\`\`\n${attachedFile.content}\n\`\`\``;
-      const displayText = text ? `${text}\n\n📎 ${attachedFile.name}` : `📎 ${attachedFile.name}`;
-      sendMessage(fullMessage, { displayText });
-    } else {
-      sendMessage(text);
+      fullMessage = `${text}\n\n[Attached file: ${attachedFile.name}]\n\`\`\`\n${attachedFile.content}\n\`\`\``;
+      displayText = text ? `${text}\n\n📎 ${attachedFile.name}` : `📎 ${attachedFile.name}`;
     }
-  }, [sendMessage]);
+
+    sendMessage(fullMessage, { displayText, tools, systemPrompt });
+  }, [path, content, onApplyEdit, sendMessage]);
 
   const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload />;
 

@@ -151,18 +151,29 @@ export async function callLLM(params) {
 // Most common interface to LLM.
 //
 // @param {object} params
-// @param {array} params.tools - Tool definitions with callbacks
-// @param {string} params.systemPrompt - System prompt (injected at start of each request)
+// @param {array} params.tools - Default tool definitions (can be overridden per-call)
+// @param {string} params.systemPrompt - Default system prompt (can be overridden per-call)
 // @param {string} params.initialMessage - Initial message to show (default: 'Ask the LLM a question.')
 export function useChat(params = {}) {
-  const { tools = [], systemPrompt, initialMessage = 'Ask the LLM a question.' } = params;
+  const {
+    tools: defaultTools = [],
+    systemPrompt: defaultSystemPrompt,
+    initialMessage = 'Ask the LLM a question.'
+  } = params;
   const [messages, setMessages] = useState([
     { type: 'SystemMessage', text: initialMessage }
   ]);
   const [status, setStatus] = useState(LLM_STATUS.INIT);
 
-  // sendMessage accepts optional displayText for showing a shorter version in chat
-  const sendMessage = async (text, { displayText } = {}) => {
+  // sendMessage accepts per-call overrides for tools and systemPrompt
+  // This allows building fresh tools with current values at call time
+  const sendMessage = async (text, options = {}) => {
+    const {
+      displayText,
+      tools = defaultTools,
+      systemPrompt = defaultSystemPrompt,
+    } = options;
+
     setStatus(LLM_STATUS.RUNNING);
 
     // Show displayText in chat, but send full text to LLM

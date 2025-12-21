@@ -1,4 +1,4 @@
-// src/components/studio/panels/FilesPanel.tsx
+// src/app/studio/panels/FilesPanel.tsx
 'use client';
 
 import { useState } from 'react';
@@ -148,7 +148,7 @@ function FileTreeNode({
   onShowActions, actionPath, onDelete, onRename, renameValue, onRenameChange
 }: FileTreeNodeProps) {
   const [expanded, setExpanded] = useState(depth < 2);
-  const isDir = node.children && node.children.length > 0;
+  const isDir = Array.isArray(node.children);
   const name = node.uri.split('/').pop() || node.uri;
   const isActive = node.uri === currentPath;
   const showingActions = actionPath === node.uri;

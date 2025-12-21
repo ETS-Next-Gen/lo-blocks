@@ -645,3 +645,95 @@
   font-size: 12px;
   color: #8b949e;
 }
+
+/* Button spinner */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.8s linear infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+.studio-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.studio-btn.primary:disabled {
+  background: #238636;
+}
+
+/* Notifications / Toasts - Dark theme overrides for Studio */
+.studio-notifications {
+  bottom: 48px !important; /* Above footer */
+}
+
+.studio-notifications .lo-toast {
+  background: #161b22 !important;
+  border-color: #30363d !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.studio-notifications .lo-toast > div > div:first-child {
+  color: #c9d1d9 !important;
+}
+
+.studio-notifications .lo-toast > div > div:last-child {
+  color: #8b949e !important;
+}
+
+.studio-notifications .lo-toast > button {
+  color: #8b949e !important;
+}
+
+.studio-notifications .lo-toast > button:hover {
+  color: #c9d1d9 !important;
+}
+
+.studio-notifications .lo-toast-success {
+  background: linear-gradient(135deg, #161b22 0%, #0d1f0d 100%) !important;
+  border-color: #238636 !important;
+}
+
+.studio-notifications .lo-toast-error {
+  background: linear-gradient(135deg, #161b22 0%, #2d1216 100%) !important;
+  border-color: #f85149 !important;
+}
+
+.studio-notifications .lo-toast-info {
+  background: linear-gradient(135deg, #161b22 0%, #0d1525 100%) !important;
+  border-color: #58a6ff !important;
+}
+
+/* Loading overlay for editor */
+.studio-editor-loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.studio-editor-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #30363d;
+  border-top-color: #58a6ff;
+  border-radius: 50%;
+  animation: btn-spin 0.8s linear infinite;
+}
+
+.studio-editor-pane {
+  position: relative;
+}

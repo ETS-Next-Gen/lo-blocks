@@ -10,6 +10,7 @@ import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
 import type { IdMap } from '@/lib/types';
+import { useNotifications, ToastNotifications } from '@/lib/util/debug';
 import './studio.css';
 
 // Dynamic import CodeMirror to avoid SSR issues
@@ -56,7 +57,11 @@ export default function StudioPage() {
   const [editorRatio, setEditorRatio] = useState(50); // percentage for editor pane
   const [fileTree, setFileTree] = useState<UriNode | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [idMap, setIdMap] = useState<IdMap | null>(null);
+
+  // Toast notifications
+  const { notifications, notify, dismiss: dismissNotification } = useNotifications();
 
   // Shared docs data hook
   const docsData = useDocsData();
@@ -85,49 +90,72 @@ export default function StudioPage() {
       setFilePath(path);
     } catch (err) {
       console.error('Failed to load file:', err);
+      notify('error', `Failed to load ${path}`, err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [notify]);
 
   const handleSave = useCallback(async () => {
-    setLoading(true);
+    setSaving(true);
     try {
       await storage.write(filePath, content);
-      console.log('Saved:', filePath);
+      notify('success', `Saved ${filePath}`);
     } catch (err) {
       console.error('Failed to save:', err);
+      notify('error', `Failed to save ${filePath}`, err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
-  }, [filePath, content]);
+  }, [filePath, content, notify]);
 
   const handleFileCreate = useCallback(async (path: string, fileContent: string) => {
-    await storage.write(path, fileContent);
-    refreshFiles();
-    // Open the new file
-    setContent(fileContent);
-    setFilePath(path);
-  }, [refreshFiles]);
+    try {
+      await storage.write(path, fileContent);
+      refreshFiles();
+      // Open the new file
+      setContent(fileContent);
+      setFilePath(path);
+      notify('success', `Created ${path}`);
+    } catch (err) {
+      console.error('Failed to create file:', err);
+      notify('error', `Failed to create ${path}`, err instanceof Error ? err.message : String(err));
+      throw err; // Re-throw so FilesPanel can handle it
+    }
+  }, [refreshFiles, notify]);
 
   const handleFileDelete = useCallback(async (path: string) => {
-    await storage.delete(path);
-    refreshFiles();
-    // If we deleted the current file, clear the editor
-    if (path === filePath) {
-      setContent(DEMO_CONTENT);
-      setFilePath('untitled.olx');
+    try {
+      await storage.delete(path);
+      refreshFiles();
+      // If we deleted the current file, clear the editor
+      if (path === filePath) {
+        setContent(DEMO_CONTENT);
+        setFilePath('untitled.olx');
+      }
+      notify('success', `Deleted ${path}`);
+    } catch (err) {
+      console.error('Failed to delete:', err);
+      notify('error', `Failed to delete ${path}`, err instanceof Error ? err.message : String(err));
+      throw err;
     }
-  }, [filePath, refreshFiles]);
+  }, [filePath, refreshFiles, notify]);
 
   const handleFileRename = useCallback(async (oldPath: string, newPath: string) => {
-    await storage.rename(oldPath, newPath);
-    refreshFiles();
-    // If we renamed the current file, update the path
-    if (oldPath === filePath) {
-      setFilePath(newPath);
+    try {
+      await storage.rename(oldPath, newPath);
+      refreshFiles();
+      // If we renamed the current file, update the path
+      if (oldPath === filePath) {
+        setFilePath(newPath);
+      }
+      notify('success', `Renamed to ${newPath}`);
+    } catch (err) {
+      console.error('Failed to rename:', err);
+      notify('error', `Failed to rename ${oldPath}`, err instanceof Error ? err.message : String(err));
+      throw err;
     }
-  }, [filePath, refreshFiles]);
+  }, [filePath, refreshFiles, notify]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -192,8 +220,9 @@ export default function StudioPage() {
               {previewLayout === 'horizontal' ? '⬌' : '⬍'}
             </button>
           )}
-          <button className="studio-btn primary" onClick={handleSave}>
-            Save
+          <button className="studio-btn primary" onClick={handleSave} disabled={saving}>
+            {saving && <span className="btn-spinner" />}
+            {saving ? 'Saving...' : 'Save'}
           </button>
           <button className="studio-btn icon" title="More actions">
             ⋮
@@ -265,6 +294,11 @@ export default function StudioPage() {
               flex: 'none'
             } : undefined}
           >
+            {loading && (
+              <div className="studio-editor-loading">
+                <div className="studio-editor-loading-spinner" />
+              </div>
+            )}
             <CodeEditor
               value={content}
               onChange={setContent}
@@ -302,6 +336,14 @@ export default function StudioPage() {
         />
       )}
 
+      {/* Toast Notifications */}
+      <ToastNotifications
+        notifications={notifications}
+        onDismiss={dismissNotification}
+        position="bottom-right"
+        className="studio-notifications"
+      />
+
       {/* Footer hint */}
       <footer className="studio-footer">
         <kbd>⌘K</kbd> Command palette
@@ -313,30 +355,40 @@ export default function StudioPage() {
 // Draggable resizer for sidebar
 function Resizer({ onResize }: { onResize: (delta: number) => void }) {
   const startX = useRef(0);
-  const dragging = useRef(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     startX.current = e.clientX;
-    dragging.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!dragging.current) return;
       const delta = e.clientX - startX.current;
       startX.current = e.clientX;
       onResize(delta);
     };
 
-    const handleMouseUp = () => {
-      dragging.current = false;
+    const cleanup = () => {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      cleanupRef.current = null;
     };
 
+    const handleMouseUp = () => cleanup();
+
+    cleanupRef.current = cleanup;
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
@@ -353,13 +405,21 @@ function PaneResizer({
   onResize: (delta: number, containerSize: number) => void;
 }) {
   const startPos = useRef(0);
-  const dragging = useRef(false);
   const resizerRef = useRef<HTMLDivElement>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     startPos.current = direction === 'horizontal' ? e.clientX : e.clientY;
-    dragging.current = true;
     document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize';
     document.body.style.userSelect = 'none';
 
@@ -370,21 +430,23 @@ function PaneResizer({
       : 1000;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!dragging.current) return;
       const currentPos = direction === 'horizontal' ? e.clientX : e.clientY;
       const delta = currentPos - startPos.current;
       startPos.current = currentPos;
       onResize(delta, containerSize);
     };
 
-    const handleMouseUp = () => {
-      dragging.current = false;
+    const cleanup = () => {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      cleanupRef.current = null;
     };
 
+    const handleMouseUp = () => cleanup();
+
+    cleanupRef.current = cleanup;
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };

@@ -1,4 +1,4 @@
-// src/components/studio/panels/ChatPanel.tsx
+// src/app/studio/panels/ChatPanel.tsx
 'use client';
 
 import EditorLLMChat from '@/components/chat/EditorLLMChat';

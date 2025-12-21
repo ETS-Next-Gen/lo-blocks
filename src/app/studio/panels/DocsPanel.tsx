@@ -1,4 +1,4 @@
-// src/components/studio/panels/DocsPanel.tsx
+// src/app/studio/panels/DocsPanel.tsx
 'use client';
 
 import { ElementsInFile, BlockList } from '@/components/common/BlockList';

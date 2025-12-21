@@ -1,6 +1,20 @@
 /* src/app/studio/studio.css */
 /* Prototype editor styles */
 
+/* CSS Custom Properties for BlockList component in dark theme */
+.studio {
+  --block-list-muted: #8b949e;
+  --block-list-text: #c9d1d9;
+  --block-list-accent: #58a6ff;
+  --block-list-hover: rgba(255, 255, 255, 0.05);
+  --block-list-selected: rgba(88, 166, 255, 0.15);
+  --block-list-border: #30363d;
+  --block-list-panel: rgba(0, 0, 0, 0.2);
+  --block-list-code-bg: rgba(0, 0, 0, 0.3);
+  --block-list-tooltip-bg: #1f2937;
+  --block-list-tooltip-text: #fff;
+}
+
 .studio {
   display: flex;
   flex-direction: column;
@@ -468,170 +482,27 @@
   background: #2ea043;
 }
 
-/* Expandable docs sections */
-.docs-section-container {
-  margin-top: 8px;
+/* Docs panel specific styles */
+.docs-panel {
+  /* Uses shared BlockList component */
 }
 
-.docs-section-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #c9d1d9;
-  padding: 6px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.docs-section-header:hover {
-  background: #21262d;
-}
-
-.docs-section-icon {
-  font-size: 10px;
-  color: #8b949e;
-  width: 12px;
-}
-
-.docs-section-content {
-  padding-left: 18px;
-}
-
-/* Legacy section header (plain text) */
-.docs-section {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #8b949e;
-  margin: 12px 0 8px;
+.docs-section-links {
+  margin-bottom: 12px;
 }
 
 .docs-item {
   display: block;
-  padding: 6px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
-  cursor: pointer;
   text-decoration: none;
-  color: inherit;
+  color: #c9d1d9;
+  font-size: 13px;
 }
 
 .docs-item:hover {
   background: #21262d;
   color: #58a6ff;
-}
-
-.docs-item-link {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: 4px;
-  text-decoration: none;
-  color: inherit;
-}
-
-.docs-item-link:hover {
-  background: #21262d;
-}
-
-.docs-tag {
-  font-family: 'SF Mono', Consolas, monospace;
-  color: #58a6ff;
-  font-size: 13px;
-}
-
-.docs-desc {
-  font-size: 11px;
-  color: #8b949e;
-}
-
-.docs-section-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #8b949e;
-  margin: 16px 0 8px;
-  padding: 0 8px;
-}
-
-/* Expandable element doc items */
-.element-doc-item {
-  margin-bottom: 2px;
-}
-
-.element-doc-header {
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  gap: 8px;
-}
-
-.element-doc-header:hover {
-  background: #21262d;
-}
-
-.element-doc-tag {
-  font-family: 'SF Mono', Consolas, monospace;
-  color: #58a6ff;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.element-doc-desc {
-  flex: 1;
-  font-size: 12px;
-  color: #8b949e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.element-doc-toggle {
-  font-size: 10px;
-  color: #8b949e;
-  flex-shrink: 0;
-}
-
-.element-doc-content {
-  margin: 4px 8px 8px 8px;
-  padding: 8px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-}
-
-.element-doc-example {
-  font-family: 'SF Mono', Consolas, monospace;
-  font-size: 11px;
-  line-height: 1.5;
-  color: #c9d1d9;
-  margin: 0;
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-
-.element-doc-link {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 11px;
-  color: #58a6ff;
-  text-decoration: none;
-}
-
-.element-doc-link:hover {
-  text-decoration: underline;
-}
-
-.element-doc-desc-full {
-  font-size: 12px;
-  color: #c9d1d9;
-  line-height: 1.5;
-  margin-bottom: 8px;
 }
 
 /* Main editor */

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import RenderOLX from '@/components/common/RenderOLX';
 import EditorLLMChat from '@/components/chat/EditorLLMChat';
+import { ElementsInFile, BlockList, type BlockItem } from '@/components/common/BlockList';
 import { NetworkStorageProvider } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
 import './studio.css';
@@ -26,16 +27,11 @@ interface IdMapEntry {
   provenance?: string[];
 }
 
-// Block documentation from /api/docs
-interface BlockDoc {
-  name: string;
+// BlockDoc extends BlockItem for API response
+interface BlockDoc extends BlockItem {
   exportName: string;
-  description: string | null;
   namespace: string;
-  category: string | null;
   fields: string[];
-  examples: Array<{ path: string; gitStatus?: string }>;
-  readme: string | null;
 }
 
 const DEMO_CONTENT = `<Vertical>
@@ -441,17 +437,6 @@ function extractElements(content: string): string[] {
   return Array.from(tags).sort();
 }
 
-// Group blocks by category
-function groupBlocksByCategory(blocks: BlockDoc[]): Record<string, BlockDoc[]> {
-  const groups: Record<string, BlockDoc[]> = {};
-  for (const block of blocks) {
-    const category = block.category || 'Other';
-    if (!groups[category]) groups[category] = [];
-    groups[category].push(block);
-  }
-  return groups;
-}
-
 // Detect file type for context-aware docs
 function getFileDocType(path: string): 'olx' | 'peg' | 'markdown' | 'unknown' {
   const ext = path.split('.').pop()?.toLowerCase();
@@ -775,79 +760,40 @@ Start writing here.
       const elements = extractElements(content);
 
       // Create lookup for block docs by name
-      const blockDocsByName: Record<string, BlockDoc> = {};
+      const blockDocsByName: Record<string, BlockItem> = {};
       if (blockDocs) {
         for (const block of blockDocs) {
           blockDocsByName[block.name] = block;
         }
       }
 
-      // Group blocks by category for quick reference
-      const categories = blockDocs ? groupBlocksByCategory(blockDocs) : {};
-
-      // Preferred category order
-      const categoryOrder = ['Layout', 'Display', 'Input', 'Grader', 'Problem', 'Other'];
-      const sortedCategories = Object.keys(categories).sort((a, b) => {
-        const aIdx = categoryOrder.indexOf(a);
-        const bIdx = categoryOrder.indexOf(b);
-        if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
-        if (aIdx === -1) return 1;
-        if (bIdx === -1) return -1;
-        return aIdx - bIdx;
-      });
-
       return (
-        <div className="sidebar-panel">
+        <div className="sidebar-panel docs-panel">
           <div className="sidebar-panel-header">Documentation</div>
           <div className="docs-list">
             <a href="/docs/" target="_blank" className="docs-link">Full Documentation</a>
 
             {/* File-type specific docs */}
             {docType === 'peg' && (
-              <DocsSection title="PEG Format" defaultOpen>
+              <div className="docs-section-links">
                 <a href="/docs#peg-format" target="_blank" className="docs-item">PEG Syntax Guide</a>
                 <a href="/docs#chatpeg" target="_blank" className="docs-item">ChatPEG Format</a>
-                <a href="/docs#sortpeg" target="_blank" className="docs-item">SortPEG Format</a>
-              </DocsSection>
+              </div>
             )}
 
             {docType === 'markdown' && (
-              <DocsSection title="Markdown" defaultOpen>
-                <a href="/docs#markdown-syntax" target="_blank" className="docs-item">Markdown Syntax</a>
+              <div className="docs-section-links">
                 <a href="/docs#Markdown" target="_blank" className="docs-item">Markdown Block</a>
-              </DocsSection>
+              </div>
             )}
 
-            {/* Elements used in current file - each is expandable */}
-            {elements.length > 0 && (
-              <>
-                <div className="docs-section-label">Elements in file</div>
-                {elements.map(tag => (
-                  <ElementDocItem key={tag} tag={tag} block={blockDocsByName[tag]} />
-                ))}
-              </>
-            )}
+            {/* Elements used in current file - shared component */}
+            <ElementsInFile elements={elements} blockDocs={blockDocsByName} />
 
-            {/* All blocks by category from API */}
-            {sortedCategories.map(category => (
-              <DocsSection key={category} title={category}>
-                {categories[category].map(block => (
-                  <a
-                    key={block.name}
-                    href={`/docs#${block.name}`}
-                    target="_blank"
-                    className="docs-item-link"
-                  >
-                    <span className="docs-tag">{block.name}</span>
-                    {block.description && (
-                      <span className="docs-desc">{block.description}</span>
-                    )}
-                  </a>
-                ))}
-              </DocsSection>
-            ))}
-
-            {!blockDocs && (
+            {/* All blocks by category - shared component */}
+            {blockDocs ? (
+              <BlockList blocks={blockDocs} />
+            ) : (
               <div className="search-hint">Loading blocks...</div>
             )}
           </div>
@@ -855,80 +801,6 @@ Start writing here.
       );
     }
   }
-}
-
-// Expandable element doc item - shows description and fetches examples on expand
-function ElementDocItem({ tag, block }: { tag: string; block?: BlockDoc }) {
-  const [expanded, setExpanded] = useState(false);
-  const [detailedDocs, setDetailedDocs] = useState<{
-    readme?: { content: string };
-    examples?: Array<{ filename: string; content: string }>;
-  } | null>(null);
-  const [loadingDocs, setLoadingDocs] = useState(false);
-
-  // Fetch detailed docs when expanded
-  useEffect(() => {
-    if (expanded && block && !detailedDocs && !loadingDocs) {
-      setLoadingDocs(true);
-      fetch(`/api/docs/${encodeURIComponent(tag)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.ok) {
-            setDetailedDocs({
-              readme: data.block.readme,
-              examples: data.block.examples,
-            });
-          }
-        })
-        .catch(console.error)
-        .finally(() => setLoadingDocs(false));
-    }
-  }, [expanded, block, tag, detailedDocs, loadingDocs]);
-
-  const firstExample = detailedDocs?.examples?.[0];
-
-  return (
-    <div className="element-doc-item">
-      <div className="element-doc-header" onClick={() => setExpanded(!expanded)}>
-        <span className="element-doc-tag">{tag}</span>
-        {block?.description && <span className="element-doc-desc">{block.description}</span>}
-        <span className="element-doc-toggle">{expanded ? '▼' : '▶'}</span>
-      </div>
-      {expanded && (
-        <div className="element-doc-content">
-          {loadingDocs && <div className="search-hint">Loading...</div>}
-          {firstExample && (
-            <pre className="element-doc-example">{firstExample.content}</pre>
-          )}
-          {!loadingDocs && !firstExample && block?.description && (
-            <div className="element-doc-desc-full">{block.description}</div>
-          )}
-          <a href={`/docs#${tag}`} target="_blank" className="element-doc-link">
-            Full docs →
-          </a>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Expandable section header (for quick reference)
-function DocsSection({ title, children, defaultOpen = false }: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  return (
-    <div className="docs-section-container">
-      <div className="docs-section-header" onClick={() => setOpen(!open)}>
-        <span className="docs-section-icon">{open ? '▼' : '▶'}</span>
-        <span>{title}</span>
-      </div>
-      {open && <div className="docs-section-content">{children}</div>}
-    </div>
-  );
 }
 
 // Template snippets for insertion

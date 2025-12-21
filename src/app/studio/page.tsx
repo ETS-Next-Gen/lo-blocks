@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import RenderOLX from '@/components/common/RenderOLX';
 import EditorLLMChat from '@/components/chat/EditorLLMChat';
 import { ElementsInFile, BlockList, type BlockItem } from '@/components/common/BlockList';
+import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
 import './studio.css';
@@ -27,12 +28,6 @@ interface IdMapEntry {
   provenance?: string[];
 }
 
-// BlockDoc extends BlockItem for API response
-interface BlockDoc extends BlockItem {
-  exportName: string;
-  namespace: string;
-  fields: string[];
-}
 
 const DEMO_CONTENT = `<Vertical>
   <Markdown>
@@ -70,27 +65,22 @@ export default function StudioPage() {
   const [fileTree, setFileTree] = useState<UriNode | null>(null);
   const [loading, setLoading] = useState(false);
   const [idMap, setIdMap] = useState<Record<string, IdMapEntry> | null>(null);
-  const [blockDocs, setBlockDocs] = useState<BlockDoc[] | null>(null);
+
+  // Shared docs data hook
+  const docsData = useDocsData();
 
   // Load file tree
   const refreshFiles = useCallback(() => {
     storage.listFiles().then(setFileTree).catch(console.error);
   }, []);
 
-  // Load file tree, idMap, and block docs on mount
+  // Load file tree and idMap on mount
   useEffect(() => {
     refreshFiles();
     // Use 'all' to get all IDs, not just launchable ones
     fetch('/api/content/all')
       .then(res => res.json())
       .then(data => setIdMap(data.idMap))
-      .catch(console.error);
-    // Load block documentation
-    fetch('/api/docs')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ok) setBlockDocs(data.documentation.blocks);
-      })
       .catch(console.error);
   }, [refreshFiles]);
 
@@ -248,7 +238,7 @@ export default function StudioPage() {
                   onRefreshFiles={refreshFiles}
                   fileTree={fileTree}
                   idMap={idMap}
-                  blockDocs={blockDocs}
+                  docsData={docsData}
                 />
               </div>
             </aside>
@@ -410,7 +400,7 @@ interface SidebarPanelProps {
   onRefreshFiles: () => void;
   fileTree: UriNode | null;
   idMap: Record<string, IdMapEntry> | null;
-  blockDocs: BlockDoc[] | null;
+  docsData: ReturnType<typeof useDocsData>;
 }
 
 // Extract IDs and their tag names from OLX content
@@ -535,7 +525,7 @@ function FileTreeNode({
 function SidebarPanel({
   tab, filePath, content, onApplyEdit, onFileSelect,
   onFileCreate, onFileDelete, onFileRename, onRefreshFiles,
-  fileTree, idMap, blockDocs
+  fileTree, idMap, docsData
 }: SidebarPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewFileDialog, setShowNewFileDialog] = useState(false);
@@ -759,14 +749,6 @@ Start writing here.
       const docType = getFileDocType(filePath);
       const elements = extractElements(content);
 
-      // Create lookup for block docs by name
-      const blockDocsByName: Record<string, BlockItem> = {};
-      if (blockDocs) {
-        for (const block of blockDocs) {
-          blockDocsByName[block.name] = block;
-        }
-      }
-
       return (
         <div className="sidebar-panel docs-panel">
           <div className="sidebar-panel-header">Documentation</div>
@@ -788,13 +770,13 @@ Start writing here.
             )}
 
             {/* Elements used in current file - shared component */}
-            <ElementsInFile elements={elements} blockDocs={blockDocsByName} />
+            <ElementsInFile elements={elements} blockDocs={docsData.blocksByName} />
 
-            {/* All blocks by category - shared component */}
-            {blockDocs ? (
-              <BlockList blocks={blockDocs} />
-            ) : (
+            {/* All blocks and grammars by category - shared component */}
+            {docsData.loading ? (
               <div className="search-hint">Loading blocks...</div>
+            ) : (
+              <BlockList blocks={docsData.allItems} />
             )}
           </div>
         </div>

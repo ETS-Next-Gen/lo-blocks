@@ -2,9 +2,10 @@
 // Prototype editor - exploring layout and interaction patterns
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import RenderOLX from '@/components/common/RenderOLX';
+import EditorLLMChat from '@/components/chat/EditorLLMChat';
 import './studio.css';
 
 // Dynamic import CodeMirror to avoid SSR issues
@@ -13,7 +14,8 @@ const CodeEditor = dynamic(
   { ssr: false }
 );
 
-type SidebarTab = 'files' | 'chat' | 'search' | 'data' | 'docs';
+type SidebarTab = 'chat' | 'docs' | 'search' | 'files' | 'data';
+type PreviewLayout = 'horizontal' | 'vertical';
 
 const DEMO_CONTENT = `<Vertical>
   <Markdown>
@@ -36,32 +38,48 @@ This is a **live preview** of your content. Edit on the left, see changes on the
 </Vertical>`;
 
 export default function StudioPage() {
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('files');
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('chat');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [content, setContent] = useState(DEMO_CONTENT);
   const [filePath, setFilePath] = useState('untitled.olx');
   const [showPreview, setShowPreview] = useState(true);
+  const [previewLayout, setPreviewLayout] = useState<PreviewLayout>('horizontal');
+  const [sidebarWidth, setSidebarWidth] = useState(320);
 
-  // Command palette keyboard shortcut
+  const handleSave = useCallback(() => {
+    console.log('Save:', filePath, content);
+    // TODO: Implement save
+  }, [filePath, content]);
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const mod = e.metaKey || e.ctrlKey;
+
+      // Command palette
+      if (mod && e.key === 'k') {
         e.preventDefault();
         setCommandPaletteOpen(open => !open);
       }
+      // Save
+      if (mod && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      // Toggle preview
+      if (mod && e.key === 'p' && !e.shiftKey) {
+        e.preventDefault();
+        setShowPreview(p => !p);
+      }
+      // Escape closes overlays
       if (e.key === 'Escape') {
         setCommandPaletteOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const handleSave = useCallback(() => {
-    console.log('Save:', filePath, content);
-    // TODO: Implement save
-  }, [filePath, content]);
+  }, [handleSave]);
 
   return (
     <div className="studio">
@@ -88,6 +106,15 @@ export default function StudioPage() {
           >
             Preview
           </button>
+          {showPreview && (
+            <button
+              className="studio-btn icon"
+              onClick={() => setPreviewLayout(l => l === 'horizontal' ? 'vertical' : 'horizontal')}
+              title={`Layout: ${previewLayout}`}
+            >
+              {previewLayout === 'horizontal' ? '⬌' : '⬍'}
+            </button>
+          )}
           <button className="studio-btn primary" onClick={handleSave}>
             Save
           </button>
@@ -100,26 +127,34 @@ export default function StudioPage() {
       <div className="studio-body">
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="studio-sidebar">
-            <nav className="studio-sidebar-tabs">
-              {(['files', 'chat', 'search', 'data', 'docs'] as SidebarTab[]).map(tab => (
-                <button
-                  key={tab}
-                  className={`studio-sidebar-tab ${sidebarTab === tab ? 'active' : ''}`}
-                  onClick={() => setSidebarTab(tab)}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </nav>
-            <div className="studio-sidebar-content">
-              <SidebarPanel tab={sidebarTab} />
-            </div>
-          </aside>
+          <>
+            <aside className="studio-sidebar" style={{ width: sidebarWidth }}>
+              <nav className="studio-sidebar-tabs">
+                {(['chat', 'docs', 'search', 'files', 'data'] as SidebarTab[]).map(tab => (
+                  <button
+                    key={tab}
+                    className={`studio-sidebar-tab ${sidebarTab === tab ? 'active' : ''}`}
+                    onClick={() => setSidebarTab(tab)}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </nav>
+              <div className="studio-sidebar-content">
+                <SidebarPanel
+                  tab={sidebarTab}
+                  filePath={filePath}
+                  content={content}
+                  onApplyEdit={setContent}
+                />
+              </div>
+            </aside>
+            <Resizer onResize={(delta) => setSidebarWidth(w => Math.max(200, Math.min(600, w + delta)))} />
+          </>
         )}
 
         {/* Main Editor Area */}
-        <main className={`studio-main ${showPreview ? 'split' : ''}`}>
+        <main className={`studio-main ${showPreview ? `split ${previewLayout}` : ''}`}>
           <div className="studio-editor-pane">
             <CodeEditor
               value={content}
@@ -152,7 +187,62 @@ export default function StudioPage() {
   );
 }
 
-function SidebarPanel({ tab }: { tab: SidebarTab }) {
+// Draggable resizer for sidebar
+function Resizer({ onResize }: { onResize: (delta: number) => void }) {
+  const startX = useRef(0);
+  const dragging = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startX.current = e.clientX;
+    dragging.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      const delta = e.clientX - startX.current;
+      startX.current = e.clientX;
+      onResize(delta);
+    };
+
+    const handleMouseUp = () => {
+      dragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  return <div className="studio-resizer" onMouseDown={handleMouseDown} />;
+}
+
+interface SidebarPanelProps {
+  tab: SidebarTab;
+  filePath: string;
+  content: string;
+  onApplyEdit: (newContent: string) => void;
+}
+
+// Extract IDs and their tag names from OLX content
+function extractIds(content: string): Array<{ id: string; tag: string }> {
+  const results: Array<{ id: string; tag: string }> = [];
+  // Match <TagName ... id="value" ...>
+  const regex = /<(\w+)[^>]*\bid=["']([^"']+)["'][^>]*>/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    results.push({ tag: match[1], id: match[2] });
+  }
+  return results;
+}
+
+function SidebarPanel({ tab, filePath, content, onApplyEdit }: SidebarPanelProps) {
+  const ids = tab === 'search' ? extractIds(content) : [];
+
   switch (tab) {
     case 'files':
       return (
@@ -169,13 +259,13 @@ function SidebarPanel({ tab }: { tab: SidebarTab }) {
       );
     case 'chat':
       return (
-        <div className="sidebar-panel">
-          <div className="sidebar-panel-header">Chat</div>
-          <div className="chat-placeholder">
-            LLM conversation will appear here.
-            <br /><br />
-            Ask to create content, explain concepts, or modify the current file.
-          </div>
+        <div className="sidebar-panel chat-panel">
+          <EditorLLMChat
+            path={filePath}
+            content={content}
+            onApplyEdit={onApplyEdit}
+            theme="dark"
+          />
         </div>
       );
     case 'search':
@@ -187,20 +277,18 @@ function SidebarPanel({ tab }: { tab: SidebarTab }) {
             className="search-input"
             placeholder="Search by ID, text, or file..."
           />
-          <div className="search-section">By ID</div>
+          <div className="search-section">IDs in current file ({ids.length})</div>
           <div className="search-results">
-            <div className="search-result-item">
-              <span className="search-id">demo-mcq</span>
-              <span className="search-type">MCQ</span>
-            </div>
-            <div className="search-result-item">
-              <span className="search-id">intro-video</span>
-              <span className="search-type">Video</span>
-            </div>
-            <div className="search-result-item">
-              <span className="search-id">quiz-1</span>
-              <span className="search-type">Vertical</span>
-            </div>
+            {ids.length === 0 ? (
+              <div className="search-hint">No IDs found in content</div>
+            ) : (
+              ids.map(({ id, tag }) => (
+                <div key={id} className="search-result-item">
+                  <span className="search-id">{id}</span>
+                  <span className="search-type">{tag}</span>
+                </div>
+              ))
+            )}
           </div>
           <div className="search-section">By Text</div>
           <div className="search-hint">Type to search content...</div>

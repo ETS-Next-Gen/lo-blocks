@@ -14,8 +14,9 @@ import { createEditorTools } from '@/lib/editor/tools';
  * @param {string} props.path - Current file path
  * @param {string} props.content - Current file content
  * @param {function} props.onApplyEdit - Called when LLM applies an edit
+ * @param {'light' | 'dark'} [props.theme='light'] - Color theme
  */
-export default function EditorLLMChat({ path, content, onApplyEdit }) {
+export default function EditorLLMChat({ path, content, onApplyEdit, theme = 'light' }) {
   const initialMessage = path
     ? `Editing: ${path}. Ask me to help with this content.`
     : 'Select a file to edit, then ask me for help.';
@@ -35,7 +36,7 @@ export default function EditorLLMChat({ path, content, onApplyEdit }) {
     sendMessage(text, { attachments, tools, systemPrompt });
   }, [path, content, onApplyEdit, sendMessage]);
 
-  const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload />;
+  const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload theme={theme} />;
 
   return (
     <ChatComponent
@@ -43,6 +44,7 @@ export default function EditorLLMChat({ path, content, onApplyEdit }) {
       messages={messages}
       footer={footer}
       height="flex-1"
+      theme={theme}
     />
   );
 }

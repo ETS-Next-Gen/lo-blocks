@@ -627,6 +627,13 @@
   text-decoration: underline;
 }
 
+.element-doc-desc-full {
+  font-size: 12px;
+  color: #c9d1d9;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
 /* Main editor */
 .studio-main {
   flex: 1;

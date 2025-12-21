@@ -26,6 +26,18 @@ interface IdMapEntry {
   provenance?: string[];
 }
 
+// Block documentation from /api/docs
+interface BlockDoc {
+  name: string;
+  exportName: string;
+  description: string | null;
+  namespace: string;
+  category: string | null;
+  fields: string[];
+  examples: Array<{ path: string; gitStatus?: string }>;
+  readme: string | null;
+}
+
 const DEMO_CONTENT = `<Vertical>
   <Markdown>
 # Welcome to Studio
@@ -62,19 +74,27 @@ export default function StudioPage() {
   const [fileTree, setFileTree] = useState<UriNode | null>(null);
   const [loading, setLoading] = useState(false);
   const [idMap, setIdMap] = useState<Record<string, IdMapEntry> | null>(null);
+  const [blockDocs, setBlockDocs] = useState<BlockDoc[] | null>(null);
 
   // Load file tree
   const refreshFiles = useCallback(() => {
     storage.listFiles().then(setFileTree).catch(console.error);
   }, []);
 
-  // Load file tree and idMap on mount
+  // Load file tree, idMap, and block docs on mount
   useEffect(() => {
     refreshFiles();
     // Use 'all' to get all IDs, not just launchable ones
     fetch('/api/content/all')
       .then(res => res.json())
       .then(data => setIdMap(data.idMap))
+      .catch(console.error);
+    // Load block documentation
+    fetch('/api/docs')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) setBlockDocs(data.documentation.blocks);
+      })
       .catch(console.error);
   }, [refreshFiles]);
 
@@ -232,6 +252,7 @@ export default function StudioPage() {
                   onRefreshFiles={refreshFiles}
                   fileTree={fileTree}
                   idMap={idMap}
+                  blockDocs={blockDocs}
                 />
               </div>
             </aside>
@@ -393,6 +414,7 @@ interface SidebarPanelProps {
   onRefreshFiles: () => void;
   fileTree: UriNode | null;
   idMap: Record<string, IdMapEntry> | null;
+  blockDocs: BlockDoc[] | null;
 }
 
 // Extract IDs and their tag names from OLX content
@@ -419,87 +441,16 @@ function extractElements(content: string): string[] {
   return Array.from(tags).sort();
 }
 
-// Inline docs for elements - description + example
-const ELEMENT_DOCS: Record<string, { desc: string; example: string }> = {
-  Markdown: {
-    desc: 'Rich text content using Markdown syntax',
-    example: `<Markdown>
-# Heading
-**Bold** and *italic* text.
-</Markdown>`,
-  },
-  CapaProblem: {
-    desc: 'Container for a graded problem with inputs and graders',
-    example: `<CapaProblem id="q1" title="Question">
-  <KeyGrader>
-    <p>Question text</p>
-    <ChoiceInput>...</ChoiceInput>
-  </KeyGrader>
-</CapaProblem>`,
-  },
-  KeyGrader: {
-    desc: 'Grades based on Key/Distractor answer keys',
-    example: `<KeyGrader>
-  <p>Which is correct?</p>
-  <ChoiceInput>
-    <Key id="a">Correct</Key>
-    <Distractor id="b">Wrong</Distractor>
-  </ChoiceInput>
-</KeyGrader>`,
-  },
-  ChoiceInput: {
-    desc: 'Multiple choice input with Key and Distractor options',
-    example: `<ChoiceInput>
-  <Key id="correct">Right answer</Key>
-  <Distractor id="d1">Wrong 1</Distractor>
-  <Distractor id="d2">Wrong 2</Distractor>
-</ChoiceInput>`,
-  },
-  Key: {
-    desc: 'Correct answer option in a ChoiceInput',
-    example: `<Key id="correct">The right answer</Key>`,
-  },
-  Distractor: {
-    desc: 'Incorrect answer option in a ChoiceInput',
-    example: `<Distractor id="wrong1">A wrong answer</Distractor>`,
-  },
-  Vertical: {
-    desc: 'Stack children vertically',
-    example: `<Vertical>
-  <Markdown>First</Markdown>
-  <Markdown>Second</Markdown>
-</Vertical>`,
-  },
-  Horizontal: {
-    desc: 'Arrange children horizontally',
-    example: `<Horizontal>
-  <Markdown>Left</Markdown>
-  <Markdown>Right</Markdown>
-</Horizontal>`,
-  },
-  Hint: {
-    desc: 'Collapsible hint that students can reveal',
-    example: `<Hint title="Need help?">
-  <Markdown>Here's a hint...</Markdown>
-</Hint>`,
-  },
-  Image: {
-    desc: 'Display an image',
-    example: `<Image src="/path/to/image.png" alt="Description" />`,
-  },
-  Video: {
-    desc: 'Embed a video player',
-    example: `<Video src="https://youtube.com/watch?v=..." />`,
-  },
-  TextInput: {
-    desc: 'Free-text input field',
-    example: `<TextInput id="answer" placeholder="Type here..." />`,
-  },
-  NumberInput: {
-    desc: 'Numeric input field',
-    example: `<NumberInput id="num" min="0" max="100" />`,
-  },
-};
+// Group blocks by category
+function groupBlocksByCategory(blocks: BlockDoc[]): Record<string, BlockDoc[]> {
+  const groups: Record<string, BlockDoc[]> = {};
+  for (const block of blocks) {
+    const category = block.category || 'Other';
+    if (!groups[category]) groups[category] = [];
+    groups[category].push(block);
+  }
+  return groups;
+}
 
 // Detect file type for context-aware docs
 function getFileDocType(path: string): 'olx' | 'peg' | 'markdown' | 'unknown' {
@@ -599,7 +550,7 @@ function FileTreeNode({
 function SidebarPanel({
   tab, filePath, content, onApplyEdit, onFileSelect,
   onFileCreate, onFileDelete, onFileRename, onRefreshFiles,
-  fileTree, idMap
+  fileTree, idMap, blockDocs
 }: SidebarPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewFileDialog, setShowNewFileDialog] = useState(false);
@@ -823,6 +774,28 @@ Start writing here.
       const docType = getFileDocType(filePath);
       const elements = extractElements(content);
 
+      // Create lookup for block docs by name
+      const blockDocsByName: Record<string, BlockDoc> = {};
+      if (blockDocs) {
+        for (const block of blockDocs) {
+          blockDocsByName[block.name] = block;
+        }
+      }
+
+      // Group blocks by category for quick reference
+      const categories = blockDocs ? groupBlocksByCategory(blockDocs) : {};
+
+      // Preferred category order
+      const categoryOrder = ['Layout', 'Display', 'Input', 'Grader', 'Problem', 'Other'];
+      const sortedCategories = Object.keys(categories).sort((a, b) => {
+        const aIdx = categoryOrder.indexOf(a);
+        const bIdx = categoryOrder.indexOf(b);
+        if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
+        if (aIdx === -1) return 1;
+        if (bIdx === -1) return -1;
+        return aIdx - bIdx;
+      });
+
       return (
         <div className="sidebar-panel">
           <div className="sidebar-panel-header">Documentation</div>
@@ -850,31 +823,33 @@ Start writing here.
               <>
                 <div className="docs-section-label">Elements in file</div>
                 {elements.map(tag => (
-                  <ElementDocItem key={tag} tag={tag} />
+                  <ElementDocItem key={tag} tag={tag} block={blockDocsByName[tag]} />
                 ))}
               </>
             )}
 
-            {/* Quick reference sections */}
-            <DocsSection title="Layout">
-              <a href="/docs#Vertical" target="_blank" className="docs-item">Vertical</a>
-              <a href="/docs#Horizontal" target="_blank" className="docs-item">Horizontal</a>
-              <a href="/docs#Tabs" target="_blank" className="docs-item">Tabs</a>
-            </DocsSection>
+            {/* All blocks by category from API */}
+            {sortedCategories.map(category => (
+              <DocsSection key={category} title={category}>
+                {categories[category].map(block => (
+                  <a
+                    key={block.name}
+                    href={`/docs#${block.name}`}
+                    target="_blank"
+                    className="docs-item-link"
+                  >
+                    <span className="docs-tag">{block.name}</span>
+                    {block.description && (
+                      <span className="docs-desc">{block.description}</span>
+                    )}
+                  </a>
+                ))}
+              </DocsSection>
+            ))}
 
-            <DocsSection title="Problems">
-              <a href="/docs#CapaProblem" target="_blank" className="docs-item">CapaProblem</a>
-              <a href="/docs#KeyGrader" target="_blank" className="docs-item">KeyGrader</a>
-              <a href="/docs#ChoiceInput" target="_blank" className="docs-item">ChoiceInput</a>
-              <a href="/docs#TextInput" target="_blank" className="docs-item">TextInput</a>
-            </DocsSection>
-
-            <DocsSection title="Display">
-              <a href="/docs#Markdown" target="_blank" className="docs-item">Markdown</a>
-              <a href="/docs#Image" target="_blank" className="docs-item">Image</a>
-              <a href="/docs#Video" target="_blank" className="docs-item">Video</a>
-              <a href="/docs#Hint" target="_blank" className="docs-item">Hint</a>
-            </DocsSection>
+            {!blockDocs && (
+              <div className="search-hint">Loading blocks...</div>
+            )}
           </div>
         </div>
       );
@@ -882,21 +857,52 @@ Start writing here.
   }
 }
 
-// Expandable element doc item
-function ElementDocItem({ tag }: { tag: string }) {
+// Expandable element doc item - shows description and fetches examples on expand
+function ElementDocItem({ tag, block }: { tag: string; block?: BlockDoc }) {
   const [expanded, setExpanded] = useState(false);
-  const doc = ELEMENT_DOCS[tag];
+  const [detailedDocs, setDetailedDocs] = useState<{
+    readme?: { content: string };
+    examples?: Array<{ filename: string; content: string }>;
+  } | null>(null);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+
+  // Fetch detailed docs when expanded
+  useEffect(() => {
+    if (expanded && block && !detailedDocs && !loadingDocs) {
+      setLoadingDocs(true);
+      fetch(`/api/docs/${encodeURIComponent(tag)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok) {
+            setDetailedDocs({
+              readme: data.block.readme,
+              examples: data.block.examples,
+            });
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoadingDocs(false));
+    }
+  }, [expanded, block, tag, detailedDocs, loadingDocs]);
+
+  const firstExample = detailedDocs?.examples?.[0];
 
   return (
     <div className="element-doc-item">
       <div className="element-doc-header" onClick={() => setExpanded(!expanded)}>
         <span className="element-doc-tag">{tag}</span>
-        {doc && <span className="element-doc-desc">{doc.desc}</span>}
+        {block?.description && <span className="element-doc-desc">{block.description}</span>}
         <span className="element-doc-toggle">{expanded ? '▼' : '▶'}</span>
       </div>
-      {expanded && doc && (
+      {expanded && (
         <div className="element-doc-content">
-          <pre className="element-doc-example">{doc.example}</pre>
+          {loadingDocs && <div className="search-hint">Loading...</div>}
+          {firstExample && (
+            <pre className="element-doc-example">{firstExample.content}</pre>
+          )}
+          {!loadingDocs && !firstExample && block?.description && (
+            <div className="element-doc-desc-full">{block.description}</div>
+          )}
           <a href={`/docs#${tag}`} target="_blank" className="element-doc-link">
             Full docs →
           </a>

@@ -6,6 +6,7 @@
 // Single source of truth for extension lists used throughout the app.
 //
 
+import path from 'path';
 import { PEG_CONTENT_EXTENSIONS } from '@/generated/parserRegistry';
 
 // ============================================================
@@ -57,18 +58,17 @@ export const CATEGORY = {
  * getExtension('file.chatpeg') // => 'chatpeg'
  * getExtension('noextension') // => ''
  */
-export function getExtension(path: string | undefined | null): string {
-  if (!path) return '';
-  const lastDot = path.lastIndexOf('.');
-  if (lastDot === -1 || lastDot === path.length - 1) return '';
-  return path.slice(lastDot + 1).toLowerCase();
+export function getExtension(filePath: string | undefined | null): string {
+  if (!filePath) return '';
+  const ext = path.extname(filePath);
+  return ext ? ext.slice(1).toLowerCase() : '';
 }
 
 /**
- * Check if a file's extension is in a list of extensions.
+ * Check if a file path has one of the given extensions.
  * Use the named helpers below for common cases.
  */
-export function isFileExtensionIn(path: string | undefined | null, extensions: readonly string[]): boolean {
+export function fileHasExtension(path: string | undefined | null, extensions: readonly string[]): boolean {
   const ext = getExtension(path);
   return ext !== '' && extensions.includes(ext);
 }
@@ -114,32 +114,32 @@ export function getContentType(path: string | undefined | null): ContentType {
 
 // Specific file types
 export const isOLXFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, EXT.olx);
+  fileHasExtension(path, EXT.olx);
 
 export const isMarkdownFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, EXT.markdown);
+  fileHasExtension(path, EXT.markdown);
 
 export const isPEGFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, EXT.peg);
+  fileHasExtension(path, EXT.peg);
 
 export const isImageFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, EXT.image);
+  fileHasExtension(path, EXT.image);
 
 export const isVideoFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, EXT.video);
+  fileHasExtension(path, EXT.video);
 
 // Category checks
 export const isContentFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, CATEGORY.content);
+  fileHasExtension(path, CATEGORY.content);
 
 export const isEditableFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, CATEGORY.editable);
+  fileHasExtension(path, CATEGORY.editable);
 
 export const isUploadableFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, CATEGORY.uploadable);
+  fileHasExtension(path, CATEGORY.uploadable);
 
 export const isMediaFile = (path: string | undefined | null) =>
-  isFileExtensionIn(path, CATEGORY.media);
+  fileHasExtension(path, CATEGORY.media);
 
 // ============================================================
 // UTILITIES FOR BUILDING UI / CONFIG

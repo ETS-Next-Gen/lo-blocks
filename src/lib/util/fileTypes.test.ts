@@ -23,6 +23,9 @@ describe('fileTypes', () => {
     expect(getExtension('no-extension')).toBe('');
     expect(getExtension(null)).toBe('');
     expect(getExtension(undefined)).toBe('');
+    // Dots in directory names should be ignored
+    expect(getExtension('/home/bob/my.files/file.ext')).toBe('ext');
+    expect(getExtension('/home/bob/my.files/noext')).toBe('');
   });
 
   test('file type helpers correctly identify files', () => {

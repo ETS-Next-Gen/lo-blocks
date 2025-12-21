@@ -84,21 +84,6 @@
   font-style: italic;
 }
 
-.element-doc-item__example-details {
-  margin-bottom: 8px;
-}
-
-.element-doc-item__example-summary {
-  font-size: 11px;
-  color: var(--block-list-muted, #8b949e);
-  cursor: pointer;
-  margin-bottom: 4px;
-}
-
-.element-doc-item__example-summary:hover {
-  color: var(--block-list-text, #c9d1d9);
-}
-
 .element-doc-item__example {
   font-family: 'SF Mono', Consolas, monospace;
   font-size: 10px;

@@ -93,10 +93,7 @@ function ElementDocItem({ tag, block }: { tag: string; block?: BlockItem }) {
         <div className="element-doc-item__content">
           {loadingDocs && <div className="element-doc-item__loading">Loading...</div>}
           {firstExample && (
-            <details className="element-doc-item__example-details">
-              <summary className="element-doc-item__example-summary">Example OLX</summary>
-              <pre className="element-doc-item__example">{firstExample.content}</pre>
-            </details>
+            <pre className="element-doc-item__example">{firstExample.content}</pre>
           )}
           {!loadingDocs && !firstExample && block?.description && (
             <div className="element-doc-item__desc-full">{block.description}</div>

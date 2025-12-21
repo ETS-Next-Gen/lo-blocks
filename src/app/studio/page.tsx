@@ -6,10 +6,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import RenderOLX from '@/components/common/RenderOLX';
 import EditorLLMChat from '@/components/chat/EditorLLMChat';
-import { ElementsInFile, BlockList, type BlockItem } from '@/components/common/BlockList';
+import { ElementsInFile, BlockList } from '@/components/common/BlockList';
 import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
+import type { IdMap } from '@/lib/types';
 import './studio.css';
 
 // Dynamic import CodeMirror to avoid SSR issues
@@ -20,14 +21,6 @@ const CodeEditor = dynamic(
 
 type SidebarTab = 'chat' | 'docs' | 'search' | 'files' | 'data';
 type PreviewLayout = 'horizontal' | 'vertical';
-
-// IdMap entry from /api/content/root
-interface IdMapEntry {
-  tag: string;
-  attributes?: Record<string, unknown>;
-  provenance?: string[];
-}
-
 
 const DEMO_CONTENT = `<Vertical>
   <Markdown>
@@ -64,7 +57,7 @@ export default function StudioPage() {
   const [editorRatio, setEditorRatio] = useState(50); // percentage for editor pane
   const [fileTree, setFileTree] = useState<UriNode | null>(null);
   const [loading, setLoading] = useState(false);
-  const [idMap, setIdMap] = useState<Record<string, IdMapEntry> | null>(null);
+  const [idMap, setIdMap] = useState<IdMap | null>(null);
 
   // Shared docs data hook
   const docsData = useDocsData();
@@ -399,7 +392,7 @@ interface SidebarPanelProps {
   onFileRename: (oldPath: string, newPath: string) => Promise<void>;
   onRefreshFiles: () => void;
   fileTree: UriNode | null;
-  idMap: Record<string, IdMapEntry> | null;
+  idMap: IdMap | null;
   docsData: ReturnType<typeof useDocsData>;
 }
 

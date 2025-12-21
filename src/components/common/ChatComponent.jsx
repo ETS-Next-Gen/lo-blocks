@@ -86,25 +86,132 @@ const DateSeparator = ({ message }) => {
   );
 };
 
-export const InputFooter = ({ onSendMessage, disabled = false, placeholder = 'Type a message...' }) => {
+// Tool call component - shows what tool the LLM called
+const ToolCallMessage = ({ message }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  // Truncate result for synopsis display
+  const synopsis = message.result || '(no result)';
+  const truncatedSynopsis = synopsis.length > 80
+    ? synopsis.slice(0, 80) + '...'
+    : synopsis;
+
+  return (
+    <div className="my-2 mx-10">
+      <div
+        className="text-xs bg-gray-50 border border-gray-200 rounded p-2 cursor-pointer hover:bg-gray-100"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span className="text-gray-500">🔧</span>
+        <span className="font-mono ml-1 text-blue-600">{message.name}</span>
+        <span className="text-gray-600 ml-2">{truncatedSynopsis}</span>
+        <span className="text-gray-400 ml-2">{expanded ? '▼' : '▶'}</span>
+      </div>
+      {expanded && (
+        <div className="mt-1 p-2 bg-gray-50 border border-gray-200 rounded text-xs font-mono overflow-x-auto">
+          <div className="text-gray-600">Args:</div>
+          <pre className="text-gray-800 whitespace-pre-wrap">{JSON.stringify(message.args, null, 2)}</pre>
+          <div className="text-gray-600 mt-2">Result:</div>
+          <pre className="text-gray-800 whitespace-pre-wrap">{message.result}</pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const InputFooter = ({
+  onSendMessage,
+  disabled = false,
+  placeholder = 'Type a message...',
+  allowFileUpload = false,
+}) => {
   const [message, setMessage] = useState('');
+  const [attachedFile, setAttachedFile] = useState(null); // { name, content }
+  const [fileError, setFileError] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleSend = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message);
+    if ((message.trim() || attachedFile) && !disabled) {
+      // Send message with optional file attachment
+      // File content is passed separately, not embedded in message text
+      onSendMessage(message, attachedFile);
       setMessage('');
+      setAttachedFile(null);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && message.trim() && !disabled) {
+    if (e.key === 'Enter' && (message.trim() || attachedFile) && !disabled) {
       handleSend();
     }
   };
 
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileError(null);
+    try {
+      const content = await file.text();
+      setAttachedFile({ name: file.name, content });
+    } catch (err) {
+      setFileError(`Failed to read ${file.name}`);
+    }
+
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
   return (
     <div className="bg-gray-50 p-3 border-t border-gray-200">
+      {/* Show attached file */}
+      {attachedFile && (
+        <div className="mb-2 flex items-center text-sm text-gray-600 bg-gray-100 rounded px-2 py-1">
+          <span className="mr-2">📎</span>
+          <span className="flex-1 truncate">{attachedFile.name}</span>
+          <button
+            className="ml-2 text-gray-400 hover:text-red-500"
+            onClick={() => setAttachedFile(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {/* Show file error */}
+      {fileError && (
+        <div className="mb-2 flex items-center text-sm text-red-600 bg-red-50 rounded px-2 py-1">
+          <span className="flex-1">{fileError}</span>
+          <button
+            className="ml-2 text-red-400 hover:text-red-600"
+            onClick={() => setFileError(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <div className="flex items-center">
+        {/* File upload (when enabled) */}
+        {allowFileUpload && (
+          <>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".txt,.md,.olx,.xml,.json,.js,.jsx,.ts,.tsx,.css,.html,.py,.yaml,.yml,.pegjs,.chatpeg,.sortpeg"
+              onChange={handleFileSelect}
+            />
+            <button
+              className={`mr-2 p-2 rounded-full ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'}`}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled}
+              title="Attach file"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+            </button>
+          </>
+        )}
         <input
           type="text"
           className={`flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none ${disabled ? 'bg-gray-100 text-gray-500' : 'focus:ring-2 focus:ring-blue-500'}`}
@@ -231,6 +338,12 @@ export function ChatComponent({
             <DateSeparator message={message} />
           </div>
         );
+      case 'ToolCall':
+        return (
+          <div key={index} className="message-item">
+            <ToolCallMessage message={message} />
+          </div>
+        );
       default:
         return null;
     }
@@ -251,8 +364,8 @@ export function ChatComponent({
       </div>
       <div
         ref={chatContainerRef}
-        className="overflow-y-auto p-4 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        style={{height}}
+        className={`overflow-y-auto p-4 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${height === 'flex-1' ? 'flex-1' : ''}`}
+        style={height !== 'flex-1' ? { height } : undefined}
         tabIndex={0}
         role="region"
         aria-label="Chat transcript. Press space to advance."

@@ -15,21 +15,17 @@ export const LLM_STATUS = {
   TOOL_RUNNING: 'LLM_TOOL_RUNNING',
 };
 
+// Execute tool calls and return canonical results.
+// Caller derives API and display formats as needed.
 async function handleToolCalls(toolCalls, tools) {
-  // Collect promises for all tool calls in parallel
   return Promise.all(toolCalls.map(async (call) => {
     const tool = findToolByName(tools, call.function.name);
-    let result = '';
-    if (tool) {
-      let args = {};
-      try { args = JSON.parse(call.function.arguments || '{}'); } catch {}
-      result = await tool.callback(args);
-    }
-    return {
-      role: 'tool',
-      content: result,
-      tool_call_id: call.id,
-    };
+    let args = {};
+    try { args = JSON.parse(call.function.arguments || '{}'); } catch {}
+    const result = tool ? await tool.callback(args) : '';
+
+    // Single canonical format
+    return { id: call.id, name: call.function.name, args, result };
   }));
 }
 
@@ -60,7 +56,8 @@ export async function callLLM(params) {
 
   let loopCount = 0;
   let newMessages = [];
-  while (loopCount++ < 5) {
+  let displayMessagesAccum = [];  // Tool calls to show in chat
+  while (loopCount++ < 10) {
     try {
       const res = await fetch('/api/openai/chat/completions', {
         method: 'POST',
@@ -73,34 +70,55 @@ export async function callLLM(params) {
       });
       const json = (await res.json()).choices?.[0];
       const content = json?.message?.content;
-      const toolCalls = json?.message.tool_calls;
+      const toolCalls = json?.message?.tool_calls;
+
+      // Handle tool calls if present
       if (toolCalls?.length) {
         statusCallback(LLM_STATUS.TOOL_RUNNING);
-        const toolResponses = await handleToolCalls(toolCalls, tools);
+        const toolResults = await handleToolCalls(toolCalls, tools);
+
+        // Add to API history (for next request)
         newMessages = [
           ...newMessages,
           json.message,
-          ...toolResponses
+          ...toolResults.map(r => ({ role: 'tool', content: r.result, tool_call_id: r.id }))
         ];
+
+        // Add to display messages
+        displayMessagesAccum = [
+          ...displayMessagesAccum,
+          ...toolResults.map(r => ({ type: 'ToolCall', name: r.name, args: r.args, result: r.result }))
+        ];
+
+        // If there's also content, return it (some models send both)
+        if (content) {
+          statusCallback(LLM_STATUS.RESPONSE_READY);
+          return {
+            messages: [...displayMessagesAccum, { type: 'Line', speaker: 'LLM', text: content }],
+            error: false,
+          };
+        }
         continue;
       }
+
+      // No tool calls - check for content
       if (content) {
         statusCallback(LLM_STATUS.RESPONSE_READY);
         return {
-          messages: [...newMessages, { type: 'Line', speaker: 'LLM', text: content }],
+          messages: [...displayMessagesAccum, { type: 'Line', speaker: 'LLM', text: content }],
           error: false,
         };
       } else {
         statusCallback(LLM_STATUS.ERROR);
         return {
-          messages: [...newMessages, { type: 'SystemMessage', text: 'No response from LLM' }],
+          messages: [...displayMessagesAccum, { type: 'SystemMessage', text: 'No response from LLM' }],
           error: true,
         };
       }
     } catch (err) {
       statusCallback(LLM_STATUS.ERROR);
       return {
-        messages: [...newMessages, { type: 'SystemMessage', text: 'Error contacting LLM' }],
+        messages: [...displayMessagesAccum, { type: 'SystemMessage', text: 'Error contacting LLM' }],
         error: true,
       };
     }
@@ -108,33 +126,66 @@ export async function callLLM(params) {
   // If loop exceeds
   statusCallback(LLM_STATUS.ERROR);
   return {
-    messages: [...newMessages, { type: 'SystemMessage', text: 'Too many loops, LLM gave no final answer.' }],
+    messages: [...displayMessagesAccum, { type: 'SystemMessage', text: 'Too many tool calls without a final response. Try asking again.' }],
     error: true,
   };
 }
 
 // Most common interface to LLM.
 //
-// TODO: We should pass both props and additional params to this
+// @param {object} params
+// @param {array} params.tools - Default tool definitions (can be overridden per-call)
+// @param {string} params.systemPrompt - Default system prompt (can be overridden per-call)
+// @param {string} params.initialMessage - Initial message to show (default: 'Ask the LLM a question.')
 export function useChat(params = {}) {
-  const { tools = [] } = params;
+  const {
+    tools: defaultTools = [],
+    systemPrompt: defaultSystemPrompt,
+    initialMessage = 'Ask the LLM a question.'
+  } = params;
   const [messages, setMessages] = useState([
-    { type: 'SystemMessage', text: 'Ask the LLM a question.' }
+    { type: 'SystemMessage', text: initialMessage }
   ]);
   const [status, setStatus] = useState(LLM_STATUS.INIT);
 
-  const sendMessage = async (text) => {
+  // sendMessage accepts per-call overrides for tools and systemPrompt
+  // This allows building fresh tools with current values at call time
+  const sendMessage = async (text, options = {}) => {
+    const {
+      attachments = [],
+      tools = defaultTools,
+      systemPrompt = defaultSystemPrompt,
+    } = options;
+
     setStatus(LLM_STATUS.RUNNING);
 
-    const userMessage = { type: 'Line', speaker: 'You', text };
+    // Build display text (what user sees in chat)
+    const attachmentSuffix = attachments.length > 0
+      ? '\n\n' + attachments.map(a => `📎 ${a.name}`).join('\n')
+      : '';
+    const displayText = (text || '') + attachmentSuffix;
+
+    // Build API text (what LLM sees - includes full file content)
+    const attachmentContent = attachments.length > 0
+      ? '\n\n' + attachments.map(a => `[Attached file: ${a.name}]\n\`\`\`\n${a.content}\n\`\`\``).join('\n\n')
+      : '';
+    const apiText = (text || '') + attachmentContent;
+
+    const userMessage = { type: 'Line', speaker: 'You', text: displayText };
     setMessages(m => [...m, userMessage]);
 
-    let history = [...messages, userMessage]
+    // Build history from messages (use apiText for the current message)
+    let history = [...messages, { type: 'Line', speaker: 'You', text: apiText }]
       .filter((msg) => msg.type === 'Line')
       .map((msg) => ({
         role: msg.speaker === 'You' ? 'user' : 'assistant',
         content: msg.text,
       }));
+
+    // Prepend system prompt if provided
+    if (systemPrompt) {
+      history = [{ role: 'system', content: systemPrompt }, ...history];
+    }
 
     const { messages: newMessages, error } = await callLLM({
       history,

@@ -1,27 +1,48 @@
 // src/components/chat/EditorLLMChat.jsx
 'use client';
 
+import { useCallback } from 'react';
 import { ChatComponent, InputFooter } from '@/components/common/ChatComponent';
 import { useChat } from '@/lib/llm/reduxClient.jsx';
+import { buildSystemPrompt, getFileType } from '@/lib/editor/context';
+import { createEditorTools } from '@/lib/editor/tools';
 
-// TODO: Implement a state machine to disable the footer while waiting for a
-// response. This will likely leverage Redux and src/lib/llm/client.jsx.
+/**
+ * LLM chat for the editor pane.
+ *
+ * @param {object} props
+ * @param {string} props.path - Current file path
+ * @param {string} props.content - Current file content
+ * @param {function} props.onApplyEdit - Called when LLM applies an edit
+ */
+export default function EditorLLMChat({ path, content, onApplyEdit }) {
+  const initialMessage = path
+    ? `Editing: ${path}. Ask me to help with this content.`
+    : 'Select a file to edit, then ask me for help.';
 
-const tools = [{
-  type: "function",
-  function: {
-    name: "helloInGerman",
-    description: "Returns the phrase 'Hello, World!' in German.",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  callback: async () => "Hallo, Welt!",
-}];
+  const { messages, sendMessage } = useChat({ initialMessage });
 
-export default function EditorLLMChat() {
-  const { messages, sendMessage } = useChat({tools: tools});
-  const footer = <InputFooter onSendMessage={sendMessage} />;
+  // Build tools and context fresh at call time - no stale closures
+  const handleSendMessage = useCallback(async (text, attachedFile) => {
+    const tools = createEditorTools({
+      onApplyEdit,
+      getCurrentContent: () => content,
+      getFileType: () => getFileType(path),
+    });
+    const systemPrompt = await buildSystemPrompt({ path, content });
+    const attachments = attachedFile ? [attachedFile] : [];
+
+    sendMessage(text, { attachments, tools, systemPrompt });
+  }, [path, content, onApplyEdit, sendMessage]);
+
+  const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload />;
 
   return (
-    <ChatComponent id="editor_llm_chat" messages={messages} footer={footer} height="flex-1" />
+    <ChatComponent
+      id="editor_llm_chat"
+      messages={messages}
+      footer={footer}
+      height="flex-1"
+    />
   );
 }

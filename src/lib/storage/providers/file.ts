@@ -407,6 +407,25 @@ export class FileStorageProvider implements StorageProvider {
     await this.write(path, content);
   }
 
+  async delete(filePath: string): Promise<void> {
+    const fs = await import('fs/promises');
+    const full = await resolveSafeWritePath(this.baseDir, filePath);
+    await fs.unlink(full);
+  }
+
+  async rename(oldPath: string, newPath: string): Promise<void> {
+    const fs = await import('fs/promises');
+    // Validate both paths with write safety checks
+    const fullOld = await resolveSafeWritePath(this.baseDir, oldPath);
+    const fullNew = await resolveSafeWritePath(this.baseDir, newPath);
+
+    // Create destination directory if needed
+    await fs.mkdir(path.dirname(fullNew), { recursive: true });
+
+    // Rename/move the file
+    await fs.rename(fullOld, fullNew);
+  }
+
   async listFiles(selection: FileSelection = {}): Promise<UriNode> {
     return listFileTree(selection, this.baseDir);
   }

@@ -1,11 +1,8 @@
 // src/app/api/file/route.js
-import fs from 'fs/promises';
-import path from 'path';
 import { FileStorageProvider } from '@/lib/storage/providers/file';
 import { validateContentPath } from '@/lib/storage/contentPaths';
 
 const provider = new FileStorageProvider('./content');
-const CONTENT_DIR = './content';
 
 export async function GET(request) {
   const url = new URL(request.url);
@@ -59,11 +56,10 @@ export async function DELETE(request) {
   }
 
   try {
-    const fullPath = path.join(CONTENT_DIR, validation.relativePath);
-    await fs.unlink(fullPath);
+    await provider.delete(validation.relativePath);
     return Response.json({ ok: true });
   } catch (err) {
-    const isNotFound = err.code === 'ENOENT';
+    const isNotFound = err.code === 'ENOENT' || err.message?.includes('not found');
     const status = isNotFound ? 404 : 500;
     const error = isNotFound ? `File not found: ${relPath}` : err.message;
     console.error(`[API /file DELETE] ${error}`);
@@ -85,17 +81,10 @@ export async function PUT(request) {
   }
 
   try {
-    const srcPath = path.join(CONTENT_DIR, srcValidation.relativePath);
-    const dstPath = path.join(CONTENT_DIR, dstValidation.relativePath);
-
-    // Create destination directory if needed
-    await fs.mkdir(path.dirname(dstPath), { recursive: true });
-
-    // Rename/move the file
-    await fs.rename(srcPath, dstPath);
+    await provider.rename(srcValidation.relativePath, dstValidation.relativePath);
     return Response.json({ ok: true });
   } catch (err) {
-    const isNotFound = err.code === 'ENOENT';
+    const isNotFound = err.code === 'ENOENT' || err.message?.includes('not found');
     const status = isNotFound ? 404 : 500;
     const error = isNotFound ? `File not found: ${relPath}` : err.message;
     console.error(`[API /file PUT] ${error}`);

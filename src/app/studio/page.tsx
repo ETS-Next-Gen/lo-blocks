@@ -247,7 +247,7 @@ function StudioPageContent() {
       notify('error', `Failed to create ${path}`, err instanceof Error ? err.message : String(err));
       throw err; // Re-throw so FilesPanel can handle it
     }
-  }, [refreshFiles, notify, updateUrl]);
+  }, [refreshFiles, notify, updateUrl, setContent]);
 
   const handleFileDelete = useCallback(async (path: string) => {
     try {
@@ -267,7 +267,7 @@ function StudioPageContent() {
       notify('error', `Failed to delete ${path}`, err instanceof Error ? err.message : String(err));
       throw err;
     }
-  }, [filePath, refreshFiles, notify, updateUrl]);
+  }, [filePath, refreshFiles, notify, updateUrl, setContent]);
 
   const handleFileRename = useCallback(async (oldPath: string, newPath: string) => {
     try {

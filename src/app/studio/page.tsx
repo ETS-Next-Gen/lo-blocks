@@ -11,6 +11,8 @@ import { NetworkStorageProvider, VersionConflictError } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
 import type { IdMap } from '@/lib/types';
 import { useNotifications, ToastNotifications } from '@/lib/util/debug';
+import { useReduxState } from '@/lib/state';
+import { editorFields } from '../edit/editorFields';
 import './studio.css';
 
 // Dynamic import CodeMirror to avoid SSR issues
@@ -48,12 +50,28 @@ This is a **live preview** of your content. Edit on the left, see changes on the
 // Create a single storage provider instance
 const storage = new NetworkStorageProvider();
 
+// Redux state wrapper - matches /edit/ pattern for content persistence
+function useEditComponentState(field, provenance, defaultState) {
+  return useReduxState(
+    {},
+    field,
+    defaultState,
+    { id: provenance }
+  );
+}
+
 export default function StudioPage() {
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('chat');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [content, setContent] = useState(DEMO_CONTENT);
   const [filePath, setFilePath] = useState('untitled.olx');
+
+  // Content stored in Redux - enables analytics and persistence
+  const [content, setContent] = useEditComponentState(
+    editorFields.fieldInfoByField.content,
+    filePath,
+    DEMO_CONTENT,
+  );
   const [showPreview, setShowPreview] = useState(true);
   const [previewLayout, setPreviewLayout] = useState<PreviewLayout>('horizontal');
   const [sidebarWidth, setSidebarWidth] = useState(320);
@@ -66,10 +84,13 @@ export default function StudioPage() {
   // Editor ref for insert operations
   const editorRef = useRef<CodeEditorHandle>(null);
 
-  // Track saved content and metadata for dirty state and conflict detection
-  const savedContentRef = useRef(DEMO_CONTENT);
-  const fileMetadataRef = useRef<unknown>(null);
-  const isDirty = content !== savedContentRef.current;
+  // Track per-file saved state for dirty detection and conflict detection
+  // Maps filePath -> { content, metadata } for files we've loaded
+  const fileStateRef = useRef<Map<string, { content: string; metadata: unknown }>>(new Map());
+
+  // Get current file's saved state (for dirty detection)
+  const savedState = fileStateRef.current.get(filePath);
+  const isDirty = savedState ? content !== savedState.content : false;
 
   // Toast notifications
   const { notifications, notify, dismiss: dismissNotification } = useNotifications();
@@ -92,34 +113,55 @@ export default function StudioPage() {
       .catch(console.error);
   }, [refreshFiles]);
 
-  // Load file content when path changes
-  const handleFileSelect = useCallback(async (path: string) => {
-    setLoading(true);
-    try {
-      const result = await storage.read(path);
-      setContent(result.content);
-      setFilePath(path);
-      savedContentRef.current = result.content; // Mark as clean
-      fileMetadataRef.current = result.metadata; // Track for conflict detection
-    } catch (err) {
-      console.error('Failed to load file:', err);
-      notify('error', `Failed to load ${path}`, err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
+  // Load file content when filePath changes
+  // Only load from storage if we haven't loaded this file before -
+  // otherwise Redux has the (possibly edited) content cached
+  useEffect(() => {
+    if (!filePath || filePath === 'untitled.olx') return;
+
+    // If we've already loaded this file, use Redux cache (preserves edits)
+    if (fileStateRef.current.has(filePath)) {
+      return;
     }
-  }, [notify]);
+
+    // First time loading this file - fetch from storage
+    setLoading(true);
+    storage.read(filePath)
+      .then(result => {
+        setContent(result.content);
+        fileStateRef.current.set(filePath, {
+          content: result.content,
+          metadata: result.metadata,
+        });
+      })
+      .catch(err => {
+        console.error('Failed to load file:', err);
+        notify('error', `Failed to load ${filePath}`, err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filePath]); // Only reload when filePath changes
+
+  // File selection just updates the path - content loading handled by effect above
+  const handleFileSelect = useCallback((path: string) => {
+    setFilePath(path);
+  }, []);
 
   const handleSave = useCallback(async (force = false) => {
     setSaving(true);
     try {
+      const previousMetadata = fileStateRef.current.get(filePath)?.metadata;
       await storage.write(filePath, content, {
-        previousMetadata: fileMetadataRef.current,
+        previousMetadata,
         force,
       });
-      savedContentRef.current = content; // Mark as clean
       // Re-read to get updated metadata
       const result = await storage.read(filePath);
-      fileMetadataRef.current = result.metadata;
+      // Update saved state (marks file as clean, updates metadata for conflict detection)
+      fileStateRef.current.set(filePath, {
+        content,
+        metadata: result.metadata,
+      });
       notify('success', `Saved ${filePath}`);
     } catch (err) {
       console.error('Failed to save:', err);
@@ -150,10 +192,12 @@ export default function StudioPage() {
       refreshFiles();
       // Open the new file and get its metadata
       const result = await storage.read(path);
-      setContent(result.content);
       setFilePath(path);
-      savedContentRef.current = result.content; // Mark as clean
-      fileMetadataRef.current = result.metadata; // Track metadata
+      setContent(result.content);
+      fileStateRef.current.set(path, {
+        content: result.content,
+        metadata: result.metadata,
+      });
       notify('success', `Created ${path}`);
     } catch (err) {
       console.error('Failed to create file:', err);
@@ -166,12 +210,12 @@ export default function StudioPage() {
     try {
       await storage.delete(path);
       refreshFiles();
+      // Remove from cache
+      fileStateRef.current.delete(path);
       // If we deleted the current file, clear the editor
       if (path === filePath) {
-        setContent(DEMO_CONTENT);
         setFilePath('untitled.olx');
-        savedContentRef.current = DEMO_CONTENT; // Mark as clean
-        fileMetadataRef.current = null; // Clear metadata
+        setContent(DEMO_CONTENT);
       }
       notify('success', `Deleted ${path}`);
     } catch (err) {
@@ -185,6 +229,12 @@ export default function StudioPage() {
     try {
       await storage.rename(oldPath, newPath);
       refreshFiles();
+      // Move cache entry to new path
+      const cachedState = fileStateRef.current.get(oldPath);
+      if (cachedState) {
+        fileStateRef.current.delete(oldPath);
+        fileStateRef.current.set(newPath, cachedState);
+      }
       // If we renamed the current file, update the path
       if (oldPath === filePath) {
         setFilePath(newPath);

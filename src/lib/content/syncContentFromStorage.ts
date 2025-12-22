@@ -209,7 +209,7 @@ async function moveUnchangedToChanged(
   const filePath = fileUri.startsWith('file://') ? fileUri.slice(7) : fileUri;
 
   try {
-    const content = await provider.read(filePath);
+    const { content } = await provider.read(filePath);
 
     // Create a clean FileRecord without the old blockIds
     const fileRecord: FileRecord = {

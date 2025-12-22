@@ -15,6 +15,8 @@ import type {
   XmlScanResult,
   FileSelection,
   UriNode,
+  ReadResult,
+  WriteOptions,
 } from '../types';
 
 export class PostgresStorageProvider implements StorageProvider {
@@ -26,11 +28,11 @@ export class PostgresStorageProvider implements StorageProvider {
     throw new Error('postgres storage not implemented');
   }
 
-  async read(_path: string): Promise<string> {
+  async read(_path: string): Promise<ReadResult> {
     throw new Error('postgres storage not implemented');
   }
 
-  async write(_path: string, _content: string): Promise<void> {
+  async write(_path: string, _content: string, _options?: WriteOptions): Promise<void> {
     throw new Error('postgres storage not implemented');
   }
 

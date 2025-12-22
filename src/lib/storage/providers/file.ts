@@ -9,12 +9,15 @@
 import path from 'path';
 import pegExts from '../../../generated/pegExtensions.json' assert { type: 'json' };
 import type { ProvenanceURI } from '../../types';
-import type {
-  StorageProvider,
-  XmlFileInfo,
-  XmlScanResult,
-  FileSelection,
-  UriNode,
+import {
+  type StorageProvider,
+  type XmlFileInfo,
+  type XmlScanResult,
+  type FileSelection,
+  type UriNode,
+  type ReadResult,
+  type WriteOptions,
+  VersionConflictError,
 } from '../types';
 import { fileTypes } from '../fileTypes';
 
@@ -384,11 +387,18 @@ export class FileStorageProvider implements StorageProvider {
     return { added, changed, unchanged, deleted };
   }
 
-  async read(filePath: string): Promise<string> {
+  async read(filePath: string): Promise<ReadResult> {
     const fs = await import('fs/promises');
     const full = await resolveSafeReadPath(this.baseDir, filePath);
     try {
-      return await fs.readFile(full, 'utf-8');
+      const [content, stat] = await Promise.all([
+        fs.readFile(full, 'utf-8'),
+        fs.stat(full),
+      ]);
+      return {
+        content,
+        metadata: { mtime: stat.mtimeMs, size: stat.size },
+      };
     } catch (err: any) {
       if (err.code === 'ENOENT') {
         throw new Error(`File not found: ${filePath} (resolved to ${full})`);
@@ -397,9 +407,33 @@ export class FileStorageProvider implements StorageProvider {
     }
   }
 
-  async write(filePath: string, content: string): Promise<void> {
+  async write(filePath: string, content: string, options: WriteOptions = {}): Promise<void> {
+    const { previousMetadata, force = false } = options;
     const fs = await import('fs/promises');
     const full = await resolveSafeWritePath(this.baseDir, filePath);
+
+    // Check for version conflict if previousMetadata is provided
+    if (previousMetadata && !force) {
+      try {
+        const stat = await fs.stat(full);
+        const previous = previousMetadata as { mtime?: number; size?: number };
+        if (previous.mtime !== undefined && stat.mtimeMs !== previous.mtime) {
+          throw new VersionConflictError(
+            'File has been modified since last read',
+            { mtime: stat.mtimeMs, size: stat.size }
+          );
+        }
+      } catch (err: any) {
+        // If file doesn't exist but we have previous metadata, that's also a conflict
+        if (err.code === 'ENOENT' && previousMetadata) {
+          throw new VersionConflictError('File was deleted');
+        }
+        if (err.name === 'VersionConflictError') throw err;
+        // Other errors (like permission) should propagate
+        throw err;
+      }
+    }
+
     await fs.writeFile(full, content, 'utf-8');
   }
 

@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import RenderOLX from '@/components/common/RenderOLX';
 import { ChatPanel, DataPanel, DocsPanel, FilesPanel, SearchPanel } from './panels';
 import { useDocsData } from '@/lib/docs';
-import { NetworkStorageProvider } from '@/lib/storage';
+import { NetworkStorageProvider, VersionConflictError } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
 import type { IdMap } from '@/lib/types';
 import { useNotifications, ToastNotifications } from '@/lib/util/debug';
@@ -66,8 +66,9 @@ export default function StudioPage() {
   // Editor ref for insert operations
   const editorRef = useRef<CodeEditorHandle>(null);
 
-  // Track saved content for dirty state detection
+  // Track saved content and metadata for dirty state and conflict detection
   const savedContentRef = useRef(DEMO_CONTENT);
+  const fileMetadataRef = useRef<unknown>(null);
   const isDirty = content !== savedContentRef.current;
 
   // Toast notifications
@@ -95,10 +96,11 @@ export default function StudioPage() {
   const handleFileSelect = useCallback(async (path: string) => {
     setLoading(true);
     try {
-      const fileContent = await storage.read(path);
-      setContent(fileContent);
+      const result = await storage.read(path);
+      setContent(result.content);
       setFilePath(path);
-      savedContentRef.current = fileContent; // Mark as clean
+      savedContentRef.current = result.content; // Mark as clean
+      fileMetadataRef.current = result.metadata; // Track for conflict detection
     } catch (err) {
       console.error('Failed to load file:', err);
       notify('error', `Failed to load ${path}`, err instanceof Error ? err.message : String(err));
@@ -107,15 +109,36 @@ export default function StudioPage() {
     }
   }, [notify]);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (force = false) => {
     setSaving(true);
     try {
-      await storage.write(filePath, content);
+      await storage.write(filePath, content, {
+        previousMetadata: fileMetadataRef.current,
+        force,
+      });
       savedContentRef.current = content; // Mark as clean
+      // Re-read to get updated metadata
+      const result = await storage.read(filePath);
+      fileMetadataRef.current = result.metadata;
       notify('success', `Saved ${filePath}`);
     } catch (err) {
       console.error('Failed to save:', err);
-      notify('error', `Failed to save ${filePath}`, err instanceof Error ? err.message : String(err));
+      // Handle version conflict
+      if (err instanceof VersionConflictError || (err as any)?.name === 'VersionConflictError') {
+        const shouldOverwrite = window.confirm(
+          'This file has been modified externally since you opened it.\n\n' +
+          'Do you want to overwrite the external changes with your version?'
+        );
+        if (shouldOverwrite) {
+          setSaving(false);
+          handleSave(true); // Retry with force
+          return;
+        } else {
+          notify('info', 'Save cancelled - file was modified externally');
+        }
+      } else {
+        notify('error', `Failed to save ${filePath}`, err instanceof Error ? err.message : String(err));
+      }
     } finally {
       setSaving(false);
     }
@@ -125,10 +148,12 @@ export default function StudioPage() {
     try {
       await storage.write(path, fileContent);
       refreshFiles();
-      // Open the new file
-      setContent(fileContent);
+      // Open the new file and get its metadata
+      const result = await storage.read(path);
+      setContent(result.content);
       setFilePath(path);
-      savedContentRef.current = fileContent; // Mark as clean
+      savedContentRef.current = result.content; // Mark as clean
+      fileMetadataRef.current = result.metadata; // Track metadata
       notify('success', `Created ${path}`);
     } catch (err) {
       console.error('Failed to create file:', err);
@@ -146,6 +171,7 @@ export default function StudioPage() {
         setContent(DEMO_CONTENT);
         setFilePath('untitled.olx');
         savedContentRef.current = DEMO_CONTENT; // Mark as clean
+        fileMetadataRef.current = null; // Clear metadata
       }
       notify('success', `Deleted ${path}`);
     } catch (err) {
@@ -250,7 +276,7 @@ export default function StudioPage() {
               {previewLayout === 'horizontal' ? '⬌' : '⬍'}
             </button>
           )}
-          <button className="studio-btn primary" onClick={handleSave} disabled={saving}>
+          <button className="studio-btn primary" onClick={() => handleSave()} disabled={saving}>
             {saving && <span className="btn-spinner" />}
             {saving ? 'Saving...' : 'Save'}
           </button>

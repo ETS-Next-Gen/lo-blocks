@@ -1,5 +1,6 @@
 // src/app/api/file/route.js
 import { FileStorageProvider } from '@/lib/storage/providers/file';
+import { VersionConflictError } from '@/lib/storage/types';
 import { validateContentPath } from '@/lib/storage/contentPaths';
 
 const provider = new FileStorageProvider('./content');
@@ -14,8 +15,8 @@ export async function GET(request) {
   }
 
   try {
-    const content = await provider.read(validation.relativePath);
-    return Response.json({ ok: true, content });
+    const result = await provider.read(validation.relativePath);
+    return Response.json({ ok: true, content: result.content, metadata: result.metadata });
   } catch (err) {
     const isNotFound = err.code === 'ENOENT' || err.message?.includes('not found');
     const status = isNotFound ? 404 : 500;
@@ -26,7 +27,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const { path: relPath, content } = await request.json();
+  const { path: relPath, content, previousMetadata, force } = await request.json();
 
   const validation = validateContentPath(relPath);
   if (!validation.valid) {
@@ -38,9 +39,19 @@ export async function POST(request) {
   }
 
   try {
-    await provider.write(validation.relativePath, content);
+    await provider.write(validation.relativePath, content, { previousMetadata, force });
     return Response.json({ ok: true });
   } catch (err) {
+    // Handle version conflict specially
+    if (err instanceof VersionConflictError || err.name === 'VersionConflictError') {
+      console.warn(`[API /file POST] Conflict: ${err.message}`);
+      return Response.json({
+        ok: false,
+        conflict: true,
+        error: err.message,
+        metadata: err.currentMetadata,
+      }, { status: 409 });
+    }
     console.error(`[API /file POST] ${err.message}`);
     return Response.json({ ok: false, error: err.message }, { status: 500 });
   }

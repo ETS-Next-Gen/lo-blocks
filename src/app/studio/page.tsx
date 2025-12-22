@@ -432,6 +432,7 @@ export default function StudioPage() {
               onChange={setContent}
               path={filePath}
               height="100%"
+              theme="light"
             />
           </div>
           {showPreview && (

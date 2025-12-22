@@ -554,6 +554,7 @@
   flex-direction: column;
   overflow: hidden;
   position: relative; /* Required for loading overlay */
+  color: initial; /* Reset inherited color so CodeMirror theme takes over */
 }
 
 .studio-editor-pane > div {

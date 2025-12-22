@@ -23,7 +23,7 @@ import CodeEditor from '@/components/common/CodeEditor';
 import Spinner from '@/components/common/Spinner';
 import StatePanel from '@/components/common/StatePanel';
 import { useReduxState } from '@/lib/state';
-import { editorFields } from '../edit/editorFields';
+import { editorFields } from '@/lib/state/editorFields';
 
 // Hook for docs example editing - uses Redux state with docs-specific provenance
 function useDocsExampleState(blockName, exampleFilename, originalContent) {

@@ -13,7 +13,7 @@ import type { UriNode } from '@/lib/storage/types';
 import type { IdMap } from '@/lib/types';
 import { useNotifications, ToastNotifications } from '@/lib/util/debug';
 import { useReduxState, selectFromStore } from '@/lib/state';
-import { editorFields } from '../edit/editorFields';
+import { editorFields } from '@/lib/state/editorFields';
 import './studio.css';
 
 // Dynamic import CodeMirror to avoid SSR issues

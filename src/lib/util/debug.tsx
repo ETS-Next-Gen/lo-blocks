@@ -1,7 +1,7 @@
 // src/lib/util/debug.tsx
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { parseProvenance, formatProvenance } from '@/lib/storage/provenance';
 import { useReduxState, settings } from '@/lib/state';
@@ -63,7 +63,7 @@ export const DebugWrapper = ({ props = {}, blueprint, children }: DebugWrapperPr
       // TODO: Move away from absolute file:/// URIs
       // HACK: Extracts relative from absolute URI
       const rel = prov.path.split('/content/')[1] ?? prov.path;
-      const href = `/edit/${encodeURI(rel)}`;
+      const href = `/studio?file=${encodeURIComponent(rel)}`;
       return <Link key={key} href={href}>{label}</Link>;
     }
   };
@@ -139,6 +139,156 @@ export function DisplayError({ props={}, name = 'Error', message, technical, dat
           <pre className="overflow-auto mt-2">{safe(technical)}</pre>
         </details>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Toast Notification System
+// ============================================================================
+
+export type NotificationType = 'success' | 'error' | 'info';
+
+export interface ToastNotification {
+  id: number;
+  type: NotificationType;
+  message: string;
+  detail?: string;
+}
+
+export interface UseNotificationsReturn {
+  notifications: ToastNotification[];
+  notify: (type: NotificationType, message: string, detail?: string) => void;
+  dismiss: (id: number) => void;
+}
+
+/**
+ * Hook for managing toast notifications
+ * @param autoDismissMs - Time in ms before auto-dismiss (default: 4000, errors: 6000)
+ */
+export function useNotifications(autoDismissMs = 4000): UseNotificationsReturn {
+  const [notifications, setNotifications] = useState<ToastNotification[]>([]);
+  const idRef = useRef(0);
+
+  const notify = useCallback((type: NotificationType, message: string, detail?: string) => {
+    const id = ++idRef.current;
+    setNotifications(prev => [...prev, { id, type, message, detail }]);
+    // Auto-dismiss (longer for errors)
+    const timeout = type === 'error' ? Math.max(autoDismissMs, 6000) : autoDismissMs;
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, timeout);
+  }, [autoDismissMs]);
+
+  const dismiss = useCallback((id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  return { notifications, notify, dismiss };
+}
+
+const TOAST_ICONS: Record<NotificationType, string> = {
+  success: '✓',
+  error: '✕',
+  info: 'ℹ',
+};
+
+interface ToastNotificationsProps {
+  notifications: ToastNotification[];
+  onDismiss: (id: number) => void;
+  /** Position on screen */
+  position?: 'bottom-right' | 'top-right' | 'bottom-left' | 'top-left';
+  /** Additional className for the container */
+  className?: string;
+}
+
+/**
+ * Toast notification display component
+ * Renders a stack of notifications with auto-dismiss and manual close
+ */
+export function ToastNotifications({
+  notifications,
+  onDismiss,
+  position = 'bottom-right',
+  className = '',
+}: ToastNotificationsProps) {
+  if (notifications.length === 0) return null;
+
+  const positionStyles: Record<string, React.CSSProperties> = {
+    'bottom-right': { bottom: 16, right: 16 },
+    'top-right': { top: 16, right: 16 },
+    'bottom-left': { bottom: 16, left: 16 },
+    'top-left': { top: 16, left: 16 },
+  };
+
+  return (
+    <div
+      className={`lo-toast-container ${className}`}
+      style={{
+        position: 'fixed',
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        maxWidth: 400,
+        ...positionStyles[position],
+      }}
+    >
+      {notifications.map(n => (
+        <div
+          key={n.id}
+          className={`lo-toast lo-toast-${n.type}`}
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 10,
+            padding: '12px 16px',
+            borderRadius: 8,
+            background: n.type === 'error' ? '#fef2f2' : n.type === 'success' ? '#f0fdf4' : '#eff6ff',
+            border: `1px solid ${n.type === 'error' ? '#fecaca' : n.type === 'success' ? '#bbf7d0' : '#bfdbfe'}`,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            animation: 'toast-slide-in 0.2s ease-out',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 16,
+              color: n.type === 'error' ? '#dc2626' : n.type === 'success' ? '#16a34a' : '#2563eb',
+            }}
+          >
+            {TOAST_ICONS[n.type]}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, color: '#1f2937' }}>{n.message}</div>
+            {n.detail && (
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, wordBreak: 'break-word' }}>
+                {n.detail}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => onDismiss(n.id)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              fontSize: 18,
+              lineHeight: 1,
+              color: '#9ca3af',
+            }}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <style>{`
+        @keyframes toast-slide-in {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </div>
   );
 }

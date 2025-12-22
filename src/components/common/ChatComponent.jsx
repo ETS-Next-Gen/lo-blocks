@@ -6,6 +6,52 @@ import ReactMarkdown from 'react-markdown';
 import { ChevronRight } from 'lucide-react';
 import { acceptString } from '@/lib/util/fileTypes';
 
+// Theme definitions
+const themes = {
+  light: {
+    container: 'border-gray-200 bg-white',
+    header: 'bg-white border-gray-200',
+    headerText: 'text-gray-700',
+    headerSubtle: 'text-gray-500',
+    content: 'bg-white',
+    message: 'bg-gray-100',
+    messageText: '',
+    systemBg: 'bg-gray-100',
+    systemText: 'text-gray-500',
+    toolBg: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
+    toolText: 'text-gray-600',
+    toolIcon: 'text-gray-500',
+    inputBg: 'bg-gray-50 border-gray-200',
+    inputField: 'bg-white border-gray-300 text-gray-900',
+    inputPlaceholder: 'placeholder-gray-400',
+    button: 'bg-blue-500 hover:bg-blue-600 text-white',
+    buttonDisabled: 'bg-gray-300 text-gray-500',
+    fileBadge: 'bg-gray-100 text-gray-600',
+    errorBadge: 'bg-red-50 text-red-600',
+  },
+  dark: {
+    container: 'border-gray-700 bg-gray-900',
+    header: 'bg-gray-800 border-gray-700',
+    headerText: 'text-gray-200',
+    headerSubtle: 'text-gray-400',
+    content: 'bg-gray-900',
+    message: 'bg-gray-800',
+    messageText: 'text-gray-200',
+    systemBg: 'bg-gray-800',
+    systemText: 'text-gray-400',
+    toolBg: 'bg-gray-800 border-gray-700 hover:bg-gray-700',
+    toolText: 'text-gray-300',
+    toolIcon: 'text-gray-400',
+    inputBg: 'bg-gray-800 border-gray-700',
+    inputField: 'bg-gray-900 border-gray-600 text-gray-100',
+    inputPlaceholder: 'placeholder-gray-500',
+    button: 'bg-blue-600 hover:bg-blue-500 text-white',
+    buttonDisabled: 'bg-gray-700 text-gray-500',
+    fileBadge: 'bg-gray-800 text-gray-300',
+    errorBadge: 'bg-red-900/30 text-red-400',
+  },
+};
+
 // Generate random colors based on name (consistent for same name)
 const getAvatarColor = (name) => {
   const colors = [
@@ -43,7 +89,8 @@ const Avatar = ({ name }) => {
 };
 
 // Message component for chat lines
-const ChatMessage = ({ message, isSequential }) => {
+const ChatMessage = ({ message, isSequential, theme }) => {
+  const t = themes[theme] || themes.light;
   return (
     <div className={`flex ${isSequential ? 'mt-1' : 'mt-4'}`}>
       {!isSequential ? (
@@ -55,9 +102,9 @@ const ChatMessage = ({ message, isSequential }) => {
       )}
       <div className="flex flex-col">
         {!isSequential && (
-          <span className="text-sm font-semibold mb-1">{message.speaker}</span>
+          <span className={`text-sm font-semibold mb-1 ${t.headerText}`}>{message.speaker}</span>
         )}
-        <div className="bg-gray-100 p-2 px-3 rounded-lg max-w-md">
+        <div className={`${t.message} ${t.messageText} p-2 px-3 rounded-lg max-w-md`}>
           <ReactMarkdown>{message.text || ''}</ReactMarkdown>
         </div>
       </div>
@@ -66,10 +113,11 @@ const ChatMessage = ({ message, isSequential }) => {
 };
 
 // System message component
-const SystemMessage = ({ message }) => {
+const SystemMessage = ({ message, theme }) => {
+  const t = themes[theme] || themes.light;
   return (
     <div className="flex justify-center my-2">
-      <span className="text-xs text-gray-500 bg-gray-100 py-1 px-3 rounded-full">
+      <span className={`text-xs ${t.systemText} ${t.systemBg} py-1 px-3 rounded-full`}>
         {message.text}
       </span>
     </div>
@@ -77,10 +125,11 @@ const SystemMessage = ({ message }) => {
 };
 
 // Date separator component
-const DateSeparator = ({ message }) => {
+const DateSeparator = ({ message, theme }) => {
+  const t = themes[theme] || themes.light;
   return (
     <div className="flex justify-center my-4">
-      <span className="text-xs text-gray-500 bg-gray-100 py-1 px-3 rounded-full">
+      <span className={`text-xs ${t.systemText} ${t.systemBg} py-1 px-3 rounded-full`}>
         {message.date}
       </span>
     </div>
@@ -88,8 +137,9 @@ const DateSeparator = ({ message }) => {
 };
 
 // Tool call component - shows what tool the LLM called
-const ToolCallMessage = ({ message }) => {
+const ToolCallMessage = ({ message, theme }) => {
   const [expanded, setExpanded] = useState(false);
+  const t = themes[theme] || themes.light;
 
   // Truncate result for synopsis display
   const synopsis = message.result || '(no result)';
@@ -100,20 +150,20 @@ const ToolCallMessage = ({ message }) => {
   return (
     <div className="my-2 mx-10">
       <div
-        className="text-xs bg-gray-50 border border-gray-200 rounded p-2 cursor-pointer hover:bg-gray-100"
+        className={`text-xs ${t.toolBg} border rounded p-2 cursor-pointer`}
         onClick={() => setExpanded(!expanded)}
       >
-        <span className="text-gray-500">🔧</span>
-        <span className="font-mono ml-1 text-blue-600">{message.name}</span>
-        <span className="text-gray-600 ml-2">{truncatedSynopsis}</span>
-        <span className="text-gray-400 ml-2">{expanded ? '▼' : '▶'}</span>
+        <span className={t.toolIcon}>🔧</span>
+        <span className="font-mono ml-1 text-blue-500">{message.name}</span>
+        <span className={`${t.toolText} ml-2`}>{truncatedSynopsis}</span>
+        <span className={`${t.headerSubtle} ml-2`}>{expanded ? '▼' : '▶'}</span>
       </div>
       {expanded && (
-        <div className="mt-1 p-2 bg-gray-50 border border-gray-200 rounded text-xs font-mono overflow-x-auto">
-          <div className="text-gray-600">Args:</div>
-          <pre className="text-gray-800 whitespace-pre-wrap">{JSON.stringify(message.args, null, 2)}</pre>
-          <div className="text-gray-600 mt-2">Result:</div>
-          <pre className="text-gray-800 whitespace-pre-wrap">{message.result}</pre>
+        <div className={`mt-1 p-2 ${t.toolBg} border rounded text-xs font-mono overflow-x-auto`}>
+          <div className={t.toolText}>Args:</div>
+          <pre className={`${t.messageText} whitespace-pre-wrap`}>{JSON.stringify(message.args, null, 2)}</pre>
+          <div className={`${t.toolText} mt-2`}>Result:</div>
+          <pre className={`${t.messageText} whitespace-pre-wrap`}>{message.result}</pre>
         </div>
       )}
     </div>
@@ -125,7 +175,9 @@ export const InputFooter = ({
   disabled = false,
   placeholder = 'Type a message...',
   allowFileUpload = false,
+  theme = 'light',
 }) => {
+  const t = themes[theme];
   const [message, setMessage] = useState('');
   const [attachedFile, setAttachedFile] = useState(null); // { name, content }
   const [fileError, setFileError] = useState(null);
@@ -164,14 +216,14 @@ export const InputFooter = ({
   };
 
   return (
-    <div className="bg-gray-50 p-3 border-t border-gray-200">
+    <div className={`${t.inputBg} p-3 border-t`}>
       {/* Show attached file */}
       {attachedFile && (
-        <div className="mb-2 flex items-center text-sm text-gray-600 bg-gray-100 rounded px-2 py-1">
+        <div className={`mb-2 flex items-center text-sm ${t.fileBadge} rounded px-2 py-1`}>
           <span className="mr-2">📎</span>
           <span className="flex-1 truncate">{attachedFile.name}</span>
           <button
-            className="ml-2 text-gray-400 hover:text-red-500"
+            className={`ml-2 ${t.headerSubtle} hover:text-red-500`}
             onClick={() => setAttachedFile(null)}
           >
             ✕
@@ -180,10 +232,10 @@ export const InputFooter = ({
       )}
       {/* Show file error */}
       {fileError && (
-        <div className="mb-2 flex items-center text-sm text-red-600 bg-red-50 rounded px-2 py-1">
+        <div className={`mb-2 flex items-center text-sm ${t.errorBadge} rounded px-2 py-1`}>
           <span className="flex-1">{fileError}</span>
           <button
-            className="ml-2 text-red-400 hover:text-red-600"
+            className="ml-2 hover:text-red-600"
             onClick={() => setFileError(null)}
           >
             ✕
@@ -202,7 +254,7 @@ export const InputFooter = ({
               onChange={handleFileSelect}
             />
             <button
-              className={`mr-2 p-2 rounded-full ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'}`}
+              className={`mr-2 p-2 rounded-full ${disabled ? `${t.headerSubtle} cursor-not-allowed` : `${t.toolIcon} hover:${t.message}`}`}
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled}
               title="Attach file"
@@ -215,7 +267,7 @@ export const InputFooter = ({
         )}
         <input
           type="text"
-          className={`flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none ${disabled ? 'bg-gray-100 text-gray-500' : 'focus:ring-2 focus:ring-blue-500'}`}
+          className={`flex-1 border rounded-full py-2 px-4 focus:outline-none ${t.inputField} ${t.inputPlaceholder} ${disabled ? 'opacity-50' : 'focus:ring-2 focus:ring-blue-500'}`}
           placeholder={disabled ? 'Observation mode' : placeholder}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -223,11 +275,11 @@ export const InputFooter = ({
           disabled={disabled}
         />
         <button
-          className={`ml-2 rounded-full p-2 ${disabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500'}`}
+          className={`ml-2 rounded-full p-2 ${disabled ? t.buttonDisabled + ' cursor-not-allowed' : t.button + ' focus:outline-none focus:ring-2 focus:ring-blue-500'}`}
           onClick={handleSend}
           disabled={disabled}
         >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
           </svg>
         </button>
@@ -274,7 +326,9 @@ export function ChatComponent({
   footer,
   height = 'h-96',
   onAdvance,
+  theme = 'light',
 }) {
+  const t = themes[theme];
   const chatContainerRef = useRef(null);
 
   useEffect(() => {
@@ -324,25 +378,25 @@ export function ChatComponent({
       case 'Line':
         return (
           <div key={index} className="message-item">
-            <ChatMessage message={message} isSequential={isSequential} />
+            <ChatMessage message={message} isSequential={isSequential} theme={theme} />
           </div>
         );
       case 'SystemMessage':
         return (
           <div key={index} className="message-item">
-            <SystemMessage message={message} />
+            <SystemMessage message={message} theme={theme} />
           </div>
         );
       case 'DateSeparator':
         return (
           <div key={index} className="message-item">
-            <DateSeparator message={message} />
+            <DateSeparator message={message} theme={theme} />
           </div>
         );
       case 'ToolCall':
         return (
           <div key={index} className="message-item">
-            <ToolCallMessage message={message} />
+            <ToolCallMessage message={message} theme={theme} />
           </div>
         );
       default:
@@ -351,21 +405,21 @@ export function ChatComponent({
   };
 
   return (
-    <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-white p-3 border-b border-gray-200">
+    <div className={`flex flex-col h-full border rounded-lg overflow-hidden ${t.container}`}>
+      <div className={`p-3 border-b ${t.header}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <span className="font-semibold">Chat</span>
-            <span className="ml-2 text-gray-500 text-sm">{messages.length} messages</span>
+            <span className={`font-semibold ${t.headerText}`}>Chat</span>
+            <span className={`ml-2 ${t.headerSubtle} text-sm`}>{messages.length} messages</span>
           </div>
           {subtitle && (
-            <span className="font-semibold text-sm text-gray-700">{subtitle}</span>
+            <span className={`font-semibold text-sm ${t.headerText}`}>{subtitle}</span>
           )}
         </div>
       </div>
       <div
         ref={chatContainerRef}
-        className={`overflow-y-auto p-4 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${height === 'flex-1' ? 'flex-1' : ''}`}
+        className={`overflow-y-auto p-4 ${t.content} focus:outline-none focus:ring-2 focus:ring-blue-500 ${height === 'flex-1' ? 'flex-1' : ''}`}
         style={height !== 'flex-1' ? { height } : undefined}
         tabIndex={0}
         role="region"

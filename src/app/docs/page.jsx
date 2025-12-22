@@ -18,13 +18,12 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import RenderOLX from '@/components/common/RenderOLX';
+import PreviewPane from '@/components/common/PreviewPane';
 import CodeEditor from '@/components/common/CodeEditor';
-import PEGPreviewPane from '@/components/common/PEGPreviewPane';
 import Spinner from '@/components/common/Spinner';
 import StatePanel from '@/components/common/StatePanel';
 import { useReduxState } from '@/lib/state';
-import { editorFields } from '../edit/editorFields';
+import { editorFields } from '@/lib/state/editorFields';
 
 // Hook for docs example editing - uses Redux state with docs-specific provenance
 function useDocsExampleState(blockName, exampleFilename, originalContent) {
@@ -460,14 +459,15 @@ function GrammarExamplePreview({ example, grammarName, extension }) {
               onChange={setEditedContent}
               path={`example.${extension}`}
               maxHeight="200px"
+              theme="light"
             />
           </div>
         </div>
       </div>
 
-      {/* Preview pane - reuses PEGPreviewPane component */}
+      {/* Preview pane */}
       <div className="border-t h-64">
-        <PEGPreviewPane
+        <PreviewPane
           path={`example.${extension}`}
           content={editedContent}
         />
@@ -489,6 +489,7 @@ function GrammarSourceTab({ grammar }) {
           onChange={() => {}} // Read-only
           path={`${grammar.name}.pegjs`}
           maxHeight="600px"
+          theme="light"
         />
       </div>
     </div>
@@ -536,13 +537,14 @@ function GrammarExampleTab({ example, grammarName, extension }) {
             onChange={setEditedContent}
             path={`example.${extension}`}
             maxHeight="300px"
+            theme="light"
           />
         </div>
       </section>
 
-      {/* Preview pane - reuses PEGPreviewPane component */}
+      {/* Preview pane */}
       <section className="bg-white rounded-lg border overflow-hidden h-80">
-        <PEGPreviewPane
+        <PreviewPane
           path={`example.${extension}`}
           content={editedContent}
         />
@@ -577,7 +579,7 @@ function ExamplePreview({ example, showMoreCount, blockName }) {
           Live Preview
         </div>
         <div className="p-4 bg-white">
-          <RenderOLX inline={editedContent} onParsed={handleParsed} />
+          <PreviewPane path={example.path || 'example.olx'} content={editedContent} onParsed={handleParsed} />
         </div>
       </div>
 
@@ -607,6 +609,7 @@ function ExamplePreview({ example, showMoreCount, blockName }) {
             onChange={setEditedContent}
             language="xml"
             maxHeight="256px"
+            theme="light"
           />
         </div>
       </div>
@@ -677,7 +680,7 @@ function ExampleTab({ example, blockName }) {
           <code className="text-xs text-gray-500">{example.path || example.filename}</code>
         </div>
         <div className="p-6">
-          <RenderOLX inline={editedContent} onParsed={handleParsed} />
+          <PreviewPane path={example.path || example.filename} content={editedContent} onParsed={handleParsed} />
         </div>
         <StatePanel idMap={parsedIdMap} />
       </section>
@@ -707,6 +710,7 @@ function ExampleTab({ example, blockName }) {
             value={editedContent}
             onChange={setEditedContent}
             language="xml"
+            theme="light"
           />
         </div>
       </section>

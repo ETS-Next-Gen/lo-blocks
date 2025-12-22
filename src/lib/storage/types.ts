@@ -32,6 +32,39 @@ export interface UriNode {
   children?: UriNode[];
 }
 
+/**
+ * Result from reading a file, includes opaque metadata for conflict detection
+ */
+export interface ReadResult {
+  content: string;
+  /** Provider-specific metadata (mtime, git hash, etag, etc.) - opaque to consumers */
+  metadata?: unknown;
+}
+
+/**
+ * Options for writing a file with optional conflict detection
+ */
+export interface WriteOptions {
+  /** Metadata from previous read - if provided and doesn't match current, write fails */
+  previousMetadata?: unknown;
+  /** Force write even if metadata mismatch */
+  force?: boolean;
+}
+
+/**
+ * Error thrown when write conflicts with changed file
+ */
+export class VersionConflictError extends Error {
+  /** Current metadata of the file (for potential retry/merge) */
+  currentMetadata?: unknown;
+
+  constructor(message = 'File has been modified', currentMetadata?: unknown) {
+    super(message);
+    this.name = 'VersionConflictError';
+    this.currentMetadata = currentMetadata;
+  }
+}
+
 export interface StorageProvider {
   /**
    * Scan for XML/OLX files returning added/changed/unchanged/deleted
@@ -40,8 +73,8 @@ export interface StorageProvider {
    */
   loadXmlFilesWithStats(previous?: Record<ProvenanceURI, XmlFileInfo>): Promise<XmlScanResult>;
 
-  read(path: string): Promise<string>;
-  write(path: string, content: string): Promise<void>;
+  read(path: string): Promise<ReadResult>;
+  write(path: string, content: string, options?: WriteOptions): Promise<void>;
   update(path: string, content: string): Promise<void>;
   listFiles(selection?: FileSelection): Promise<UriNode>;
 

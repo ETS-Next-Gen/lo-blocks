@@ -8,7 +8,7 @@ import { Provider, useSelector } from 'react-redux';
 import * as lo_event from 'lo_event';
 
 import { store, extendSettings } from '@/lib/state';
-import { editorFields } from './edit/editorFields';
+import { editorFields } from '@/lib/state/editorFields';
 
 const reduxStore = store.init({
   extraFields: extendSettings(editorFields)

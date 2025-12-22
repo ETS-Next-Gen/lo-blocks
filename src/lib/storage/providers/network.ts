@@ -12,12 +12,15 @@
 // configurable endpoints, maintaining the same interface as local file storage.
 //
 import type { ProvenanceURI } from '../../types';
-import type {
-  StorageProvider,
-  XmlFileInfo,
-  XmlScanResult,
-  FileSelection,
-  UriNode,
+import {
+  type StorageProvider,
+  type XmlFileInfo,
+  type XmlScanResult,
+  type FileSelection,
+  type UriNode,
+  type ReadResult,
+  type WriteOptions,
+  VersionConflictError,
 } from '../types';
 
 export interface NetworkProviderOptions {
@@ -64,7 +67,7 @@ export class NetworkStorageProvider implements StorageProvider {
     return json.tree as UriNode;
   }
 
-  async read(path: string): Promise<string> {
+  async read(path: string): Promise<ReadResult> {
     const res = await fetch(
       `${this.readEndpoint}?path=${encodeURIComponent(path)}`,
     );
@@ -72,22 +75,52 @@ export class NetworkStorageProvider implements StorageProvider {
     if (!json.ok) {
       throw new Error(json.error ?? 'Failed to read');
     }
-    return json.content as string;
+    return {
+      content: json.content as string,
+      metadata: json.metadata,
+    };
   }
 
-  async write(path: string, content: string): Promise<void> {
+  async write(path: string, content: string, options: WriteOptions = {}): Promise<void> {
+    const { previousMetadata, force = false } = options;
     const res = await fetch(this.readEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path, content }),
+      body: JSON.stringify({ path, content, previousMetadata, force }),
     });
     const json = await res.json();
     if (!json.ok) {
+      if (json.conflict) {
+        throw new VersionConflictError(json.error, json.metadata);
+      }
       throw new Error(json.error ?? 'Failed to write');
     }
   }
 
   async update(path: string, content: string): Promise<void> {
     await this.write(path, content);
+  }
+
+  async delete(path: string): Promise<void> {
+    const res = await fetch(
+      `${this.readEndpoint}?path=${encodeURIComponent(path)}`,
+      { method: 'DELETE' }
+    );
+    const json = await res.json();
+    if (!json.ok) {
+      throw new Error(json.error ?? 'Failed to delete');
+    }
+  }
+
+  async rename(oldPath: string, newPath: string): Promise<void> {
+    const res = await fetch(this.readEndpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: oldPath, newPath }),
+    });
+    const json = await res.json();
+    if (!json.ok) {
+      throw new Error(json.error ?? 'Failed to rename');
+    }
   }
 }

@@ -1,13 +1,14 @@
 // src/components/common/CodeEditor.tsx
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useImperativeHandle, forwardRef } from 'react';
 import dynamic from 'next/dynamic';
 import { xml } from '@codemirror/lang-xml';
 import { markdown } from '@codemirror/lang-markdown';
 import { linter, lintGutter, Diagnostic } from '@codemirror/lint';
 import { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { getParserForExtension, type PEGContentExtension } from '@/generated/parserRegistry';
 import { getExtension, isPEGFile, isOLXFile, isMarkdownFile } from '@/lib/util/fileTypes';
 
@@ -50,6 +51,7 @@ const errorTheme = EditorView.baseTheme({
     maxWidth: '400px',
   },
 });
+
 
 /**
  * Creates diagnostics from a PEG parse error.
@@ -123,6 +125,8 @@ interface CodeEditorProps {
   path?: string;
   /** Explicit language override (takes precedence over path) */
   language?: CodeLanguage;
+  /** Theme - 'light' or 'dark'. Defaults to 'light'. */
+  theme?: 'light' | 'dark';
   /** Height constraint - defaults to "100%" */
   height?: string;
   /** Max height constraint */
@@ -135,6 +139,26 @@ interface CodeEditorProps {
   };
   /** Additional CodeMirror extensions */
   extensions?: Extension[];
+}
+
+/** Methods exposed via ref */
+export interface CodeEditorHandle {
+  /** Insert text at cursor position, with proper indentation for OLX */
+  insertAtCursor: (text: string) => void;
+  /** Get the underlying EditorView (if available) */
+  getView: () => EditorView | undefined;
+}
+
+/**
+ * Indents a multi-line string to match a base indentation.
+ * The first line is not indented (it goes at cursor), subsequent lines get the base indent.
+ */
+function indentText(text: string, baseIndent: string): string {
+  const lines = text.split('\n');
+  if (lines.length <= 1) return text;
+
+  // First line stays as-is, subsequent lines get the base indent
+  return lines.map((line, i) => i === 0 ? line : baseIndent + line).join('\n');
 }
 
 function getLanguageExtension(language?: CodeLanguage): Extension | undefined {
@@ -168,19 +192,62 @@ function detectLanguageFromPath(path?: string): 'xml' | 'md' | undefined {
  * For PEG content files (.chatpeg, .sortpeg, etc.), provides inline
  * error highlighting using the appropriate parser.
  */
-export default function CodeEditor({
+const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(function CodeEditor({
   value,
   onChange,
   path,
   language,
+  theme = 'dark',
   height = '100%',
   maxHeight,
   basicSetup = { lineNumbers: true, foldGutter: false },
   extensions: additionalExtensions = [],
-}: CodeEditorProps) {
+}, ref) {
+  const editorRef = useRef<ReactCodeMirrorRef>(null);
   const effectiveLanguage = language ?? detectLanguageFromPath(path);
   const ext = getExtension(path);
   const isPegContent = isPEGFile(path);
+
+  // Expose methods via ref
+  useImperativeHandle(ref, () => ({
+    insertAtCursor: (text: string) => {
+      const view = editorRef.current?.view;
+      if (!view) {
+        // Fallback: append to end if no view available
+        onChange(value + '\n\n' + text);
+        return;
+      }
+
+      const state = view.state;
+      const selection = state.selection.main;
+      const cursorPos = selection.head;
+
+      // Get the current line to determine indentation
+      const line = state.doc.lineAt(cursorPos);
+      const lineText = line.text;
+      const indentMatch = lineText.match(/^(\s*)/);
+      const baseIndent = indentMatch ? indentMatch[1] : '';
+
+      // For OLX files, indent the inserted text
+      const isOlx = isOLXFile(path);
+      const insertText = isOlx ? indentText(text, baseIndent) : text;
+
+      // Insert at cursor with proper newlines
+      const before = cursorPos > 0 && state.doc.sliceString(cursorPos - 1, cursorPos) !== '\n' ? '\n' : '';
+      const after = '\n';
+
+      view.dispatch({
+        changes: {
+          from: cursorPos,
+          to: cursorPos,
+          insert: before + insertText + after,
+        },
+        selection: { anchor: cursorPos + before.length + insertText.length + after.length },
+      });
+      view.focus();
+    },
+    getView: () => editorRef.current?.view,
+  }), [value, onChange, path]);
 
   const extensions = useMemo(() => {
     const exts: Extension[] = [];
@@ -204,12 +271,16 @@ export default function CodeEditor({
 
   return (
     <CodeMirror
+      ref={editorRef}
       value={value}
       onChange={onChange}
+      theme={theme}
       extensions={extensions}
       height={height}
       maxHeight={maxHeight}
       basicSetup={basicSetup}
     />
   );
-}
+});
+
+export default CodeEditor;

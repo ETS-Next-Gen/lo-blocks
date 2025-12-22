@@ -1,4 +1,4 @@
-# CheckboxInput
+# CheckboxInput and CheckboxGrader
 
 Multi-select (checkbox) input for questions with multiple correct answers.
 

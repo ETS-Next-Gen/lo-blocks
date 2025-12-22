@@ -34,7 +34,7 @@ function _IntakeGate(props) {
       <DisplayError
         id={id}
         name="IntakeGate"
-        message="IntakeGate requires a targets attribute listing PersonalizedText IDs to watch"
+        message="IntakeGate requires a targets attribute listing TextSlot IDs to watch"
         technical={{ example: '<IntakeGate targets="context_1,context_2">' }}
       />
     );

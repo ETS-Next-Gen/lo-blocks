@@ -1,14 +1,14 @@
-// src/components/blocks/display/PersonalizedText/_PersonalizedText.jsx
+// src/components/blocks/display/TextSlot/_TextSlot.jsx
 //
-// Simple text display that gets populated by LLMAction.
-// Like LLMFeedback but minimal - just a span, no styling.
+// A slot that receives text from other blocks (e.g., LLMAction).
+// Minimal display - just a span.
 //
 'use client';
 
 import { useFieldSelector } from '@/lib/state';
 import { LLM_STATUS } from '@/lib/llm/reduxClient.jsx';
 
-function _PersonalizedText(props) {
+function _TextSlot(props) {
   const { id, fields } = props;
 
   const text = useFieldSelector(props, fields.value, { fallback: '', id });
@@ -21,11 +21,11 @@ function _PersonalizedText(props) {
 
   // Show simple loading indicator while generating
   if (status === LLM_STATUS.RUNNING) {
-    return <span className="personalized-text-loading">...</span>;
+    return <span className="text-slot text-slot--loading">...</span>;
   }
 
   // Render the text
-  return <span className="personalized-text">{text}</span>;
+  return <span className="text-slot">{text}</span>;
 }
 
-export default _PersonalizedText;
+export default _TextSlot;

@@ -75,7 +75,7 @@ Here are linear equation problems customized for your interest!
 
       <CapaProblem id="problem_1" title="Problem 1">
         <KeyGrader id="grader_1">
-          <PersonalizedText id="context_1" />
+          <TextSlot id="context_1" />
           <p>Which equation represents the total amount (y) based on hours/units (x)?</p>
           <ChoiceInput id="input_1">
             <Key id="p1_correct">y = 50x + 80</Key>
@@ -93,7 +93,7 @@ So y = 50x + 80.
 
       <CapaProblem id="problem_2" title="Problem 2">
         <KeyGrader id="grader_2">
-          <PersonalizedText id="context_2" />
+          <TextSlot id="context_2" />
           <p>Which equation represents the total cost (y) based on number of items (x)?</p>
           <ChoiceInput id="input_2">
             <Key id="p2_correct">y = 10x + 15</Key>
@@ -111,7 +111,7 @@ So y = 10x + 15.
 
       <CapaProblem id="problem_3" title="Problem 3">
         <KeyGrader id="grader_3">
-          <PersonalizedText id="context_3" />
+          <TextSlot id="context_3" />
           <p>Which equation represents the total cost (y) based on number of uses (x)?</p>
           <ChoiceInput id="input_3">
             <Key id="p3_correct">y = 15x + 300</Key>

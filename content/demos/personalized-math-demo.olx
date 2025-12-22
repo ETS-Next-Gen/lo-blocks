@@ -6,17 +6,15 @@ category: demo
 -->
 <!-- content/demos/personalized-math-demo.olx -->
 <Vertical id="personalized_math" launchable="true" title="Personalized Math Problems">
-  <Markdown>
-## Personalized Linear Equations
-
-In this activity, you'll practice identifying linear equations from word problems.
-First, tell us what interests you, and we'll customize the problems just for you!
-  </Markdown>
-
   <Gated targets="context_1,context_2,context_3">
     <!-- Gate: Collect interest and trigger generation -->
     <Vertical id="interest_gate">
       <Markdown>
+## Personalized Linear Equations
+
+In this activity, you'll practice identifying linear equations from word problems.
+First, tell us what interests you, and we'll customize the problems just for you!
+
 ### What topic interests you?
 
 Enter something you're passionate about (e.g., basketball, video games, cooking, music, Taylor Swift).

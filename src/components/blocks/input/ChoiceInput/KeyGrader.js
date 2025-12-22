@@ -1,6 +1,8 @@
-// TODO: Rename to ChoiceGrader?
-
 // src/components/blocks/ChoiceInput/KeyGrader.js
+//
+// Grader for single-select (radio button) multiple choice questions.
+// For multi-select (checkbox) questions, use CheckboxGrader instead.
+//
 import * as parsers from '@/lib/content/parsers';
 import * as blocks from '@/lib/blocks';
 import { getInputs } from '@/lib/blocks/olxdom';
@@ -24,6 +26,7 @@ function gradeKeySelected(props, { input, inputApi }) {
 /**
  * Find the correct answer value by looking for the Key choice.
  * Works with both ChoiceInput (Key/Distractor children) and DropdownInput ((x) marker).
+ * Returns a single string value.
  */
 function getKeyDisplayAnswer(props) {
   // If explicit answer/displayAnswer provided, use that

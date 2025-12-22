@@ -18,9 +18,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import RenderOLX from '@/components/common/RenderOLX';
+import PreviewPane from '@/components/common/PreviewPane';
 import CodeEditor from '@/components/common/CodeEditor';
-import PEGPreviewPane from '@/components/common/PEGPreviewPane';
 import Spinner from '@/components/common/Spinner';
 import StatePanel from '@/components/common/StatePanel';
 import { useReduxState } from '@/lib/state';
@@ -465,9 +464,9 @@ function GrammarExamplePreview({ example, grammarName, extension }) {
         </div>
       </div>
 
-      {/* Preview pane - reuses PEGPreviewPane component */}
+      {/* Preview pane */}
       <div className="border-t h-64">
-        <PEGPreviewPane
+        <PreviewPane
           path={`example.${extension}`}
           content={editedContent}
         />
@@ -540,9 +539,9 @@ function GrammarExampleTab({ example, grammarName, extension }) {
         </div>
       </section>
 
-      {/* Preview pane - reuses PEGPreviewPane component */}
+      {/* Preview pane */}
       <section className="bg-white rounded-lg border overflow-hidden h-80">
-        <PEGPreviewPane
+        <PreviewPane
           path={`example.${extension}`}
           content={editedContent}
         />
@@ -577,7 +576,7 @@ function ExamplePreview({ example, showMoreCount, blockName }) {
           Live Preview
         </div>
         <div className="p-4 bg-white">
-          <RenderOLX inline={editedContent} onParsed={handleParsed} />
+          <PreviewPane path={example.path || 'example.olx'} content={editedContent} onParsed={handleParsed} />
         </div>
       </div>
 
@@ -677,7 +676,7 @@ function ExampleTab({ example, blockName }) {
           <code className="text-xs text-gray-500">{example.path || example.filename}</code>
         </div>
         <div className="p-6">
-          <RenderOLX inline={editedContent} onParsed={handleParsed} />
+          <PreviewPane path={example.path || example.filename} content={editedContent} onParsed={handleParsed} />
         </div>
         <StatePanel idMap={parsedIdMap} />
       </section>

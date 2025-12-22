@@ -12,7 +12,7 @@
 // would allow us to have students authoring content!
 
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 
 import { FourPaneLayout } from './FourPaneLayout';
@@ -22,10 +22,8 @@ import FileNav from '@/components/navigation/FileNav';
 import ComponentNav from '@/components/navigation/ComponentNav';
 import SearchNav from '@/components/navigation/SearchNav';
 import AppHeader from '@/components/common/AppHeader';
-import RenderOLX from '@/components/common/RenderOLX';
+import PreviewPane from '@/components/common/PreviewPane';
 import CodeEditor from '@/components/common/CodeEditor';
-import { isPEGFile } from '@/lib/util/fileTypes';
-import PEGPreviewPane from '@/components/common/PEGPreviewPane';
 import Spinner from '@/components/common/Spinner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReduxState } from '@/lib/state';
@@ -82,47 +80,6 @@ function EditControl({ content, setContent, handleSave, path }) {
 // * Bad OLX can lead to render-time problems which aren't caught by
 //   exceptions
 // * Nominally, React Error Boundaries are part of what we want, but
-//   next.js surfaces even handled errors as issues in the UX
-// * We probably want an FSM for the loading / testing / last valid
-//   state regardless.
-//
-// This component uses RenderOLX for the actual rendering, but maintains
-// editor-specific behavior like Redux state persistence.
-function PreviewPane({ path, content, idMap }) {
-  const [error, setError] = useState<ComponentError>(null);
-
-  // Clear error when content changes (user may have fixed the issue)
-  useEffect(() => {
-    setError(null);
-  }, [content]);
-
-  // Create a stable provider for resolving src="" references
-  const resolveProvider = useMemo(() => new NetworkStorageProvider(), []);
-
-  // Determine provenance from path
-  const provenance = path ? `file://${path}` : undefined;
-
-  if (!idMap) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div>
-      {error && (
-        <pre className="text-red-600 mb-2">Error: {error}</pre>
-      )}
-      <RenderOLX
-        id={path || '_root'}
-        inline={content}
-        baseIdMap={idMap}
-        resolveProvider={resolveProvider}
-        provenance={provenance}
-        onError={(err) => setError(err.message)}
-      />
-    </div>
-  );
-}
-
 function NavigationPane() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -216,7 +173,6 @@ export default function EditPage() {
   };
 
   const ready = content && idMap;
-  const isPegFile = isPEGFile(path);
 
   // Error display for the right panes
   const errorPane = error ? (
@@ -231,18 +187,10 @@ export default function EditPage() {
     </div>
   ) : null;
 
-  // Choose preview pane based on file type
+  // Preview pane - PreviewPane handles file type detection internally
   const renderPreview = () => {
     if (error) return errorPane;
     if (!content) return <Spinner>Loading preview...</Spinner>;
-
-    // PEG files get their own preview pane (don't need idMap)
-    if (isPegFile) {
-      return <PEGPreviewPane path={path} content={content} />;
-    }
-
-    // OLX files need idMap for rendering
-    if (!idMap) return <Spinner>Loading preview...</Spinner>;
     return <PreviewPane path={path} content={content} idMap={idMap} />;
   };
 

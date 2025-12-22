@@ -3,6 +3,7 @@
 
 import { ElementsInFile, BlockList } from '@/components/common/BlockList';
 import type { DocsData } from '@/lib/docs';
+import { getContentType } from '@/lib/util/fileTypes';
 
 interface DocsPanelProps {
   filePath: string;
@@ -21,17 +22,8 @@ function extractElements(content: string): string[] {
   return Array.from(tags).sort();
 }
 
-// Detect file type for context-aware docs
-function getFileDocType(path: string): 'olx' | 'peg' | 'markdown' | 'unknown' {
-  const ext = path.split('.').pop()?.toLowerCase();
-  if (ext === 'olx' || ext === 'xml') return 'olx';
-  if (ext === 'chatpeg' || ext === 'sortpeg' || ext === 'matchpeg') return 'peg';
-  if (ext === 'md' || ext === 'markdown') return 'markdown';
-  return 'unknown';
-}
-
 export function DocsPanel({ filePath, content, docsData }: DocsPanelProps) {
-  const docType = getFileDocType(filePath);
+  const docType = getContentType(filePath);
   const elements = extractElements(content);
 
   return (

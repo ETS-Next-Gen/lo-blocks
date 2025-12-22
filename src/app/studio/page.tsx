@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import RenderOLX from '@/components/common/RenderOLX';
+import PreviewPane from '@/components/common/PreviewPane';
 import { ChatPanel, DataPanel, DocsPanel, FilesPanel, SearchPanel } from './panels';
 import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider, VersionConflictError } from '@/lib/storage';
@@ -375,7 +375,7 @@ export default function StudioPage() {
               <div className="studio-preview-pane">
                 <div className="studio-preview-header">Preview</div>
                 <div className="studio-preview-content">
-                  <RenderOLX id="studio-preview" inline={content} />
+                  <PreviewPane path={filePath} content={content} idMap={idMap} />
                 </div>
               </div>
             </>

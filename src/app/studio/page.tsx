@@ -2,10 +2,11 @@
 // Prototype editor - exploring layout and interaction patterns
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import PreviewPane from '@/components/common/PreviewPane';
+import Spinner from '@/components/common/Spinner';
 import { ChatPanel, DataPanel, DocsPanel, FilesPanel, SearchPanel } from './panels';
 import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider, VersionConflictError } from '@/lib/storage';
@@ -61,7 +62,7 @@ function useEditComponentState(field, provenance, defaultState) {
   );
 }
 
-export default function StudioPage() {
+function StudioPageContent() {
   // Read initial file from URL query param
   const searchParams = useSearchParams();
   const initialFile = searchParams.get('file') || 'untitled.olx';
@@ -727,5 +728,15 @@ function CommandPalette({ onClose, onSave, onTogglePreview, onInsert }: CommandP
         </div>
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense to allow useSearchParams during static generation
+// See: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+export default function StudioPage() {
+  return (
+    <Suspense fallback={<Spinner>Loading Studio...</Spinner>}>
+      <StudioPageContent />
+    </Suspense>
   );
 }

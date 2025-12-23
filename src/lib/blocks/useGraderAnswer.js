@@ -13,6 +13,7 @@
 'use client';
 import * as state from '@/lib/state';
 import { useFieldSelector } from '@/lib/state';
+import { idMapKey } from './idResolver';
 import { getGrader, getAllNodes } from './olxdom';
 
 /**
@@ -79,9 +80,11 @@ export function useGraderAnswer(props) {
     : null;
 
   // Subscribe to field (hook must always be called, but selector handles null field)
+  // When no grader exists and component has no fields, create a dummy field for hook compliance
+  const fallbackField = props.fields?.value ?? { scope: 'component', name: 'showAnswer' };
   const showAnswer = useFieldSelector(
     props,
-    showAnswerField || props.fields?.value,  // Fallback to any valid field
+    showAnswerField || fallbackField,
     {
       id: graderId || props.id,
       fallback: false,
@@ -93,7 +96,9 @@ export function useGraderAnswer(props) {
   // Get displayAnswer from grader's blueprint when showAnswer is true
   let displayAnswer = undefined;
   if (showAnswer && graderId) {
-    const graderInstance = props.idMap[graderId];
+    // Use idMapKey for consistent ID resolution (graderId is already a base ID,
+    // but this protects against future changes)
+    const graderInstance = props.idMap[idMapKey(graderId)];
     const graderBlueprint = props.componentMap[graderInstance.tag];
 
     if (graderBlueprint.getDisplayAnswer) {

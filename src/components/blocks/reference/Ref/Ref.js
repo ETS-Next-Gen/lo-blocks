@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { core } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
 import { valueSelector, fieldByName, fieldSelector } from '@/lib/state';
+import { idMapKey } from '@/lib/blocks/idResolver';
 import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import _Ref from './_Ref';
 
@@ -57,7 +58,8 @@ const Ref = core({
   }),
   getValue: (props, state, id) => {
     // Get the Ref block from idMap to access its attributes and content
-    const refNode = props.idMap[id];
+    // Use idMapKey to handle absolute/prefixed IDs transparently
+    const refNode = props.idMap[idMapKey(id)];
     if (!refNode) {
       return { error: true, message: 'Component not found' };
     }
@@ -70,13 +72,29 @@ const Ref = core({
       return { error: true, message: 'No target specified. Use target attribute or provide ID as content.' };
     }
 
-    // Check if target exists in idMap
-    if (!props.idMap[targetId]) {
+    // Check if target exists in idMap (use idMapKey for lookup)
+    if (!props.idMap[idMapKey(targetId)]) {
       return { error: true, message: `Target "${targetId}" not found` };
     }
 
     // Check if a specific field is requested
     const field = refNode.attributes?.field;
+
+    const fallback = refNode.attributes?.fallback || '';
+
+    // HACK: Force absolute path for cross-block references.
+    //
+    // TODO: This is a workaround for the ID resolution split between:
+    //   1. idMap lookup (uses idMapKey - works correctly)
+    //   2. Redux state access (uses reduxId which applies idPrefix)
+    //
+    // When Ref is rendered in one context (e.g., inside a SortableInput) but
+    // references a component rendered elsewhere (e.g., a TextArea), the idPrefix
+    // contexts differ. Absolute paths ("/id") bypass idPrefix in reduxId.
+    //
+    // Proper fix: Unify ID resolution so cross-block refs work without this hack.
+    // See: idResolver.js, redux.ts (reduxId, fieldSelector)
+    const absoluteTargetId = targetId.startsWith('/') ? targetId : `/${targetId}`;
 
     let rawValue;
     if (field) {
@@ -85,14 +103,14 @@ const Ref = core({
       if (!fieldInfo) {
         return { error: true, message: `Unknown field "${field}"` };
       }
-      rawValue = fieldSelector(state, { ...props, id: targetId }, fieldInfo, { fallback: '' });
+      rawValue = fieldSelector(state, { ...props, id: absoluteTargetId }, fieldInfo, { fallback });
     } else {
       // Use valueSelector to get the target's value (calls getValue if available)
-      rawValue = valueSelector(props, state, targetId, { fallback: '' });
+      rawValue = valueSelector(props, state, absoluteTargetId, { fallback });
     }
 
     // Always return a string for valid values
-    return formatRefValue(rawValue, '');
+    return formatRefValue(rawValue, fallback);
   }
 });
 

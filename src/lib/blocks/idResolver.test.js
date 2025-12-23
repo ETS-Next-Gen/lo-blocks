@@ -53,4 +53,28 @@ describe("ID helpers", () => {
     expect(idResolver.reduxId({ id: '/foo' })).toBe('foo');
     expect(idResolver.reduxId({ id: './foo' })).toBe('foo');
   });
+
+  it("idMapKey extracts base ID (last segment) for idMap lookup", () => {
+    // Plain IDs pass through
+    expect(idResolver.idMapKey('foo')).toBe('foo');
+    expect(idResolver.idMapKey('child_input')).toBe('child_input');
+
+    // Absolute prefix stripped, then last segment extracted
+    expect(idResolver.idMapKey('/foo')).toBe('foo');
+    expect(idResolver.idMapKey('/list.0.child')).toBe('child');
+
+    // Explicit relative prefix stripped
+    expect(idResolver.idMapKey('./foo')).toBe('foo');
+    expect(idResolver.idMapKey('./list.0.child')).toBe('child');
+
+    // Non-strings pass through unchanged
+    expect(idResolver.idMapKey(null)).toBe(null);
+    expect(idResolver.idMapKey(undefined)).toBe(undefined);
+
+    // Namespace prefixes stripped - always takes last segment
+    expect(idResolver.idMapKey('list.0.child')).toBe('child');
+    expect(idResolver.idMapKey('mastery.attempt_0.q1')).toBe('q1');
+    expect(idResolver.idMapKey('a.b.c.d')).toBe('d');
+    expect(idResolver.idMapKey('sortable.sortitem.0.ref_id')).toBe('ref_id');
+  });
 });

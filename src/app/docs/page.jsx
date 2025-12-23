@@ -18,6 +18,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { markdownComponents } from '@/components/blocks/display/Markdown/_Markdown';
 import PreviewPane from '@/components/common/PreviewPane';
 import CodeEditor from '@/components/common/CodeEditor';
 import Spinner from '@/components/common/Spinner';
@@ -708,7 +709,7 @@ function ReadmeTab({ content, path }) {
         <code className="text-xs text-gray-500">{path}</code>
       </div>
       <div className="p-6 prose max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {content}
         </ReactMarkdown>
       </div>
@@ -926,11 +927,12 @@ export default function DocsPage() {
             return;
           }
         }
-        // Default: select first block and expand its category
-        const firstBlock = blocksData.documentation?.blocks[0];
-        if (firstBlock) {
-          setSelectedBlock(firstBlock.name);
-          const category = getCategory(firstBlock);
+        // Default: select MarkupProblem (or first block as fallback)
+        const blocks = blocksData.documentation?.blocks || [];
+        const defaultBlock = blocks.find(b => b.name === 'MarkupProblem') || blocks[0];
+        if (defaultBlock) {
+          setSelectedBlock(defaultBlock.name);
+          const category = getCategory(defaultBlock);
           setCollapsedCategories(prev => ({ ...prev, [category]: false }));
         }
       })

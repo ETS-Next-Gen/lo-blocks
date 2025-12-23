@@ -318,7 +318,9 @@ export function componentFieldByName(props, targetId, fieldName) {
   // Possible TODO: Move to OLXDom or similar. I'm not sure this is the best place for this.
   // Optimization: In production, we could go directly into the global field name maps. But this is better for dev + editing. The global map risks referencing a field which exists in the system, but not in the target component.
 
-  const targetNode = props.idMap?.[targetId];
+  // Use idMapKey to normalize the ID for idMap lookup
+  const normalizedId = idResolver.idMapKey(targetId);
+  const targetNode = props.idMap?.[normalizedId];
   if (!targetNode) {
     throw new Error(`componentFieldByName: Component "${targetId}" not found in idMap`);
   }
@@ -353,7 +355,9 @@ export function valueSelector(props, state, id, { fallback } = {} as { fallback?
     return fallback;
   }
 
-  const targetNode = props?.idMap?.[id];
+  // Use idMapKey to strip prefixes - idMap uses plain IDs (last dot-separated segment)
+  const mapKey = idResolver.idMapKey(id);
+  const targetNode = props?.idMap?.[mapKey];
   const blueprint = targetNode ? props?.componentMap?.[targetNode.tag] : null;
 
   if (!targetNode || !blueprint) {
@@ -362,7 +366,8 @@ export function valueSelector(props, state, id, { fallback } = {} as { fallback?
     if (!blueprint) missing.push('blueprint');
 
     throw new Error(
-      `valueSelector: Missing ${missing.join(' and ')} for component id "${id}"\n` +
+      `valueSelector: Missing ${missing.join(' and ')} for component id "${id}"` +
+      (id !== mapKey ? ` (idMap key: "${mapKey}")` : '') + `\n` +
       `  targetNode: ${!!targetNode}\n` +
       `  blueprint: ${!!blueprint}`
     );

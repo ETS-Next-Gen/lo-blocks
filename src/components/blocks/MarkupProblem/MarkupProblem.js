@@ -439,6 +439,7 @@ const MarkupProblem = dev({
     skipStoreEntry: false
   }),
   name: 'MarkupProblem',
+  category: 'CAPA Problems',
   description: 'Simple markup language for authoring problems - expands to CapaProblem with graders and inputs',
   component: _Noop,
   fields,

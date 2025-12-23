@@ -156,9 +156,11 @@ describe('Demo OLX files render without errors', () => {
         cleanup();
 
       } catch (err) {
+        // Include full stack trace for debugging
+        const errorWithStack = err.stack || err.message || String(err);
         errors.push({
           file: relativePath,
-          error: err.message || String(err)
+          error: errorWithStack
         });
       }
     }

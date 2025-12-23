@@ -3,9 +3,11 @@
 // Grader for single-select (radio button) multiple choice questions.
 // For multi-select (checkbox) questions, use CheckboxGrader instead.
 //
+import { z } from 'zod';
 import * as parsers from '@/lib/content/parsers';
 import * as blocks from '@/lib/blocks';
 import { getInputs } from '@/lib/blocks/olxdom';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Noop from '@/components/blocks/layout/_Noop';
 import * as state from '@/lib/state';
 import { CORRECTNESS } from '@/lib/blocks/correctness.js';
@@ -62,6 +64,11 @@ const KeyGrader = blocks.test({
   component: _Noop,
   fields,
   getDisplayAnswer: getKeyDisplayAnswer,
+  attributes: baseAttributes.extend({
+    target: z.string().optional().describe('ID of the ChoiceInput to grade; infers from children if omitted'),
+    answer: z.string().optional().describe('Correct answer value (alternative to using Key/Distractor)'),
+    displayAnswer: z.string().optional().describe('Answer text to display when showing answers'),
+  }),
 });
 
 export default KeyGrader;

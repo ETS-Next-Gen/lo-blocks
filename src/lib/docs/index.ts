@@ -14,3 +14,6 @@ export type { BlockLike } from './categoryUtils';
 
 export { useDocsData } from './useDocsData';
 export type { BlockDoc, GrammarDoc, DocsData } from './useDocsData';
+
+export { extractAttributes } from './schemaUtils';
+export type { AttributeDoc } from './schemaUtils';

@@ -1,8 +1,8 @@
 // src/components/blocks/TextBlock.jsx
 
 import * as parsers from '@/lib/content/parsers';
-// DebugWrapper will render debug details globally
 import { test } from '@/lib/blocks';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import _TextBlock from './_TextBlock';
 
 const TextBlock = test({
@@ -10,7 +10,8 @@ const TextBlock = test({
   name: "TextBlock",
   description: 'Simple text container for testing and development',
   component: _TextBlock,
-  requiresUniqueId: false
+  requiresUniqueId: false,
+  attributes: srcAttributes.strict(),
 });
 
 export default TextBlock;

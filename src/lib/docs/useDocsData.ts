@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { getCategory, sortCategories } from './categoryUtils';
+import type { AttributeDoc } from './schemaUtils';
 
 export interface BlockDoc {
   name: string;
@@ -19,6 +20,7 @@ export interface BlockDoc {
   readmeGitStatus?: string;
   internal?: boolean;
   fields?: string[];
+  attributes?: AttributeDoc[] | null;
   namespace?: string;
   exportName?: string;
 }

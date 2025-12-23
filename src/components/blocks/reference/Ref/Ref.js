@@ -1,7 +1,9 @@
 // src/components/blocks/Ref.jsx
+import { z } from 'zod';
 import { core } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
 import { valueSelector, fieldByName, fieldSelector } from '@/lib/state';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import _Ref from './_Ref';
 
 /**
@@ -46,6 +48,13 @@ const Ref = core({
   name: 'Ref',
   component: _Ref,
   description: 'Reference another component\'s value by ID. Supports both target attribute and text content.',
+  attributes: srcAttributes.extend({
+    target: z.string().optional().describe('ID of component to reference'),
+    field: z.string().optional().describe('Specific field to access from target'),
+    visible: z.enum(['true', 'false']).optional().describe('Set to "false" to hide the reference display'),
+    fallback: z.string().optional().describe('Fallback value when target is empty'),
+    format: z.enum(['code']).optional().describe('Display format for the value'),
+  }),
   getValue: (props, state, id) => {
     // Get the Ref block from idMap to access its attributes and content
     const refNode = props.idMap[id];

@@ -1,8 +1,10 @@
 // src/components/blocks/LLMAction.js
+import { z } from 'zod';
 import * as parsers from '@/lib/content/parsers';
 import * as blocks from '@/lib/blocks';
 import * as state from '@/lib/state';
 import * as reduxClient from '@/lib/llm/reduxClient';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Hidden from '@/components/blocks/layout/_Hidden';
 import { fields as feedbackFields } from './LLMFeedback';
 
@@ -87,6 +89,9 @@ const LLMAction = blocks.test({
   description: 'Executes LLM prompts with embedded Element references and updates target components',
   component: _Hidden,
   fields,
+  attributes: baseAttributes.extend({
+    target: z.string({ required_error: 'target is required' }).describe('ID of the TextSlot or LLMFeedback to write output to'),
+  }),
 });
 
 export default LLMAction;

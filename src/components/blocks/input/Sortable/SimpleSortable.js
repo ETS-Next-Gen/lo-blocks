@@ -2,6 +2,7 @@
 import { dev } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as sortParser from './_sortParser.js';
 import _Noop from '@/components/blocks/layout/_Noop';
 
@@ -90,7 +91,8 @@ const SimpleSortable = dev({
   name: 'SimpleSortable',
   description: 'Simplified sortable problem with PEG syntax - expands to CapaProblem+SortableGrader+SortableInput',
   component: _Noop, // This component doesn't render - it generates others
-  fields
+  fields,
+  attributes: srcAttributes.passthrough(), // Allow passthrough for CapaProblem attributes
 });
 
 export default SimpleSortable;

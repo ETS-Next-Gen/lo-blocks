@@ -443,6 +443,7 @@ function StudioPageContent() {
                     filePath={filePath}
                     content={content}
                     docsData={docsData}
+                    onInsert={(olx) => editorRef.current?.insertAtCursor(olx)}
                   />
                 )}
               </div>

@@ -14,6 +14,7 @@
 import { core } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
 import * as state from '@/lib/state';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _DemandHints from './_DemandHints';
 
 export const fields = state.fields(['hintsRevealed']);
@@ -25,6 +26,7 @@ const DemandHints = core({
   category: 'display',
   component: _DemandHints,
   fields,
+  attributes: baseAttributes.strict(),
   locals: {
     // Get total number of hints
     getHintCount: (props) => {

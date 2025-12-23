@@ -8,7 +8,9 @@
 // Or inferred (finds DemandHints in parent/sibling):
 //   <HintButton />
 //
+import { z } from 'zod';
 import { core } from '@/lib/blocks';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _HintButton from './_HintButton';
 
 const HintButton = core({
@@ -16,7 +18,9 @@ const HintButton = core({
   description: 'Reveals the next hint in a DemandHints component',
   category: 'action',
   component: _HintButton,
-  // target attribute handled by component - no schema needed
+  attributes: baseAttributes.extend({
+    target: z.string().optional().describe('ID of DemandHints component; infers from parent/siblings if omitted'),
+  }),
 });
 
 export default HintButton;

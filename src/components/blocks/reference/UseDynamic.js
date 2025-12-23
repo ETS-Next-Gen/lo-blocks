@@ -19,6 +19,7 @@ const UseDynamic = dev({
   fields: fields,
   attributes: baseAttributes.extend({
     target: z.string().optional().describe('Component ID to render dynamically'),
+    targetRef: z.string().optional().describe('ID of component whose value determines the target'),
   }),
 });
 

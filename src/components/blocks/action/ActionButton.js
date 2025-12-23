@@ -18,6 +18,10 @@ const ActionButton = blocks.dev({
   fields,
   attributes: baseAttributes.extend({
     label: z.string().describe('Button text displayed to the user'),
+    target: z.string().optional().describe('ID of the action block to trigger (inferred from context if omitted)'),
+    // TODO: action attribute exists in OLX but is not currently consumed by executeNodeActions.
+    // It may be intended for targets with multiple named actions (e.g., action="advance" vs action="reset").
+    action: z.string().optional().describe('Named action to invoke (currently unused; reserved for multi-action targets)'),
     dependsOn: z.string().optional().describe('Prerequisite conditions (comma-separated element IDs with optional operators)'),
   }),
 });

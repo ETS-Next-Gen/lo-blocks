@@ -31,8 +31,9 @@ const Navigator = dev({
     return { selectedItem, searchQuery, viewMode };
   },
   attributes: srcAttributes.extend({
-    previewBlock: z.string().optional().describe('ID of block to use as preview template'),
-    detailBlock: z.string().optional().describe('ID of block to use as detail template'),
+    preview: z.string().optional().describe('ID of block to use as preview template'),
+    detail: z.string().optional().describe('ID of block to use as detail template'),
+    searchable: z.enum(['true', 'false']).optional().describe('Enable search/filter functionality'),
   }),
 });
 

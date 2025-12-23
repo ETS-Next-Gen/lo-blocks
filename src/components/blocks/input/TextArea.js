@@ -17,6 +17,8 @@ const TextArea = core({
   getValue: (props, state, id) => fieldSelector(state, props, fieldByName('value'), { fallback: '', id }),
   attributes: baseAttributes.extend({
     placeholder: z.string().optional().describe('Placeholder text shown when empty'),
+    rows: z.string().optional().describe('Number of visible text rows'),
+    readonly: z.enum(['true', 'false']).optional().describe('Make textarea read-only'),
   }),
 });
 

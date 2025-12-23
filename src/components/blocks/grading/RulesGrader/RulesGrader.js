@@ -85,7 +85,7 @@ const RulesGrader = core({
   category: 'grading',
   component: _Noop,
   attributes: baseAttributes.extend({
-    target: z.string().optional(),
+    target: z.string().optional().describe('ID of the input block to grade (inferred from children if omitted)'),
   }),
   // Display answer: find first Match child with score=1
   getDisplayAnswer: (props) => {

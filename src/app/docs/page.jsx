@@ -926,11 +926,12 @@ export default function DocsPage() {
             return;
           }
         }
-        // Default: select first block and expand its category
-        const firstBlock = blocksData.documentation?.blocks[0];
-        if (firstBlock) {
-          setSelectedBlock(firstBlock.name);
-          const category = getCategory(firstBlock);
+        // Default: select MarkupProblem (or first block as fallback)
+        const blocks = blocksData.documentation?.blocks || [];
+        const defaultBlock = blocks.find(b => b.name === 'MarkupProblem') || blocks[0];
+        if (defaultBlock) {
+          setSelectedBlock(defaultBlock.name);
+          const category = getCategory(defaultBlock);
           setCollapsedCategories(prev => ({ ...prev, [category]: false }));
         }
       })

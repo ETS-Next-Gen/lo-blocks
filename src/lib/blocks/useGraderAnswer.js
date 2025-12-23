@@ -79,9 +79,11 @@ export function useGraderAnswer(props) {
     : null;
 
   // Subscribe to field (hook must always be called, but selector handles null field)
+  // When no grader exists and component has no fields, create a dummy field for hook compliance
+  const fallbackField = props.fields?.value ?? { scope: 'component', name: 'showAnswer' };
   const showAnswer = useFieldSelector(
     props,
-    showAnswerField || props.fields?.value,  // Fallback to any valid field
+    showAnswerField || fallbackField,
     {
       id: graderId || props.id,
       fallback: false,

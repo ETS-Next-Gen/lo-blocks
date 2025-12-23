@@ -11,15 +11,569 @@ Working with supervisor Lianne Park and your intern teammates, you'll investigat
 
   <Image id="interdisciplinary_gsu_prof_image" src="/sba/images/GSU_prof.png" alt="Professor at Georgia State University" />
 
-  <!-- TEAM AND LIBRARY -->
-  <Use ref="interdisciplinary_team_members" />
-  <Use ref="interdisciplinary_library" />
+  <!-- TEAM AND LIBRARY - resolved from interdisciplinary_sba.olx -->
 
-  <!-- TASK SETS -->
-  <Use ref="interdisciplinary_taskset1" />
-  <Use ref="interdisciplinary_taskset2" />
-  <Use ref="interdisciplinary_taskset3" />
-  <Use ref="interdisciplinary_taskset4" />
-  <Use ref="interdisciplinary_taskset5" />
+  <!-- ============================================================
+       TASKSET 1: BRAINSTORM CAUSES
+       ============================================================ -->
+  <Vertical id="interdisciplinary_taskset1">
+
+    <!-- Input for student's causes -->
+    <Vertical id="cause_inputs">
+      <Markdown>**Think of two causes for high school dropout:**</Markdown>
+      <Markdown>**Your individual cause (internal):** Type a cause that focuses on an individual's choice or situation:</Markdown>
+      <TextArea id="cause_internal" placeholder="e.g., Students who struggle with learning disabilities..." />
+      <Markdown>**Your structural cause:** Type a cause that focuses on external factors beyond the individual:</Markdown>
+      <TextArea id="cause_structural" placeholder="e.g., Schools in underfunded districts lack resources..." />
+    </Vertical>
+
+    <!-- Combined list of causes from team + student -->
+    <Vertical id="causes_list">
+      <Markdown>
+**Combined Causes from Team Discussion:**
+
+**Peggy's causes:**
+- Students who have illnesses that make it hard for them to keep up with schoolwork
+- Schools in rural communities can't accommodate students with physical disabilities
+
+**Ty's causes:**
+- Students who get involved with drugs or alcohol
+- Family financial situations force students to work instead of studying
+
+**Lacy's causes:**
+- Students who don't see school as relevant to their future
+- Schools lack counselors to help students navigate challenges
+
+**Lianne's example:**
+- Schools can't accommodate students with certain physical or mental disabilities (structural cause)
+
+**Your causes:**
+      </Markdown>
+      <Ref target="cause_internal" />
+      <Ref target="cause_structural" />
+    </Vertical>
+  </Vertical>
+
+  <!-- ============================================================
+       TASKSET 2: FOCUS GROUP DATA
+       ============================================================ -->
+  <Vertical id="interdisciplinary_taskset2">
+
+    <!-- Focus group transcript part 1 -->
+    <Vertical id="focus_group_transcript_pt1">
+      <Markdown>**Focus Group Transcript (Part 1)**</Markdown>
+      <TextHighlight id="focus_group_pt1" mode="selfcheck">
+Highlight reasons participants gave for dropping out:
+---
+**Moderator:** Thank you all for being here. We want to understand why young people leave high school before graduating. Let's start with what you've seen in your community.
+
+**Parent 1:** I've seen kids who just [couldn't keep up academically]. They fell behind and gave up. Some had [learning problems] that were never addressed.
+
+**Teacher:** In my experience, many students [need to work to help their families]. They take jobs and can't balance both. The [economic pressure] is real.
+
+**Community Member:** There's also the [gang activity in some neighborhoods]. Kids get pulled in, and school becomes secondary to survival.
+
+**Parent 2:** [Depression and anxiety] are huge issues. My neighbor's son stopped going because he [couldn't face the social environment]. Nobody helped him.
+      </TextHighlight>
+    </Vertical>
+
+    <!-- Focus group transcript part 2 -->
+    <Vertical id="focus_group_transcript_pt2">
+      <Markdown>**Focus Group Transcript (Part 2)**</Markdown>
+      <TextHighlight id="focus_group_pt2" mode="selfcheck">
+Continue highlighting reasons for dropping out:
+---
+**Counselor:** I see students who feel [disconnected from the curriculum]. They don't see how algebra helps them get a job. [Relevance] is a major factor.
+
+**Former Student:** I dropped out because I had a [baby and no childcare]. The school didn't have any support for teen parents. I wanted to graduate but saw no path forward.
+
+**Teacher 2:** Some students have [unstable home lives]. They move frequently, change schools, and never build connections. [Lack of support networks] makes it hard.
+
+**Community Leader:** We need to talk about [school funding]. Underfunded schools can't provide the resources - tutoring, counseling, special ed services - that keep struggling students in school.
+
+**Parent 1:** And some families prioritize [cultural or religious responsibilities] over American-style education. That's their choice, but it affects graduation rates.
+      </TextHighlight>
+    </Vertical>
+
+    <!-- Display of focus group highlights -->
+    <Vertical id="focus_group_highlights_shown">
+      <Markdown>**Your Focus Group Highlights:**</Markdown>
+      <Markdown>The text you highlighted identifies key causes mentioned by community members. These will be combined with the team's brainstormed causes.</Markdown>
+    </Vertical>
+
+    <!-- Checklist of reasons to research -->
+    <Vertical id="reasons_checklist">
+      <Markdown>**Select the causes you think are most important to research:**</Markdown>
+      <CheckboxInput id="reasons">
+        <Key>Some school systems can't accommodate students with physical or other disabilities</Key>
+        <Key>Students need to earn money right away to help their family</Key>
+        <Key>Schools use curricula that students don't see as relevant</Key>
+        <Key>Student's environment with gang activity, neighborhood instability</Key>
+        <Key>Conditions like depression, anxiety, or ADHD interfere with engagement</Key>
+        <Key>Students lack family, friends, or teacher support</Key>
+        <Key>Negative peer influences encourage dropping out</Key>
+        <Key>Cultural responsibilities more important than high school</Key>
+        <Key>Legal trouble makes it difficult to continue school</Key>
+        <Key>Lack of school funding for support services</Key>
+        <Key>Teen pregnancy with no school support</Key>
+        <Key>Substance abuse issues</Key>
+      </CheckboxInput>
+    </Vertical>
+
+    <!-- Display selected reasons -->
+    <Vertical id="reasons_shown">
+      <Markdown>**You selected these causes to focus on:**</Markdown>
+      <Ref target="reasons" />
+    </Vertical>
+
+    <!-- Explanation input -->
+    <Vertical id="reason_explanation_input">
+      <Markdown>**Explain why you selected these causes:**</Markdown>
+      <TextArea id="reason_explanation" placeholder="I selected these causes because..." />
+    </Vertical>
+  </Vertical>
+
+  <!-- ============================================================
+       TASKSET 3: INTERDISCIPLINARY ANALYSIS
+       ============================================================ -->
+  <Vertical id="interdisciplinary_taskset3">
+
+    <!-- Repko's Broad Model -->
+    <Vertical id="broad_model_display">
+      <Markdown>
+## Repko's Broad Model of Interdisciplinary Research
+
+According to Repko and colleagues (2019), a problem qualifies for interdisciplinary research when:
+
+1. **Complexity** - The problem is too complex to be addressed by a single discipline
+2. **Multiple Disciplines** - Different disciplines offer distinct insights into the problem
+3. **Important** - The problem is significant and worth investigating
+4. **Unresolved** - The problem has not been adequately solved
+5. **Avoid Bias** - The researcher must avoid privileging any single disciplinary perspective
+
+The causes of high school dropout involve individual psychology, family sociology, economic factors, educational policy, and more - suggesting this is a good candidate for interdisciplinary study.
+      </Markdown>
+    </Vertical>
+
+    <!-- Causes by disciplines mapping -->
+    <Vertical id="causes_by_disciplines">
+      <Markdown>
+**Map Each Cause to Relevant Disciplines**
+
+For each cause, select all disciplines that might study it:
+
+| Cause | Psychology | Sociology | Economics | Political Science | Health Sciences |
+|-------|------------|-----------|-----------|-------------------|-----------------|
+| Students need money to help family | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Depression/anxiety/ADHD interferes | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Gang activity / neighborhood instability | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Lack of school funding | ☐ | ☐ | ☐ | ☐ | ☐ |
+      </Markdown>
+      <TextArea id="reasons_classification" placeholder="Enter your discipline mappings here. For example: 'Money - Economics, Sociology; ADHD - Psychology, Health Sciences; ...'" />
+    </Vertical>
+
+    <!-- Display discipline mapping results -->
+    <Vertical id="causes_by_disciplines_answers">
+      <Markdown>
+**Discipline Mapping Summary:**
+
+Based on the team's analysis, here's how the causes map to disciplines:
+
+| Cause | Relevant Disciplines |
+|-------|---------------------|
+| Students need money to help family | Economics, Sociology |
+| Depression/anxiety/ADHD interferes | Psychology, Health Sciences |
+| Gang activity / neighborhood instability | Sociology, Political Science |
+| Lack of school funding | Economics, Political Science |
+
+This confirms that the high school dropout problem spans multiple disciplines, making it appropriate for interdisciplinary research.
+      </Markdown>
+    </Vertical>
+  </Vertical>
+
+  <!-- ============================================================
+       TASKSET 4: LITERATURE REVIEW
+       ============================================================ -->
+  <Vertical id="interdisciplinary_taskset4">
+
+    <!-- ADHD Study text -->
+    <Vertical id="adhd_study_text">
+      <Markdown>
+## Research Study: ADHD and High School Dropout
+
+**Fried, R., et al. (2016). ADHD and high school dropout: A comparison study.**
+
+This longitudinal study examined 250 adolescents diagnosed with ADHD and 100 control participants over 10 years. The researchers found that students with ADHD were **2.7 times more likely** to drop out than their peers.
+
+Key findings:
+- **Learning disorders** co-occurring with ADHD increased dropout risk
+- Lower **IQ scores** and **academic underachievement** were mediating factors
+- Early **intervention** and **educational support** reduced dropout likelihood
+- **Psychological risk factors** including low self-efficacy played a role
+
+The authors conclude that early identification of ADHD symptoms and appropriate educational accommodations are critical for keeping at-risk students in school.
+      </Markdown>
+    </Vertical>
+
+    <!-- ADHD study with highlights shown -->
+    <Vertical id="adhd_study_highlighted">
+      <Markdown>
+## Research Study: ADHD and High School Dropout (Highlighted)
+
+The discipline clues Peggy identified:
+
+- **"Learning disorders"** - Psychology term
+- **"IQ scores"** - Psychological assessment measure
+- **"Psychological risk factors"** - Psychology concept
+- **"self-efficacy"** - Psychology construct (Bandura)
+- **"intervention"** - Educational psychology focus
+
+These terms indicate this study comes from **Psychology**, specifically educational and clinical psychology.
+      </Markdown>
+    </Vertical>
+
+    <!-- Employment study text with highlighting -->
+    <Vertical id="employment_study_text">
+      <Markdown>**Research Study: Employment and High School Dropout**</Markdown>
+      <TextHighlight id="source_2_highlights" mode="selfcheck">
+Highlight clues that indicate which disciplines are represented:
+---
+**Staff, J., et al. (2019). Adolescent work intensity and high school dropout.**
+
+This study examined [employment patterns] among 12,000 high school students. Researchers analyzed how [intensive work schedules] (over 20 hours/week) affect educational outcomes.
+
+Key findings:
+- Students working intensively were more likely to drop out, but [economic necessity] often drove the decision
+- [Family income levels] and [parental education] were strong predictors
+- [Social capital] and peer networks influenced whether work led to dropout
+- [Labor market conditions] in the local economy affected student choices
+
+The study draws on [sociological theories] of status attainment and [economic models] of human capital investment to explain why some students choose work over school.
+      </TextHighlight>
+    </Vertical>
+
+    <!-- Employment study explanation input -->
+    <Vertical id="source_2_explanation_input">
+      <Markdown>**Explain how the clues you highlighted indicate the disciplines you selected:**</Markdown>
+      <TextArea id="source_2_classification_explanation" placeholder="The terms I highlighted indicate these disciplines because..." />
+    </Vertical>
+
+    <!-- Rural/Urban study text -->
+    <Vertical id="rural_urban_study_text">
+      <Markdown>**Research Study: Rural vs. Urban Dropout Rates**</Markdown>
+      <TextHighlight id="source_3_highlights" mode="selfcheck">
+Highlight clues that indicate which disciplines are represented:
+---
+**Jordan, W., et al. (2012). Geographic differences in high school dropout rates.**
+
+This study compared dropout rates across [rural and urban communities] in 15 states. The researchers examined how [geographic context] shapes educational outcomes.
+
+Key findings:
+- Rural schools had fewer resources due to [lower tax bases] and [state funding formulas]
+- [School consolidation policies] in rural areas increased transportation barriers
+- Urban schools faced challenges with [concentrated poverty] and [neighborhood effects]
+- [Policy interventions] varied significantly by state, affecting local outcomes
+
+The authors argue for [policy reforms] that account for geographic differences and address [structural inequalities] in school funding across different types of communities.
+      </TextHighlight>
+    </Vertical>
+
+    <!-- Rural/Urban study explanation input -->
+    <Vertical id="source_3_explanation_input">
+      <Markdown>**Explain how the clues you highlighted indicate the disciplines you selected:**</Markdown>
+      <TextArea id="source_3_classification_explanation" placeholder="The terms I highlighted indicate these disciplines because..." />
+    </Vertical>
+
+    <!-- School funding study text -->
+    <Vertical id="funding_study_text">
+      <Markdown>**Research Study: School Funding and Dropout Rates**</Markdown>
+      <TextHighlight id="source_4_highlights" mode="selfcheck">
+Highlight clues that indicate which disciplines are represented:
+---
+**Baker, B., et al. (2018). School funding and educational outcomes.**
+
+This comprehensive analysis examined [per-pupil expenditures] across 500 school districts and their relationship to dropout rates.
+
+Key findings:
+- Districts with higher [spending on support services] had lower dropout rates
+- [State education policy] created disparities between wealthy and poor districts
+- [Cost-effectiveness analysis] showed that [early intervention programs] yielded the best returns
+- [Budget allocation decisions] by school boards directly affected at-risk student services
+
+The study uses [economic analysis] of [resource allocation] and examines how [political decisions] at state and local levels shape educational funding priorities. The authors recommend [policy changes] to create more [equitable funding] formulas.
+      </TextHighlight>
+    </Vertical>
+
+    <!-- Funding study explanation input -->
+    <Vertical id="source_4_explanation_input">
+      <Markdown>**Explain how the clues you highlighted indicate the disciplines you selected:**</Markdown>
+      <TextArea id="source_4_classification_explanation" placeholder="The terms I highlighted indicate these disciplines because..." />
+    </Vertical>
+  </Vertical>
+
+  <!-- ============================================================
+       TASKSET 5: PROBLEM STATEMENT
+       ============================================================ -->
+  <Vertical id="interdisciplinary_taskset5">
+
+    <!-- NCES trends text for importance/unresolved highlighting -->
+    <Vertical id="nces_trends_text">
+      <Markdown>**National Center for Education Statistics: Dropout Trends**</Markdown>
+
+      <Markdown>**Part 1: Highlight text that shows why this problem is IMPORTANT:**</Markdown>
+      <TextHighlight id="source_5_importance_highlights" mode="selfcheck">
+Highlight evidence about the significance of the dropout problem:
+---
+**NCES (2023). Status and Trends in Education: High School Dropout Rates**
+
+The national dropout rate has declined from 12% in 1990 to about 5% in 2022. However, this progress masks significant disparities.
+
+[Economic consequences] of dropping out are severe: dropouts earn [47% less] than high school graduates over their lifetime. They are [3.5 times more likely] to be incarcerated and [more likely to rely on public assistance].
+
+For communities, [each dropout costs approximately $260,000] in lost tax revenue and increased social services over their lifetime. [Collective costs to society] run into billions annually.
+
+Despite progress, [6 out of 10 dropouts] cite reasons that could have been addressed with appropriate interventions. [Achievement gaps] persist across [racial and socioeconomic lines], with [Hispanic and Black students] dropping out at higher rates.
+      </TextHighlight>
+
+      <Markdown>**Part 2: Highlight text that shows why this problem is UNRESOLVED:**</Markdown>
+      <TextHighlight id="source_5_unresolved_highlights" mode="selfcheck">
+Highlight evidence that the problem has not been adequately solved:
+---
+Despite [decades of reform efforts], the dropout problem persists. While overall rates have declined, [disparities remain stubbornly high] for certain populations.
+
+The problem [remains unresolved] because interventions are [inconsistent and underfunded]. [No single approach] has proven universally effective, suggesting the need for [comprehensive, interdisciplinary solutions].
+
+[Existing programs reach only a fraction] of at-risk students. [Funding gaps] between wealthy and poor districts continue. [Prevention efforts start too late] for many students who show warning signs in middle school.
+
+Researchers note that [root causes are complex] and require [coordinated, multi-sector responses] that few communities have achieved.
+      </TextHighlight>
+    </Vertical>
+
+    <!-- Display importance highlights -->
+    <Vertical id="nces_importance_highlights_shown">
+      <Markdown>**Your highlights showing why the problem is important:**</Markdown>
+      <Markdown>Review your highlighted text above. You should have identified evidence about the significance and consequences of the dropout problem.</Markdown>
+    </Vertical>
+
+    <!-- Importance explanation input -->
+    <Vertical id="importance_explanation_input">
+      <Markdown>**Explain how the evidence you highlighted shows this is an important problem:**</Markdown>
+      <TextArea id="source_5_importance_explanation" placeholder="This problem is important because..." />
+    </Vertical>
+
+    <!-- Unresolved highlights display -->
+    <Vertical id="nces_unresolved_highlights_shown">
+      <Markdown>**Your highlights showing the problem is unresolved:**</Markdown>
+      <Markdown>Review your highlighted text. You should have identified evidence that this problem has not been adequately solved.</Markdown>
+    </Vertical>
+
+    <!-- Unresolved explanation input -->
+    <Vertical id="unresolved_explanation_input">
+      <Markdown>**Explain how the evidence you highlighted shows this problem remains unresolved:**</Markdown>
+      <TextArea id="source_5_unresolved_explanation" placeholder="This problem remains unresolved because..." />
+    </Vertical>
+
+    <!-- Problematic significance statement to revise -->
+    <Vertical id="problematic_significance_text">
+      <Markdown>
+**Draft Significance Statement (needs revision):**
+
+"Dropping out of high school is a serious problem mainly because it leads to crime. Students who don't finish school often end up in jail, which costs taxpayers money. The solution is vocational training programs that teach practical job skills instead of useless academic subjects."
+      </Markdown>
+    </Vertical>
+
+    <!-- Revision instructions and input -->
+    <Vertical id="revision_instructions">
+      <Markdown>
+**Revise the Statement**
+
+The draft above shows disciplinary bias (focusing only on crime/vocational training). Rewrite it to:
+- Reflect multiple consequences (economic, social, personal)
+- Avoid privileging any single perspective
+- Be supported by evidence from the sources you reviewed
+      </Markdown>
+      <TextArea id="problem_statement_revised" placeholder="Rewrite the significance statement here..." />
+    </Vertical>
+
+    <!-- Show revised statement -->
+    <Vertical id="revised_statement_shown">
+      <Markdown>**Your Revised Statement:**</Markdown>
+      <Ref id="ref_revised_statement_inline" target="problem_statement_revised" />
+    </Vertical>
+
+    <!-- Repko criteria list -->
+    <Vertical id="criteria_list">
+      <Markdown>
+## Criteria for an Effective Problem Statement (Repko, 2019)
+
+An interdisciplinary problem statement should:
+
+1. **State why the problem is important** - What are the consequences? Who is affected?
+2. **Acknowledge complexity** - Show that multiple disciplines are needed
+3. **Avoid personal/disciplinary bias** - Don't privilege one perspective
+4. **Define appropriate focus** - Narrow enough to be actionable
+5. **Match organizational scope** - Align with what Comm360 can actually address
+      </Markdown>
+    </Vertical>
+
+    <!-- Causes by priorities table -->
+    <Vertical id="causes_by_priorities_table">
+      <Markdown>
+**Map Causes to Comm360's Priority Areas**
+
+Select which priority areas could address each cause:
+
+| Cause | Education &amp; Training | Health &amp; Wellness | Family &amp; Youth Services | Community Building |
+|-------|---------------------|-------------------|--------------------------|-------------------|
+| Students need money | ☐ | ☐ | ☐ | ☐ |
+| Depression/ADHD | ☐ | ☐ | ☐ | ☐ |
+| Gang activity | ☐ | ☐ | ☐ | ☐ |
+| School funding | ☐ | ☐ | ☐ | ☐ |
+      </Markdown>
+      <TextArea id="problem_areas" placeholder="Enter your mappings here. For example: 'Money - Education, Family; ADHD - Health; ...'" />
+    </Vertical>
+
+    <!-- Show priorities mapping -->
+    <Vertical id="causes_by_priorities_shown">
+      <Markdown>**Your Priority Area Mappings:**</Markdown>
+      <Ref target="problem_areas" />
+    </Vertical>
+
+    <!-- Priority explanation input -->
+    <Vertical id="priority_explanation_input">
+      <Markdown>**Explain how these causes align with Comm360's priorities:**</Markdown>
+      <TextArea id="priority_explanation" placeholder="I mapped these causes to these priority areas because..." />
+    </Vertical>
+
+    <!-- Priority answers display -->
+    <Vertical id="causes_by_priorities_answers">
+      <Markdown>
+**Recommended Priority Area Mappings:**
+
+| Cause | Best-Fit Priority Areas |
+|-------|------------------------|
+| Students need money | Family &amp; Youth Services, Education &amp; Training |
+| Depression/anxiety/ADHD | Health &amp; Wellness |
+| Gang activity/instability | Community Building, Family &amp; Youth Services |
+| School funding | Community Building &amp; Advocacy |
+
+Based on Comm360's capacity, the **Health &amp; Wellness** area addressing depression, anxiety, and ADHD is the recommended focus.
+      </Markdown>
+    </Vertical>
+
+    <!-- Health and wellness focus display -->
+    <Vertical id="health_wellness_focus_shown">
+      <Markdown>
+## Selected Focus: Health &amp; Wellness
+
+Comm360 will focus on:
+
+**Cause:** Conditions like depression, anxiety, or ADHD that interfere with students' ability to succeed in school.
+
+**Priority Area:** Health &amp; Wellness - providing mental health support, ADHD interventions, and counseling services.
+
+**Primary Discipline:** Psychology
+
+We know Psychology offers relevant insights. What other disciplines might help us design effective programming?
+      </Markdown>
+    </Vertical>
+
+    <!-- Additional disciplines explanation input -->
+    <Vertical id="additional_disciplines_explanation_input">
+      <Markdown>**Explain why these additional disciplines would be helpful:**</Markdown>
+      <TextArea id="additional_disciplines_explanation" placeholder="These disciplines would help because..." />
+    </Vertical>
+
+    <!-- Full notes display -->
+    <Vertical id="full_notes_display">
+      <Markdown>
+## Your Research Notes
+
+**Problem:** High school dropout in our community
+
+**Why Important:**
+      </Markdown>
+      <Ref target="source_5_importance_explanation" />
+      <Markdown>**Why Unresolved:**</Markdown>
+      <Ref target="source_5_unresolved_explanation" />
+      <Markdown>
+**Disciplines Consulted:** Psychology, Sociology, Economics, Political Science
+
+**Comm360 Focus:** Health &amp; Wellness programming for depression, anxiety, and ADHD
+
+**Your Revised Significance Statement:**
+      </Markdown>
+      <Ref id="ref_revised_statement_notes" target="problem_statement_revised" />
+    </Vertical>
+
+    <!-- Final problem statement input -->
+    <Vertical id="full_problem_statement_input">
+      <Markdown>
+**Write Your Final Problem Statement**
+
+Using your notes and the Repko criteria, write a comprehensive problem statement that:
+- Explains why high school dropout is important
+- Acknowledges its complexity and interdisciplinary nature
+- Defines Comm360's focus on Health &amp; Wellness interventions
+- Avoids bias toward any single discipline
+      </Markdown>
+      <TextArea id="full_problem_statement" placeholder="Write your complete problem statement here..." />
+    </Vertical>
+  </Vertical>
+
+  <!-- DISCIPLINE SELECTION CHECKBOXES -->
+  <!-- Used by dialogue.chatpeg for literature review discipline classification -->
+
+  <!-- Employment Study (Source 2) - identify disciplines -->
+  <Vertical id="employment_discipline_checkboxes">
+    <Markdown>**Select all disciplines represented in this study:**</Markdown>
+    <CheckboxInput id="source_2_classification">
+      <Distractor id="s2_health">Health Sciences</Distractor>
+      <Distractor id="s2_bio">Biology</Distractor>
+      <Key id="s2_psych">Psychology</Key>
+      <Key id="s2_soc">Sociology</Key>
+      <Key id="s2_econ">Economics</Key>
+      <Distractor id="s2_polisci">Political Science</Distractor>
+    </CheckboxInput>
+  </Vertical>
+
+  <!-- Rural/Urban Study (Source 3) - identify disciplines -->
+  <Vertical id="rural_discipline_checkboxes">
+    <Markdown>**Select all disciplines represented in this study:**</Markdown>
+    <CheckboxInput id="source_3_classification">
+      <Distractor id="s3_health">Health Sciences</Distractor>
+      <Distractor id="s3_bio">Biology</Distractor>
+      <Distractor id="s3_psych">Psychology</Distractor>
+      <Key id="s3_soc">Sociology</Key>
+      <Distractor id="s3_econ">Economics</Distractor>
+      <Key id="s3_polisci">Political Science</Key>
+    </CheckboxInput>
+  </Vertical>
+
+  <!-- School Funding Study (Source 4) - identify disciplines -->
+  <Vertical id="funding_discipline_checkboxes">
+    <Markdown>**Select all disciplines represented in this study:**</Markdown>
+    <CheckboxInput id="source_4_classification">
+      <Distractor id="s4_health">Health Sciences</Distractor>
+      <Distractor id="s4_bio">Biology</Distractor>
+      <Distractor id="s4_psych">Psychology</Distractor>
+      <Distractor id="s4_soc">Sociology</Distractor>
+      <Key id="s4_econ">Economics</Key>
+      <Key id="s4_polisci">Political Science</Key>
+    </CheckboxInput>
+  </Vertical>
+
+  <!-- Additional Disciplines Selection -->
+  <Vertical id="additional_disciplines_checkboxes">
+    <Markdown>**Select additional disciplines that might offer useful insights:**</Markdown>
+    <CheckboxInput id="additional_disciplines">
+      <Key id="add_health">Health Sciences</Key>
+      <Key id="add_bio">Biology</Key>
+      <Distractor id="add_psych">Psychology</Distractor>
+      <Key id="add_soc">Sociology</Key>
+      <Key id="add_econ">Economics</Key>
+      <Key id="add_polisci">Political Science</Key>
+    </CheckboxInput>
+  </Vertical>
 
 </Vertical>

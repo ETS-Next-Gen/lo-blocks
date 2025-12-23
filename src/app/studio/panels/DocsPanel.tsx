@@ -9,6 +9,7 @@ interface DocsPanelProps {
   filePath: string;
   content: string;
   docsData: DocsData;
+  onInsert?: (olx: string) => void;
 }
 
 // Extract unique element tags used in content
@@ -23,7 +24,7 @@ function extractElements(content: string): string[] {
   return Array.from(tags).sort();
 }
 
-export function DocsPanel({ filePath, content, docsData }: DocsPanelProps) {
+export function DocsPanel({ filePath, content, docsData, onInsert }: DocsPanelProps) {
   const docType = getContentType(filePath);
   const elements = extractElements(content);
 
@@ -48,13 +49,13 @@ export function DocsPanel({ filePath, content, docsData }: DocsPanelProps) {
         )}
 
         {/* Elements used in current file */}
-        <ElementsInFile elements={elements} blockDocs={docsData.blocksByName} />
+        <ElementsInFile elements={elements} blockDocs={docsData.blocksByName} onInsert={onInsert} />
 
         {/* All blocks and grammars by category */}
         {docsData.loading ? (
           <div className="search-hint">Loading blocks...</div>
         ) : (
-          <BlockList blocks={docsData.allItems} />
+          <BlockList blocks={docsData.allItems} onInsert={onInsert} />
         )}
       </div>
     </div>

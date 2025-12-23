@@ -5,6 +5,7 @@
 // plus source/readme/examples paths added by the registry generator.
 //
 import { COMPONENT_MAP } from '@/components/componentMap';
+import { extractAttributes } from '@/lib/docs/schemaUtils';
 
 /**
  * Generate documentation index from COMPONENT_MAP.
@@ -25,6 +26,7 @@ function generateDocumentation() {
       readme: block.readme || null,
       examples: block.examples || [],
       fields: Object.keys(block.fields || {}),
+      attributes: extractAttributes(block.attributes),
       hasAction: !!block.action,
       hasParser: !!block.parser,
       internal: block.internal || false,

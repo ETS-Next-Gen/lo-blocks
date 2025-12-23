@@ -354,6 +354,10 @@ function BlockTabs({ tabs, activeTab, onTabChange }) {
 // =============================================================================
 
 function QuickReference({ block }) {
+  const attributes = block.attributes;
+  const customAttrs = attributes?.filter(attr => attr.description) || [];
+  const baseAttrs = attributes?.filter(attr => !attr.description) || [];
+
   return (
     <section className="bg-white rounded-lg border p-6">
       <h3 className="text-lg font-semibold mb-4">Quick Reference</h3>
@@ -381,6 +385,63 @@ function QuickReference({ block }) {
           </div>
         )}
       </dl>
+
+      {/* Attributes section */}
+      {attributes && attributes.length > 0 && (
+        <>
+          <hr className="my-6 border-gray-200" />
+          <h4 className="text-md font-semibold mb-3 text-gray-700">Attributes</h4>
+
+          {customAttrs.length > 0 && (
+            <table className="w-full text-sm mb-4">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 pr-4 font-medium text-gray-700">Name</th>
+                  <th className="text-left py-2 pr-4 font-medium text-gray-700">Type</th>
+                  <th className="text-left py-2 font-medium text-gray-700">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customAttrs.map(attr => (
+                  <tr key={attr.name} className="border-b border-gray-100">
+                    <td className="py-2 pr-4">
+                      <code className="text-blue-600">{attr.name}</code>
+                      {attr.required && <span className="text-red-500 ml-1">*</span>}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {attr.enumValues ? (
+                        <span className="font-mono text-xs">
+                          {attr.enumValues.map((v, i) => (
+                            <span key={v}>
+                              {i > 0 && ' | '}
+                              <span className="text-green-700">&quot;{v}&quot;</span>
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="font-mono text-xs text-gray-600">{attr.type}</span>
+                      )}
+                    </td>
+                    <td className="py-2 text-gray-600">{attr.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {baseAttrs.length > 0 && (
+            <div className="text-sm text-gray-500">
+              <span className="font-medium">Base attributes: </span>
+              {baseAttrs.map((attr, i) => (
+                <span key={attr.name}>
+                  {i > 0 && ', '}
+                  <code className="text-gray-600">{attr.name}</code>
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 }

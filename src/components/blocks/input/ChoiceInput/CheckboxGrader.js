@@ -7,9 +7,11 @@
 // - All-or-nothing (default): all Keys must be selected, no Distractors
 // - Partial credit (partialCredit="true"): score = (keysSelected - distractorsSelected) / totalKeys
 //
+import { z } from 'zod';
 import * as parsers from '@/lib/content/parsers';
 import * as blocks from '@/lib/blocks';
 import { getInputs } from '@/lib/blocks/olxdom';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Noop from '@/components/blocks/layout/_Noop';
 import * as state from '@/lib/state';
 import { CORRECTNESS } from '@/lib/blocks/correctness.js';
@@ -110,6 +112,14 @@ const CheckboxGrader = blocks.test({
   component: _Noop,
   fields,
   getDisplayAnswer: getCheckboxDisplayAnswer,
+  attributes: baseAttributes.extend({
+    target: z.string().optional().describe('ID of the CheckboxInput to grade; infers from children if omitted'),
+    partialCredit: z.enum(['true', 'false']).optional().describe('Enable partial credit scoring (n/m formula)'),
+    // TODO: Does answer work? This is a list. We should figure this out, and if it is available, update the
+    // documentation / zod
+    answer: z.string().optional().describe('Correct answer values (alternative to using Key/Distractor)'),
+    displayAnswer: z.string().optional().describe('Answer text to display when showing answers'),
+  }),
 });
 
 export default CheckboxGrader;

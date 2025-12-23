@@ -1,8 +1,10 @@
 // src/components/blocks/input/DropdownInput/DropdownInput.js
+import { z } from 'zod';
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as parser from './_dropdownParser.js';
 import _DropdownSelect from './_DropdownSelect.jsx';
 
@@ -17,6 +19,10 @@ const DropdownInput = core({
   getValue: (props, state, id) => {
     return fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' });
   },
+  attributes: srcAttributes.extend({
+    placeholder: z.string().optional().describe('Placeholder text for empty selection'),
+    options: z.string().optional().describe('Comma-separated options (e.g., "Red, Green, Blue" or "Red|r, Green|g")'),
+  }),
   locals: {
     getOptions: (props) => {
       const parsed = props.kids?.parsed;

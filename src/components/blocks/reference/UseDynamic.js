@@ -1,10 +1,10 @@
 // src/components/blocks/UseDynamic.js
+import { z } from 'zod';
 import { dev } from '@/lib/blocks';
 import * as state from '@/lib/state';
-
 import { _UseDynamic } from './_UseDynamic';
-
 import { ignore } from '@/lib/content/parsers';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 
 export const fields = state.fields(
   ['value']
@@ -16,7 +16,10 @@ const UseDynamic = dev({
   component: _UseDynamic,
   namespace: 'org.mitros.dev',
   description: 'Include a component block.',
-  fields: fields
+  fields: fields,
+  attributes: baseAttributes.extend({
+    target: z.string().optional().describe('Component ID to render dynamically'),
+  }),
 });
 
 export default UseDynamic;

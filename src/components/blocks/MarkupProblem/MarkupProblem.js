@@ -13,6 +13,7 @@
 import { dev } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as capaParser from '../specialized/peg_prototype/_capaParser.js';
 import _Noop from '@/components/blocks/layout/_Noop';
 
@@ -440,7 +441,8 @@ const MarkupProblem = dev({
   name: 'MarkupProblem',
   description: 'Simple markup language for authoring problems - expands to CapaProblem with graders and inputs',
   component: _Noop,
-  fields
+  fields,
+  attributes: srcAttributes.strict(),
 });
 
 export default MarkupProblem;

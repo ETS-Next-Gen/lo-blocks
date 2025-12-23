@@ -1,9 +1,11 @@
 // src/components/blocks/ComplexInput.js
 
+import { z } from 'zod';
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _LineInput from './_LineInput';
 
 export const fields = state.fields(['value']);
@@ -20,6 +22,9 @@ const ComplexInput = core({
   component: _ComplexInput,
   fields,
   getValue: (props, state, id) => fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' }),
+  attributes: baseAttributes.extend({
+    placeholder: z.string().optional().describe('Placeholder text shown when empty'),
+  }),
 });
 
 export default ComplexInput;

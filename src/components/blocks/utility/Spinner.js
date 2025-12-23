@@ -16,8 +16,8 @@
  */
 
 import * as parsers from '@/lib/content/parsers';
-
 import { dev } from '@/lib/blocks'; // adjust import path as needed
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Spinner from './_Spinner';
 
 const Spinner = dev({
@@ -25,7 +25,8 @@ const Spinner = dev({
   name: 'Spinner',
   description: 'Loading / processing indicator',
   component: _Spinner,
-  internal: true
+  internal: true,
+  attributes: baseAttributes.strict(),
 });
 
 export default Spinner;

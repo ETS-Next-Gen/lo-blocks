@@ -23,8 +23,10 @@
 // The field must exist in the TARGET component, not in StatusText itself.
 // Will throw clear error if the target component doesn't have the requested field.
 //
+import { z } from 'zod';
 import { dev } from '@/lib/blocks';
 import { ignore } from '@/lib/content/parsers';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _StatusText from './_StatusText';
 
 const StatusText = dev({
@@ -33,7 +35,11 @@ const StatusText = dev({
   description: 'Displays field values from related components (typically graders). Use field="fieldName" to specify which field to display.',
   component: _StatusText,
   requiresGrader: true,
-  internal: true
+  internal: true,
+  attributes: baseAttributes.extend({
+    field: z.string().default('message').describe('Field name to display from the target component'),
+    target: z.string().optional().describe('ID of specific component to read from; infers from parent grader if omitted'),
+  }),
 });
 
 export default StatusText;

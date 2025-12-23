@@ -11,9 +11,11 @@
 // Or with external file:
 //   <MasteryBank id="quiz" goal="6" src="problem_ids.txt" />
 
+import { z } from 'zod';
 import { dev } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as idListParser from './_idlistParser.js';
 import _MasteryBank from './_MasteryBank';
 
@@ -40,7 +42,11 @@ const MasteryBank = dev({
   name: 'MasteryBank',
   description: 'Mastery-based practice: present random problems until N correct in a row',
   component: _MasteryBank,
-  fields
+  fields,
+  attributes: srcAttributes.extend({
+    goal: z.coerce.number().optional().describe('Number of correct answers in a row to achieve mastery (default: 6)'),
+    mode: z.enum(['linear', 'shuffle']).optional().describe('Problem selection mode (default: linear)'),
+  }),
 });
 
 export default MasteryBank;

@@ -1,6 +1,7 @@
 // src/components/blocks/PEGDevBlock/PEGDevBlock.js
 import { dev } from '@/lib/blocks';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as dp  from './_demoParser.js'; // <-- Tweak this line
 import { _PEGDevBlock } from './_PEGDevBlock';
 
@@ -10,7 +11,8 @@ const PEGDevBlock = dev({
   component: _PEGDevBlock,
   namespace: 'org.mitros.dev',
   description: 'Development workbench for creating and testing PEG grammars',
-  internal: true
+  internal: true,
+  attributes: srcAttributes.strict(),
 });
 
 export default PEGDevBlock;

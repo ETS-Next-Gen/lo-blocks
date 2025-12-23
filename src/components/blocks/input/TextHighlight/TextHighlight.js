@@ -4,6 +4,7 @@ import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as blocks from '@/lib/blocks';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as parser from './_textHighlightParser.js';
 import _TextHighlight from './_TextHighlight';
 
@@ -36,7 +37,8 @@ const TextHighlight = core({
   name: 'TextHighlight',
   description: 'Interactive text highlighting exercise with feedback',
   component: _TextHighlight,
-  fields
+  fields,
+  // Uses grader mixin attributes; content defined by PEG syntax
 });
 
 export default TextHighlight;

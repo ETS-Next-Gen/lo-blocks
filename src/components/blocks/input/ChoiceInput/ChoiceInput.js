@@ -3,10 +3,12 @@
 // Single-select (radio button) input. Value is stored as a string.
 // For multi-select (checkboxes), use CheckboxInput instead.
 //
+import { z } from 'zod';
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Noop from '@/components/blocks/layout/_Noop';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
 
@@ -41,6 +43,9 @@ const ChoiceInput = core({
   getValue: (props, state, id) => {
     return fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' });
   },
+  attributes: baseAttributes.extend({
+    target: z.string().optional().describe('Comma-separated IDs of Key/Distractor children if not directly nested'),
+  }),
   locals: {
     getChoices
   }

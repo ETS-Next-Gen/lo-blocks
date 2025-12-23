@@ -14,6 +14,7 @@ import * as blocks from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import { peggyParser } from '@/lib/content/parsers';
+import { srcAttributes } from '@/lib/blocks/attributeSchemas';
 import * as parser from './_tabularMCQParser.js';
 import _TabularMCQ from './_TabularMCQ';
 
@@ -31,6 +32,7 @@ const TabularMCQ = core({
   description: 'Tabular multiple choice matrix',
   component: _TabularMCQ,
   fields,
+  attributes: srcAttributes.strict(),
   locals: {
     // peggyParser always produces { type: 'parsed', parsed: {...} }
     // These accessors extract the parsed content for graders and other consumers.

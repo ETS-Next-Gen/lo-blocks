@@ -11,6 +11,7 @@
 import { core } from '@/lib/blocks';
 import * as parsers from '@/lib/content/parsers';
 import * as state from '@/lib/state';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Hint from './_Hint';
 
 export const fields = state.fields([]);
@@ -21,7 +22,8 @@ const Hint = core({
   description: 'Individual hint content for DemandHints',
   category: 'display',
   component: _Hint,
-  fields
+  fields,
+  attributes: baseAttributes.strict(),
 });
 
 export default Hint;

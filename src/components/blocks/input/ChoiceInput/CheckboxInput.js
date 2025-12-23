@@ -3,10 +3,12 @@
 // Multi-select checkbox input. Value is stored as an array of selected values.
 // For single-select (radio buttons), use ChoiceInput instead.
 //
+import { z } from 'zod';
 import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
+import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import _Noop from '@/components/blocks/layout/_Noop';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
 
@@ -46,6 +48,9 @@ const CheckboxInput = core({
     }
     return value;
   },
+  attributes: baseAttributes.extend({
+    target: z.string().optional().describe('Comma-separated IDs of Key/Distractor children if not directly nested'),
+  }),
   locals: {
     getChoices
   }

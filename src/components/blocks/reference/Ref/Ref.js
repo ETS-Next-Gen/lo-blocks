@@ -80,6 +80,12 @@ const Ref = core({
 
     const fallback = refNode.attributes?.fallback || '';
 
+    // For cross-block references (target exists in global idMap), use absolute path
+    // to avoid inheriting the current idPrefix context. This ensures we find the
+    // value where it was actually stored, not where we're rendering the Ref.
+    // Absolute paths start with "/" and ignore idPrefix during resolution.
+    const absoluteTargetId = targetId.startsWith('/') ? targetId : `/${targetId}`;
+
     let rawValue;
     if (field) {
       // Access specific field using fieldSelector
@@ -87,10 +93,10 @@ const Ref = core({
       if (!fieldInfo) {
         return { error: true, message: `Unknown field "${field}"` };
       }
-      rawValue = fieldSelector(state, { ...props, id: targetId }, fieldInfo, { fallback });
+      rawValue = fieldSelector(state, { ...props, id: absoluteTargetId }, fieldInfo, { fallback });
     } else {
       // Use valueSelector to get the target's value (calls getValue if available)
-      rawValue = valueSelector(props, state, targetId, { fallback });
+      rawValue = valueSelector(props, state, absoluteTargetId, { fallback });
     }
 
     // Always return a string for valid values

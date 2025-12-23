@@ -353,7 +353,9 @@ export function valueSelector(props, state, id, { fallback } = {} as { fallback?
     return fallback;
   }
 
-  const targetNode = props?.idMap?.[id];
+  // Use idMapKey to strip path prefixes - idMap uses plain IDs without "/" or "./" prefixes
+  const mapKey = idResolver.idMapKey(id);
+  const targetNode = props?.idMap?.[mapKey];
   const blueprint = targetNode ? props?.componentMap?.[targetNode.tag] : null;
 
   if (!targetNode || !blueprint) {
@@ -362,7 +364,8 @@ export function valueSelector(props, state, id, { fallback } = {} as { fallback?
     if (!blueprint) missing.push('blueprint');
 
     throw new Error(
-      `valueSelector: Missing ${missing.join(' and ')} for component id "${id}"\n` +
+      `valueSelector: Missing ${missing.join(' and ')} for component id "${id}"` +
+      (id !== mapKey ? ` (idMap key: "${mapKey}")` : '') + `\n` +
       `  targetNode: ${!!targetNode}\n` +
       `  blueprint: ${!!blueprint}`
     );

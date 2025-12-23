@@ -53,4 +53,22 @@ describe("ID helpers", () => {
     expect(idResolver.reduxId({ id: '/foo' })).toBe('foo');
     expect(idResolver.reduxId({ id: './foo' })).toBe('foo');
   });
+
+  it("idMapKey strips path prefixes for idMap lookup", () => {
+    // Plain IDs pass through
+    expect(idResolver.idMapKey('foo')).toBe('foo');
+    expect(idResolver.idMapKey('deep/path')).toBe('deep/path');
+
+    // Absolute prefix stripped
+    expect(idResolver.idMapKey('/foo')).toBe('foo');
+    expect(idResolver.idMapKey('/deep/path')).toBe('deep/path');
+
+    // Explicit relative prefix stripped
+    expect(idResolver.idMapKey('./foo')).toBe('foo');
+    expect(idResolver.idMapKey('./deep/path')).toBe('deep/path');
+
+    // Non-strings pass through unchanged
+    expect(idResolver.idMapKey(null)).toBe(null);
+    expect(idResolver.idMapKey(undefined)).toBe(undefined);
+  });
 });

@@ -103,6 +103,27 @@ export const nodeId = (input) => {
   return input.node.id;
 };
 
+/**
+ * Extract the idMap key from an ID string.
+ *
+ * The idMap uses plain IDs without path prefixes. This function strips
+ * the "/" prefix used for absolute references and "./" for explicit relative.
+ *
+ * @param {string} id - The ID which may have path prefixes
+ * @returns {string} The key to use for idMap lookup
+ *
+ * @example
+ * idMapKey('/foo')   // => 'foo'
+ * idMapKey('./foo')  // => 'foo'
+ * idMapKey('foo')    // => 'foo'
+ */
+export const idMapKey = (id) => {
+  if (typeof id !== 'string') return id;
+  if (id.startsWith('/')) return id.slice(1);
+  if (id.startsWith('./')) return id.slice(2);
+  return id;
+};
+
 // And, e.g.:
 export const urlName = resolveIdForContext("urlName");
 export const htmlId = resolveIdForContext("htmlId");

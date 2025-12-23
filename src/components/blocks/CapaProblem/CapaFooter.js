@@ -14,7 +14,7 @@ const CapaFooter = blocks.dev({
   // Note: Receives runtime attributes (target, hintsTarget) from _CapaProblem
   attributes: baseAttributes.extend({
     target: z.string().optional().describe('Comma-separated grader IDs to trigger'),
-    hintsTarget: z.string().nullable().optional().describe('DemandHints ID for hint button'),
+    hintsTarget: z.string().nullish().describe('DemandHints ID for hint button'),
     label: z.string().optional().describe('Check button label'),
     showAnswer: z.string().optional().describe('Show answer behavior'),
   }),

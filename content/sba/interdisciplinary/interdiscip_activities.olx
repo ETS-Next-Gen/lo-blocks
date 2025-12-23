@@ -105,18 +105,18 @@ Continue highlighting reasons for dropping out:
     <Vertical id="reasons_checklist">
       <Markdown>**Select the causes you think are most important to research:**</Markdown>
       <CheckboxInput id="reasons">
-        <Key>Some school systems can't accommodate students with physical or other disabilities</Key>
-        <Key>Students need to earn money right away to help their family</Key>
-        <Key>Schools use curricula that students don't see as relevant</Key>
-        <Key>Student's environment with gang activity, neighborhood instability</Key>
-        <Key>Conditions like depression, anxiety, or ADHD interfere with engagement</Key>
-        <Key>Students lack family, friends, or teacher support</Key>
-        <Key>Negative peer influences encourage dropping out</Key>
-        <Key>Cultural responsibilities more important than high school</Key>
-        <Key>Legal trouble makes it difficult to continue school</Key>
-        <Key>Lack of school funding for support services</Key>
-        <Key>Teen pregnancy with no school support</Key>
-        <Key>Substance abuse issues</Key>
+        <Key id="reason_disability" value="School systems can't accommodate disabilities">Some school systems can't accommodate students with physical or other disabilities</Key>
+        <Key id="reason_money" value="Students need to earn money for family">Students need to earn money right away to help their family</Key>
+        <Key id="reason_relevance" value="Curricula not seen as relevant">Schools use curricula that students don't see as relevant</Key>
+        <Key id="reason_environment" value="Gang activity and neighborhood instability">Student's environment with gang activity, neighborhood instability</Key>
+        <Key id="reason_mental_health" value="Depression, anxiety, or ADHD">Conditions like depression, anxiety, or ADHD interfere with engagement</Key>
+        <Key id="reason_support" value="Lack of family/teacher support">Students lack family, friends, or teacher support</Key>
+        <Key id="reason_peers" value="Negative peer influences">Negative peer influences encourage dropping out</Key>
+        <Key id="reason_cultural" value="Cultural responsibilities">Cultural responsibilities more important than high school</Key>
+        <Key id="reason_legal" value="Legal trouble">Legal trouble makes it difficult to continue school</Key>
+        <Key id="reason_funding" value="Lack of school funding">Lack of school funding for support services</Key>
+        <Key id="reason_pregnancy" value="Teen pregnancy without support">Teen pregnancy with no school support</Key>
+        <Key id="reason_substance" value="Substance abuse">Substance abuse issues</Key>
       </CheckboxInput>
     </Vertical>
 

@@ -1,5 +1,4 @@
-<!-- Navigator Block Demo -->
-<Vertical id="NavigatorDemo" title="Navigator Block Demo" launchable="true">
+<Vertical id="NavigatorDemo" title="Navigator Block Demo">
 
   <Markdown>
 # Navigator Block Demo

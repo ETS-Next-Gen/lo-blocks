@@ -3,7 +3,7 @@
 Interactive problem container inspired by LON-CAPA and Open edX. Combines inputs, graders, and feedback into a complete assessment experience.
 
 ```olx:playground
-<CapaProblem id="demo">
+<CapaProblem id="demo" title="Basic Arithmetic">
   <NumericalGrader answer="4">
     <Markdown>What is 2 + 2?</Markdown>
     <NumberInput />
@@ -48,7 +48,7 @@ This decoupling means you can swap inputs without changing graders. A numeric sl
 **Nesting (preferred)**: Graders find inputs among their children:
 
 ```olx:playground
-<CapaProblem id="nested">
+<CapaProblem id="nested" title="Ultimate Answer">
   <NumericalGrader answer="42">
     <Markdown>According to Douglas Adams, what is the answer to life, the universe, and everything?</Markdown>
     <NumberInput />
@@ -59,7 +59,7 @@ This decoupling means you can swap inputs without changing graders. A numeric sl
 **Explicit targeting**: Use `target` when inputs can't be nested:
 
 ```olx:playground
-<CapaProblem id="explicit">
+<CapaProblem id="explicit" title="Fraction Entry">
   <Markdown>Express 1/2 as a fraction:</Markdown>
   <NumberInput id="x" /> / <NumberInput id="y" />
   <RatioGrader answer="0.5" target="x,y" />
@@ -73,7 +73,7 @@ This decoupling means you can swap inputs without changing graders. A numeric sl
 Accept answers within a range:
 
 ```olx:playground
-<CapaProblem id="pi">
+<CapaProblem id="pi" title="Value of Pi">
   <NumericalGrader answer="3.14159" tolerance="0.01">
     <Markdown>What is pi to at least two decimal places?</Markdown>
     <NumberInput />
@@ -95,7 +95,7 @@ Accept any value in a range:
 Use `Key` for correct answers, `Distractor` for wrong ones:
 
 ```olx:playground
-<CapaProblem id="mcq">
+<CapaProblem id="mcq" title="Learning Theorists">
   <KeyGrader>
     <Markdown>Which learning theorist emphasized the importance of "scaffolding" in the zone of proximal development?</Markdown>
     <ChoiceInput>
@@ -113,7 +113,7 @@ Use `Key` for correct answers, `Distractor` for wrong ones:
 RatioGrader compares the ratio of two NumberInputs:
 
 ```olx:playground
-<CapaProblem id="fraction">
+<CapaProblem id="fraction" title="Fraction as Ratio">
   <RatioGrader answer="0.75">
     <Markdown>Express 3/4 as a fraction:</Markdown>
     <NumberInput /> / <NumberInput />
@@ -124,7 +124,7 @@ RatioGrader compares the ratio of two NumberInputs:
 ## Ordering Problems
 
 ```olx:playground
-<CapaProblem id="timeline">
+<CapaProblem id="timeline" title="Psychology Milestones">
   <SortableGrader>
     <Markdown>Arrange these educational psychology milestones chronologically:</Markdown>
     <SortableInput>
@@ -144,7 +144,7 @@ Grading algorithms: `exact`, `partial`, `adjacent`, `spearman`, `survey`
 Problems can include math, markdown, and complex layouts. For backwards compatibility with Open edX and LON-CAPA, raw HTML can be mixed with blocks. This is sometimes necessary for complex layouts (dropdowns on images, input arrays via `<table>`, etc.), but **prefer native blocks when possible**. Native components provide accessibility, mobile support, i18n, semantic analytics, and versioning that raw HTML cannot.
 
 ```olx:playground
-<CapaProblem id="physics">
+<CapaProblem id="physics" title="Kinematics">
   <NumericalGrader answer="20" tolerance="0.5">
     <Markdown>
 ### Kinematics

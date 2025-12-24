@@ -1,59 +1,48 @@
-<Vertical id="MarkupProblemDemo" title="MarkupProblem Demo" launchable="true">
-
-  <Markdown id="intro">
-## MarkupProblem
-
-Simple markup syntax for authoring problems. Supports multiple choice,
-text input, numerical input, hints, and explanations.
-  </Markdown>
-
-  <!-- Multiple choice example -->
-  <MarkupProblem id="physics_mc" title="Physics Question"><![CDATA[
-Newton's Laws
+<MarkupProblem id="MarkupProblemDemo" title="Problem Template" launchable="true"><![CDATA[
+Learning Theory
 ===
 
-Consider a ball thrown straight up into the air.
+>>Who developed the theory of the "zone of proximal development"?<<
 
->>At the highest point of its trajectory, what is the net force on the ball?<<
+( ) Piaget
+( ) Skinner
+(x) Vygotsky
+( ) Bandura
 
-( ) Zero - the ball is momentarily at rest
-(x) Downward - gravity acts continuously
-( ) Upward - residual force from the throw
-( ) Undefined - forces cancel out
+||This psychologist emphasized the social nature of learning.||
 
-||Think about what force is always acting on objects near Earth's surface.||
+{{
+The theory focuses on what learners can do with guidance versus alone.
+====
+This researcher worked in the Soviet Union in the early 20th century.
+}}
 
 [explanation]
-At the highest point, the ball is momentarily at rest, but gravity never stops acting.
-The net force is mg downward, which is why the ball starts falling back down.
+Lev Vygotsky developed the zone of proximal development (ZPD), which describes the space between what a learner can do independently and what they can achieve with guidance. This was a measurement methodology. A common misconception is that kids ought to be taught within the ZPD (which consistently leads to kids not being sufficiently challenged).
 [/explanation]
+
+---
+
+>>Select all constructivist learning theorists:<<
+
+[x] Piaget {{Stages of cognitive development}}
+[x] Vygotsky {{Social constructivism and ZPD}}
+[ ] Skinner {{Behaviorist - operant conditioning}}
+[x] Bruner {{Discovery learning and scaffolding}}
+[ ] Thorndike {{Behaviorist - law of effect}}
+
+---
+
+>>What is the term for learning through observation of others?<<
+
+= social learning {{Correct! Bandura's social learning theory.}}
+or= observational learning {{Correct! Also called social learning.}}
+or= modeling {{Correct! A key mechanism in social learning.}}
+not= conditioning {{That's a behaviorist concept, not observational}}
+
+---
+
+>>In Bloom's taxonomy, approximately what percentage of learning objectives typically address higher-order thinking skills?<<
+
+= 30 +- 15
 ]]></MarkupProblem>
-
-  <!-- Text input example -->
-  <MarkupProblem id="derivative_text" title="Calculus Question"><![CDATA[
-Derivatives
-===
-
->>What is the derivative of x squared?<<
-
-= 2x
-or= 2*x
-not= x^2 {{Remember to apply the power rule: bring down the exponent and reduce it by 1}}
-not= 2 {{Do not forget the x term}}
-]]></MarkupProblem>
-
-  <!-- Numerical input example -->
-  <MarkupProblem id="numerical_example" title="Numerical Question"><![CDATA[
-Basic Math
-===
-
->>What is 2 + 2?<<
-
-= 4
-
-[explanation]
-2 + 2 = 4. This is basic addition.
-[/explanation]
-]]></MarkupProblem>
-
-</Vertical>

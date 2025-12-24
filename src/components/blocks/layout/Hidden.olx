@@ -1,5 +1,4 @@
-<!-- Hidden Block Example -->
-<Vertical id="HiddenDemo" title="Hidden Block Demo" launchable="true">
+<Vertical id="HiddenDemo" title="Hidden Block Demo">
   <Markdown id="hidden_example">
 ### Example: Hidden Context for AI
 

@@ -1,5 +1,5 @@
 <!-- Ref Block Examples -->
-<Vertical id="RefDemo" title="Ref Block Demo" launchable="true">
+<Vertical id="RefDemo" title="Ref Block Demo">
 
   <Markdown id="intro">
 ## Ref Block

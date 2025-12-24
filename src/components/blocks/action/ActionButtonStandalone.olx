@@ -1,4 +1,3 @@
-<!-- Standalone Correctness Demo - Using Correctness outside CapaProblem -->
 <Vertical id="standalone_correctness" title="Standalone Problem Demo">
   <Markdown>
 ## Standalone Correctness, Input, Button, and Grader

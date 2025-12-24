@@ -1,4 +1,4 @@
-<Vertical id="DynamicListStructured" title="Structured DynamicList" launchable="true">
+<Vertical id="DynamicListStructured" title="Structured DynamicList">
 
   <Markdown>You're designing an active learning intervention. Provide at least 2 pieces of evidence to support your approach:</Markdown>
   <DynamicList id="evidence_list" min="2">

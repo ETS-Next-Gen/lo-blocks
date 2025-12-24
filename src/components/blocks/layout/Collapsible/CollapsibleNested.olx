@@ -1,4 +1,4 @@
-<Vertical id="CollapsibleNested" title="Nested Collapsibles" launchable="true">
+<Vertical id="CollapsibleNested" title="Nested Collapsibles">
 
   <Collapsible id="evidence" title="Evidence-Based Instruction">
     <Markdown>

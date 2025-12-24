@@ -6,11 +6,12 @@ Grades ratio/fraction answers by comparing two numeric inputs. Accepts any equiv
 
 Works with any two inputs that output numbers:
 
-```xml
-<CapaProblem id="fraction">
-  <RatioGrader answer="0.75">
-    <p>Express 3/4 as a fraction:</p>
-    <NumberInput /> / <NumberInput />
+```olx:code
+<CapaProblem id="effect_size">
+  <RatioGrader answer="2.0">
+    <Markdown>In Hake's study, interactive engagement produced roughly how many times the learning gain of traditional lecture?</Markdown>
+    <Markdown>Ratio (IE gain : Traditional gain):</Markdown>
+    <NumberInput /> : <NumberInput />
   </RatioGrader>
 </CapaProblem>
 ```
@@ -24,11 +25,12 @@ Works with any two inputs that output numbers:
 
 RatioGrader divides the first input by the second:
 
-- `answer="0.5"` (ratio 1:2)
-- Inputs 2, 4 → 2÷4 = 0.5 ✓
-- Inputs 3, 6 → 3÷6 = 0.5 ✓
-- Inputs 2, 3 → 2÷3 = 0.667 ✗
+- `answer="2.0"` (ratio 2:1)
+- Inputs 48, 24 → 48÷24 = 2.0 ✓
+- Inputs 0.48, 0.24 → 2.0 ✓
+- Inputs 50, 23 → 2.17 (may need tolerance)
 
 ## Compatible Inputs
 
 Any inputs returning numbers: `NumberInput`, `ComplexInput`, etc.
+

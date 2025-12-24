@@ -1,6 +1,6 @@
 <CapaProblem id="RatioGraderDemo" title="Chemistry Ratio">
   What is the ratio of hydrogen to oxygen atoms in H₂O?
-  <RatioGrader answer="2" tolerance="0.01">
+  <RatioGrader answer="2" tolerance="0.01" displayAnswer="2 and 1">
     <NumberInput />
     <NumberInput />
   </RatioGrader>

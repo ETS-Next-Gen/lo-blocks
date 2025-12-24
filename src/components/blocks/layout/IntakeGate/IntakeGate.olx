@@ -1,4 +1,3 @@
-<!-- IntakeGate Minimal Template -->
 <IntakeGate targets="output">
   <!-- Intake phase: collect input and trigger generation -->
   <Vertical>

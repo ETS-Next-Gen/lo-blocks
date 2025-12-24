@@ -70,7 +70,7 @@ From Walkington (2013): students who received personalized algebra problems show
     </ActionButton>
   </Vertical>
 
-  <CapaProblem>
+  <CapaProblem id="personalized_problem" title="Linear Equations">
     <TextSlot id="problem_context" />
     <Markdown>Which equation represents total cost (y) for hours worked (x)?</Markdown>
     <KeyGrader>

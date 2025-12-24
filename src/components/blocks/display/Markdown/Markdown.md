@@ -80,7 +80,7 @@ Use CDATA when embedding OLX inside Markdown to avoid XML parsing conflicts:
 Before reading about the spacing effect, predict the answer:
 
 ```olx:render
-<CapaProblem id="pretest">
+<CapaProblem id="pretest" title="Study Schedules">
   <KeyGrader>
     Which study schedule produces the best long-term retention?
     <ChoiceInput>

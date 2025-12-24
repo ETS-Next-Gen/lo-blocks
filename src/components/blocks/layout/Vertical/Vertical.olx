@@ -1,5 +1,4 @@
-<!-- Vertical Block Examples -->
-<Vertical id="VerticalDemo" title="Vertical Block Demo" launchable="true">
+<Vertical id="VerticalDemo" title="Vertical Block Demo">
 
   <Markdown id="intro">
 ## Vertical Layout Examples

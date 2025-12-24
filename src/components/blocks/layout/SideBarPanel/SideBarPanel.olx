@@ -1,5 +1,4 @@
-<!-- SideBarPanel Block Example -->
-<Vertical id="SideBarPanelDemo" title="SideBarPanel Block Demo" launchable="true">
+<Vertical id="SideBarPanelDemo" title="SideBarPanel Block Demo">
 
   <Markdown id="intro">
 ## SideBarPanel Layout

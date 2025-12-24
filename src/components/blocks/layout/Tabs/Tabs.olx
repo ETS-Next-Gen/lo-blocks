@@ -1,4 +1,4 @@
-<Tabs id="TabsDemo" title="Tabs" launchable="true">
+<Tabs id="TabsDemo" title="Tabs">
   <Markdown id="testing_effect" label="Testing Effect">
 ## The Testing Effect
 

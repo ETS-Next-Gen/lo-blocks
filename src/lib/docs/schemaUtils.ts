@@ -3,6 +3,7 @@
 // Utilities for extracting documentation-friendly information from Zod schemas.
 //
 import { z } from 'zod';
+import { BASE_ATTRIBUTE_NAMES } from '@/lib/blocks/attributeSchemas';
 
 // TODO: Should this be zod or ts?
 export interface AttributeDoc {
@@ -12,6 +13,7 @@ export interface AttributeDoc {
   description?: string;
   enumValues?: string[];  // For enum types
   default?: unknown;
+  isBaseAttribute: boolean;  // Whether this is a base attribute common to all blocks
 }
 
 /**
@@ -128,6 +130,7 @@ export function extractAttributes(schema: z.ZodTypeAny | undefined): AttributeDo
       description,
       enumValues,
       default: defaultValue,
+      isBaseAttribute: BASE_ATTRIBUTE_NAMES.includes(name),
     });
   }
 

@@ -1,107 +1,23 @@
 // src/app/api/openai/[[...path]]/route.js
 //
 // Proxy for chat completions. Client sends OpenAI format, server routes to configured provider.
-//
-// Provider selection (in order of precedence):
-//   1. Explicit: LLM_PROVIDER=bedrock|azure|openai|stub
-//   2. Inferred from env vars (fails if conflicting signals detected)
-//
-// Provider configs:
-//   bedrock: AWS_BEDROCK_MODEL (use us. prefix), AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-//   azure:   AZURE_API_KEY, AZURE_DEPLOYMENT_ID, AZURE_BASE_URL
-//   openai:  OPENAI_API_KEY and/or OPENAI_BASE_URL, OPENAI_MODEL (optional)
-//   stub:    LLM_PROVIDER=stub, or no provider config detected
+// See docs/llm-setup.md for configuration.
 
 import { NextResponse } from 'next/server';
+import {
+  getProvider,
+  AWS_BEDROCK_MODEL,
+  AWS_REGION,
+  AZURE_API_KEY,
+  AZURE_DEPLOYMENT_ID,
+  AZURE_API_VERSION,
+  AZURE_BASE_URL,
+  OPENAI_API_KEY,
+  OPENAI_MODEL,
+  OPENAI_BASE_URL,
+} from '@/lib/llm/provider';
 
-// --- Config ---
-
-// Bedrock
-const AWS_BEDROCK_MODEL = process.env.AWS_BEDROCK_MODEL;
-const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-
-// Azure (separate namespace to avoid conflicts)
-const AZURE_API_KEY = process.env.AZURE_API_KEY;
-const AZURE_DEPLOYMENT_ID = process.env.AZURE_DEPLOYMENT_ID;
-const AZURE_API_VERSION = process.env.AZURE_API_VERSION || '2024-02-15';
-const rawAzureUrl = process.env.AZURE_BASE_URL;
-const AZURE_BASE_URL = rawAzureUrl
-  ? (rawAzureUrl.endsWith('/') ? rawAzureUrl : rawAzureUrl + '/')
-  : null;
-
-// OpenAI (and compatible)
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-nano';
-const rawOpenaiUrl = process.env.OPENAI_BASE_URL;
-const OPENAI_BASE_URL = rawOpenaiUrl
-  ? (rawOpenaiUrl.endsWith('/') ? rawOpenaiUrl : rawOpenaiUrl + '/')
-  : 'https://api.openai.com/v1/';
-
-// --- Provider Detection ---
-function detectProvider() {
-  const explicit = process.env.LLM_PROVIDER?.toLowerCase();
-  if (explicit) {
-    if (!['bedrock', 'azure', 'openai', 'stub'].includes(explicit)) {
-      throw new Error(`Invalid LLM_PROVIDER: ${explicit}. Must be bedrock, azure, openai, or stub.`);
-    }
-    return explicit;
-  }
-
-  // Infer from env vars
-  const signals = {
-    bedrock: !!AWS_BEDROCK_MODEL,
-    azure: !!AZURE_DEPLOYMENT_ID,
-    openai: !!(OPENAI_API_KEY || rawOpenaiUrl),  // API key OR custom base URL (e.g., Ollama)
-  };
-
-  const detected = Object.entries(signals).filter(([, v]) => v).map(([k]) => k);
-
-  if (detected.length > 1) {
-    throw new Error(
-      `Conflicting LLM provider settings detected: ${detected.join(', ')}. ` +
-      `Set LLM_PROVIDER explicitly or remove conflicting env vars.`
-    );
-  }
-
-  return detected[0] || 'stub';
-}
-
-let PROVIDER;
-let PROVIDER_ERROR = null;
-try {
-  PROVIDER = detectProvider();
-} catch (e) {
-  PROVIDER_ERROR = e.message;
-  console.error(`\n❌ LLM configuration error: ${e.message}\n`);
-}
-
-if (PROVIDER === 'stub') {
-  console.log(`
-⚠️  LLM running in STUB mode - responses are fake.
-
-To configure a real LLM provider, set LLM_PROVIDER and required env vars:
-
-  Bedrock (Claude):
-    LLM_PROVIDER=bedrock
-    AWS_BEDROCK_MODEL=us.anthropic.claude-3-5-sonnet-20241022-v2:0
-    AWS_ACCESS_KEY_ID=...
-    AWS_SECRET_ACCESS_KEY=...
-    AWS_REGION=us-east-1
-
-  Azure OpenAI:
-    LLM_PROVIDER=azure
-    AZURE_API_KEY=...
-    AZURE_DEPLOYMENT_ID=my-deployment
-    AZURE_BASE_URL=https://myresource.openai.azure.com/openai/
-
-  OpenAI (or compatible, e.g., Ollama):
-    LLM_PROVIDER=openai
-    OPENAI_API_KEY=sk-...              # optional for local servers
-    OPENAI_BASE_URL=http://localhost:11434/v1/  # optional
-
-See docs/llm-setup.md for details.
-`);
-}
+const { provider: PROVIDER, error: PROVIDER_ERROR } = getProvider();
 
 export async function POST(request) {
   if (PROVIDER_ERROR) {
@@ -282,6 +198,16 @@ async function azureResponse(body) {
     },
     body: JSON.stringify(body),
   });
+
+  // Log errors for debugging
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`❌ Azure API error (${response.status}): ${errorBody}`);
+    return NextResponse.json(
+      { error: `Azure API error: ${response.status}`, details: errorBody },
+      { status: response.status }
+    );
+  }
 
   return new NextResponse(response.body, {
     status: response.status,

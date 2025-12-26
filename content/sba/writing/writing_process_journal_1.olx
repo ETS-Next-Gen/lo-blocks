@@ -15,20 +15,23 @@ category: writing
             The next several screens ask you to estimate how often you write each type.
        </Markdown>
    </Vertical>
-   <Vertical id="Step_1">
-       <Markdown>
-           # Writing For School
-           Indicate how often you have engaged in each of the following activities **for school**.
-       </Markdown>
-       <TabularMCQ id="writing_frequency_1">
-         cols: Daily, Weekly, Monthly, Every Semester, Rarely or Never
-         rows: Fiction (including drama and fan fiction and graphic novels), A list (e.g. to do list or grocery list), An essay, A text message or direct message, An annotated bibliography
-       </TabularMCQ>
-       <Markdown>
-         Select one option for each row. Your selections are automatically saved.
-       </Markdown>
-       <ActionButton label="Summarize my responses">
-           <LLMAction target="response_summary_1">
+   <SplitPanel id="Step_1" title="Survey Questions 1-5" sizes="80,20">
+       <LeftPane>
+            <Markdown>
+                # Writing For School
+                Indicate how often you have engaged in each of the following activities **for school**.
+            </Markdown>
+            <TabularMCQ id="writing_frequency_1">
+              cols: Daily, Weekly, Monthly, Every Semester, Rarely or Never
+              rows: Fiction (including drama and fan fiction and graphic novels), A list (e.g. to do list or grocery list), An essay, A text message or direct message, An annotated bibliography
+            </TabularMCQ>
+            <Markdown>
+              Select one option for each row. Your selections are automatically saved.
+            </Markdown>
+       </LeftPane>
+       <RightPane>
+           <ActionButton label="Summarize my responses">
+               <LLMAction target="response_summary_1">
                    For the first survey page that asks about writing for school,
                    Our column headers are: 
                          Daily (corresponding to 0),
@@ -50,14 +53,15 @@ category: writing
                  Interpret the data by substituting each column header only for the number it corresponds
                   to, adding the row headers to indicate the frequency with which the student writes in each genre
                   for school. Do not include the numbers or mention the mapping. Format the interpretation as a list.
-                  Precede the list with a statement that says this is how frequently the student
+                  Precede the list with a statement that says this is a data summary that indicates how 
+                  frequently the student
                   does each writing task for school.
-
-           </LLMAction>
+               </LLMAction>
            <LLMAction target="response_feedback_1">
                    <Ref target="response_summary_1" />
-                   In five very short summary statements, addressing the student as "you",
-                   compare the exact frequency with which this student writes in each genre
+                   In five very short summary statements using the information from the data interpretation,
+                   addressing the student as "you",
+                   compare the frequency that the student reports writing in each genre 
                    to the exact writing frequency of a typical student, who:
                    never writes fiction for school,
                    writes lists for school on a weekly or daily basis, 
@@ -66,12 +70,30 @@ category: writing
                    and creates an annotated bibliography for school once a semester or never.
                    Do not add interpretive statements that go beyond the basic comparison.
                    Format the statements as a bulleted list.
-           </LLMAction>
-       </ActionButton>
-     </Vertical>
-     <Vertical id="Step_1c">
+               </LLMAction>
+           </ActionButton>
+           <LLMFeedback id="response_summary_1" />
+         </RightPane>
+     </SplitPanel>
+     <Vertical id="Step_1b">
+           <ActionButton label="Summarize my responses">
+           <LLMAction target="response_feedback_1">
+                   <Ref target="response_summary_1" />
+                   In five very short summary statements using the information from the data interpretation,
+                   addressing the student as "you",
+                   compare the frequency that the student reports writing in each genre 
+                   to the exact writing frequency of a typical student, who:
+                   never writes fiction for school,
+                   writes lists for school on a weekly or daily basis, 
+                   may write essays for school only once a semester,
+                   writes text messages for school every day, 
+                   and creates an annotated bibliography for school once a semester or never.
+                   Do not add interpretive statements that go beyond the basic comparison.
+                   Format the statements as a bulleted list.
+               </LLMAction>
+           </ActionButton>
            <LLMFeedback id="response_feedback_1" />
-     </Vertical>
+    </Vertical>
      <Vertical id="Step_2">
        <Markdown>
            # Writing Outside of School
@@ -137,7 +159,9 @@ category: writing
                <LLMAction target="response_feedback_2">
                    <Ref target="response_summary_2" />
                    In five very short summary statements, addressing the student as "you",
-                   compare the exact frequency with which this student writes in each genre
+                   each of which compares the exact frequency with which this student writes in each genre,
+                   as indicated in the preceding data summary (using the categories provided,
+                   namely, daily, weekly, monthly, once a semester, or rarely/never)
                    to the exact writing frequency of a typical student, who:
                    never writes fiction outside of school,
                    may write list outside of school at any frequency, 

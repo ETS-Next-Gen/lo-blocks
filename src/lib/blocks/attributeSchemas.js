@@ -42,10 +42,10 @@ export const baseAttributes = z.object({
   id: z.string().optional().refine(
     (id) => !id || VALID_ID_PATTERN.test(id),
     (id) => ({ message: validateOlxId(id) })
-  ).describe('Unique identifier for this block'),
-  title: z.string().optional().describe('Display title for this block (used as tab label in Tabs)'),
-  class: z.string().optional().describe('CSS class(es) to apply to this block'),
-  launchable: z.string().optional().describe('"true" marks block as standalone-launchable'),
+  ).describe('Unique identifier (letters, numbers, underscore)'),
+  title: z.string().optional().describe('Display title (shown in tabs, course navigation, headers)'),
+  class: z.string().optional().describe('Visual styling classes (CSS classes for developers)'),
+  launchable: z.string().optional().describe('Set to "true" to show in activity indexes'),
   initialPosition: z.string().optional().describe('Initial position for sortable items'),
 }).strict();
 

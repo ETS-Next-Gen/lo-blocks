@@ -67,11 +67,12 @@ function detectProvider() {
 }
 
 let PROVIDER;
+let PROVIDER_ERROR = null;
 try {
   PROVIDER = detectProvider();
 } catch (e) {
-  console.error(`\n❌ ${e.message}\n`);
-  process.exit(1);
+  PROVIDER_ERROR = e.message;
+  console.error(`\n❌ LLM configuration error: ${e.message}\n`);
 }
 
 if (PROVIDER === 'stub') {
@@ -103,6 +104,13 @@ See docs/llm-setup.md for details.
 }
 
 export async function POST(request) {
+  if (PROVIDER_ERROR) {
+    return NextResponse.json(
+      { error: `LLM configuration error: ${PROVIDER_ERROR}` },
+      { status: 500 }
+    );
+  }
+
   const body = await request.json();
 
   switch (PROVIDER) {

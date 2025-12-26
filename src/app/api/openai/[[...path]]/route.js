@@ -2,52 +2,90 @@
 //
 // Proxy for chat completions. Client sends OpenAI format, server routes to configured provider.
 //
-// Providers (detected by env vars, in priority order):
-//   Bedrock: AWS_BEDROCK_MODEL, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-//            Use cross-region inference profile format: us.anthropic.claude-3-5-sonnet-20241022-v2:0
-//            (The us. prefix is required for most models; without it you get inference profile errors)
-//   Azure:   OPENAI_DEPLOYMENT_ID, OPENAI_BASE_URL, OPENAI_API_KEY
-//   OpenAI:  OPENAI_API_KEY, OPENAI_MODEL (optional), OPENAI_BASE_URL (optional)
-//   Stub:    No API key, or LLM_MODE=STUB
+// Provider selection (in order of precedence):
+//   1. Explicit: LLM_PROVIDER=bedrock|azure|openai|stub
+//   2. Inferred from env vars (fails if conflicting signals detected)
+//
+// Provider configs:
+//   bedrock: AWS_BEDROCK_MODEL (use us. prefix), AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
+//   azure:   OPENAI_DEPLOYMENT_ID, OPENAI_BASE_URL, OPENAI_API_KEY
+//   openai:  OPENAI_API_KEY and/or OPENAI_BASE_URL, OPENAI_MODEL (optional)
+//   stub:    LLM_PROVIDER=stub, or no provider config detected
 
 import { NextResponse } from 'next/server';
 
-// Bedrock config
+// --- Config ---
 const AWS_BEDROCK_MODEL = process.env.AWS_BEDROCK_MODEL;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-
-// OpenAI/Azure config
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-nano';
 const OPENAI_DEPLOYMENT_ID = process.env.OPENAI_DEPLOYMENT_ID;
 const OPENAI_API_VERSION = process.env.OPENAI_API_VERSION || '2024-02-15';
-const rawBaseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1/";
-const OPENAI_BASE_URL = rawBaseUrl.endsWith('/') ? rawBaseUrl : rawBaseUrl + '/';
+const rawBaseUrl = process.env.OPENAI_BASE_URL;
+const OPENAI_BASE_URL = rawBaseUrl
+  ? (rawBaseUrl.endsWith('/') ? rawBaseUrl : rawBaseUrl + '/')
+  : 'https://api.openai.com/v1/';
 
-// Provider detection
-const USE_BEDROCK = !!AWS_BEDROCK_MODEL;
-const USE_AZURE = !USE_BEDROCK && !!OPENAI_DEPLOYMENT_ID;
-const USE_STUB = !USE_BEDROCK && !OPENAI_API_KEY || process.env.LLM_MODE === 'STUB';
+// --- Provider Detection ---
+function detectProvider() {
+  const explicit = process.env.LLM_PROVIDER?.toLowerCase();
+  if (explicit) {
+    if (!['bedrock', 'azure', 'openai', 'stub'].includes(explicit)) {
+      throw new Error(`Invalid LLM_PROVIDER: ${explicit}. Must be bedrock, azure, openai, or stub.`);
+    }
+    return explicit;
+  }
 
-if (USE_STUB) {
+  // Infer from env vars
+  const signals = {
+    bedrock: !!AWS_BEDROCK_MODEL,
+    azure: !!OPENAI_DEPLOYMENT_ID,
+    openai: !!(OPENAI_API_KEY || rawBaseUrl),  // API key OR custom base URL (e.g., Ollama)
+  };
+
+  const detected = Object.entries(signals).filter(([, v]) => v).map(([k]) => k);
+
+  if (detected.length > 1) {
+    throw new Error(
+      `Conflicting LLM provider settings detected: ${detected.join(', ')}. ` +
+      `Set LLM_PROVIDER explicitly or remove conflicting env vars.`
+    );
+  }
+
+  return detected[0] || 'stub';
+}
+
+let PROVIDER;
+try {
+  PROVIDER = detectProvider();
+} catch (e) {
+  console.error(`\n❌ ${e.message}\n`);
+  process.exit(1);
+}
+
+if (PROVIDER === 'stub') {
   console.log(`
 ⚠️  LLM running in STUB mode - responses are fake.
 
-To configure a real LLM provider, set these environment variables:
+To configure a real LLM provider, set LLM_PROVIDER and required env vars:
 
   Bedrock (Claude):
+    LLM_PROVIDER=bedrock
     AWS_BEDROCK_MODEL=us.anthropic.claude-3-5-sonnet-20241022-v2:0
     AWS_ACCESS_KEY_ID=...
     AWS_SECRET_ACCESS_KEY=...
     AWS_REGION=us-east-1
 
   Azure OpenAI:
+    LLM_PROVIDER=azure
     OPENAI_API_KEY=...
     OPENAI_DEPLOYMENT_ID=my-deployment
     OPENAI_BASE_URL=https://myresource.openai.azure.com/openai/
 
-  OpenAI:
-    OPENAI_API_KEY=sk-...
+  OpenAI (or compatible, e.g., Ollama):
+    LLM_PROVIDER=openai
+    OPENAI_API_KEY=sk-...              # optional for local servers
+    OPENAI_BASE_URL=http://localhost:11434/v1/  # optional
 
 See docs/llm-setup.md for details.
 `);
@@ -56,16 +94,17 @@ See docs/llm-setup.md for details.
 export async function POST(request) {
   const body = await request.json();
 
-  if (USE_STUB) {
-    console.log(`🤖 Using LLM stub`);
-    return stubResponse(body);
+  switch (PROVIDER) {
+    case 'stub':
+      console.log(`🤖 Using LLM stub`);
+      return stubResponse(body);
+    case 'bedrock':
+      return bedrockResponse(body);
+    case 'azure':
+      return azureResponse(body);
+    case 'openai':
+      return openaiResponse(body);
   }
-
-  if (USE_BEDROCK) {
-    return bedrockResponse(body);
-  }
-
-  return openaiResponse(body);
 }
 
 // --- Bedrock (Claude) ---
@@ -188,24 +227,39 @@ function transformToOpenAI(result) {
   };
 }
 
-// --- OpenAI / Azure ---
+// --- OpenAI (and compatible: Ollama, OpenRouter, etc.) ---
 
 async function openaiResponse(body) {
-  const url = USE_AZURE
-    ? `${OPENAI_BASE_URL}deployments/${OPENAI_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`
-    : `${OPENAI_BASE_URL}chat/completions`;
+  body.model = OPENAI_MODEL;
 
-  const headers = USE_AZURE
-    ? { 'api-key': OPENAI_API_KEY, 'Content-Type': 'application/json' }
-    : { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' };
-
-  if (!USE_AZURE) {
-    body.model = OPENAI_MODEL;
+  const headers = { 'Content-Type': 'application/json' };
+  if (OPENAI_API_KEY) {
+    headers['Authorization'] = `Bearer ${OPENAI_API_KEY}`;
   }
+
+  const response = await fetch(`${OPENAI_BASE_URL}chat/completions`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  return new NextResponse(response.body, {
+    status: response.status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// --- Azure OpenAI ---
+
+async function azureResponse(body) {
+  const url = `${OPENAI_BASE_URL}deployments/${OPENAI_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`;
 
   const response = await fetch(url, {
     method: 'POST',
-    headers,
+    headers: {
+      'api-key': OPENAI_API_KEY,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(body),
   });
 

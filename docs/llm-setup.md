@@ -2,20 +2,22 @@
 
 This project supports multiple LLM providers. Configuration is via environment variables, typically set in `.env.local`.
 
-## Provider Priority
+## Provider Selection
 
-The system detects which provider to use based on which env vars are set, in this order:
+Set `LLM_PROVIDER` explicitly, or let the system infer from other env vars:
 
-1. **Bedrock** - if `AWS_BEDROCK_MODEL` is set
-2. **Azure OpenAI** - if `OPENAI_DEPLOYMENT_ID` is set
-3. **OpenAI** - if `OPENAI_API_KEY` is set
-4. **Stub** - fallback when no credentials, or `LLM_MODE=STUB`
+```bash
+LLM_PROVIDER=bedrock   # or: azure, openai, stub
+```
+
+If not set, the provider is inferred from which env vars are present. If conflicting signals are detected (e.g., both `AWS_BEDROCK_MODEL` and `OPENAI_DEPLOYMENT_ID`), the system exits with an error.
 
 ## AWS Bedrock (Claude)
 
 Recommended for Claude models. Uses AWS credentials for authentication.
 
 ```bash
+LLM_PROVIDER=bedrock
 AWS_BEDROCK_MODEL=us.anthropic.claude-3-5-sonnet-20241022-v2:0
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
@@ -47,6 +49,7 @@ The AWS SDK automatically checks these sources.
 ## OpenAI
 
 ```bash
+LLM_PROVIDER=openai
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4.1-nano          # optional, default: gpt-4.1-nano
 OPENAI_BASE_URL=https://...        # optional, default: https://api.openai.com/v1/
@@ -63,6 +66,7 @@ The model is controlled server-side only (client cannot override). Common models
 ## Azure OpenAI
 
 ```bash
+LLM_PROVIDER=azure
 OPENAI_API_KEY=...
 OPENAI_DEPLOYMENT_ID=my-gpt4-deployment
 OPENAI_BASE_URL=https://myresource.openai.azure.com/openai/
@@ -77,26 +81,36 @@ Any provider with an OpenAI-compatible API works by setting `OPENAI_BASE_URL`:
 
 ```bash
 # OpenRouter
+LLM_PROVIDER=openai
 OPENAI_API_KEY=sk-or-...
 OPENAI_BASE_URL=https://openrouter.ai/api/v1/
 OPENAI_MODEL=anthropic/claude-3-haiku
 
-# Local Ollama
+# Local Ollama (no API key needed)
+LLM_PROVIDER=openai
 OPENAI_BASE_URL=http://localhost:11434/v1/
 OPENAI_MODEL=llama2
 ```
+
+Note: For servers that don't require authentication (like local Ollama), you can omit `OPENAI_API_KEY`.
 
 ## Stub Mode (Development)
 
 For development without API access:
 
 ```bash
-LLM_MODE=STUB
+LLM_PROVIDER=stub
 ```
 
-Or simply don't set any credentials. The stub returns fake responses that echo the input, useful for testing the UI without incurring API costs.
+Or simply don't set any provider credentials. The stub returns fake responses that echo the input, useful for testing the UI without incurring API costs.
 
 ## Troubleshooting
+
+### "Conflicting LLM provider settings detected"
+
+You have env vars for multiple providers. Either:
+1. Set `LLM_PROVIDER` explicitly to choose one
+2. Remove the conflicting env vars
 
 ### "inference profile required" error (Bedrock)
 

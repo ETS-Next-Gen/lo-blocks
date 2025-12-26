@@ -19,22 +19,22 @@ category: interdisciplinary
   <RightPane>
     <Tabs id="interdisciplinary_sba_tabs">
       <!-- Tab 1: Current Activity -->
-      <Vertical id="interdisciplinary_current_activity" label="Current Activity">
+      <Vertical id="interdisciplinary_current_activity" title="Current Activity">
         <UseHistory id="interdisciplinary_sba_sidebar" initial="interdisciplinary_orientation" />
       </Vertical>
 
       <!-- Tab 2: Student Artifact -->
-      <Vertical id="interdisciplinary_artifact_tab" label="Artifact">
+      <Vertical id="interdisciplinary_artifact_tab" title="Artifact">
         <Use ref="interdisciplinary_artifact" />
       </Vertical>
 
       <!-- Tab 3: Library of Readings -->
-      <Vertical id="interdisciplinary_library_tab" label="Library">
+      <Vertical id="interdisciplinary_library_tab" title="Library">
         <Use ref="interdisciplinary_library" />
       </Vertical>
 
       <!-- Tab 4: Team Directory -->
-      <Vertical id="interdisciplinary_directory" label="Team">
+      <Vertical id="interdisciplinary_directory" title="Team">
         <Use ref="interdisciplinary_team_members" />
       </Vertical>
     </Tabs>

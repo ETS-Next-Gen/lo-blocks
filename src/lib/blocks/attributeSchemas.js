@@ -42,18 +42,25 @@ export const baseAttributes = z.object({
   id: z.string().optional().refine(
     (id) => !id || VALID_ID_PATTERN.test(id),
     (id) => ({ message: validateOlxId(id) })
-  ),
-  title: z.string().optional(),
-  class: z.string().optional(),
-  url_name: z.string().optional().refine(
-    (id) => !id || VALID_ID_PATTERN.test(id),
-    (id) => ({ message: validateOlxId(id) })
-  ),  // legacy edX attribute
-  launchable: z.string().optional(), // "true" marks block as standalone-launchable
-  // TODO: Rename 'label' to 'title' for consistency (label is used by Tabs for tab titles)
-  label: z.string().optional().describe('Tab label when used as child of Tabs'),
+  ).describe('Unique identifier for this block'),
+  title: z.string().optional().describe('Display title for this block (used as tab label in Tabs)'),
+  class: z.string().optional().describe('CSS class(es) to apply to this block'),
+  launchable: z.string().optional().describe('"true" marks block as standalone-launchable'),
   initialPosition: z.string().optional().describe('Initial position for sortable items'),
 }).strict();
+
+/**
+ * Names of all base attributes (for documentation filtering).
+ */
+export const BASE_ATTRIBUTE_NAMES = Object.keys(baseAttributes.shape);
+
+/**
+ * Placeholder attribute - mixin for blocks that support placeholder text.
+ * Use with baseAttributes.extend(placeholder)
+ */
+export const placeholder = {
+  placeholder: z.string().optional().describe('Placeholder text displayed when empty'),
+};
 
 /**
  * Attributes for blocks that support external source loading via src attribute.

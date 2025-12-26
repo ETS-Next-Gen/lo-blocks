@@ -4,7 +4,7 @@ import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
-import { srcAttributes } from '@/lib/blocks/attributeSchemas';
+import { srcAttributes, placeholder } from '@/lib/blocks/attributeSchemas';
 import _NumberInput from './_NumberInput';
 
 export const fields = state.fields(['value']);
@@ -22,10 +22,10 @@ const NumberInput = core({
     return v === undefined ? undefined : parseFloat(v);
   },
   attributes: srcAttributes.extend({
+    ...placeholder,
     min: z.string().optional().describe('Minimum allowed value'),
     max: z.string().optional().describe('Maximum allowed value'),
     step: z.string().optional().describe('Step increment for value changes'),
-    placeholder: z.string().optional().describe('Placeholder text shown when empty'),
   }),
 });
 

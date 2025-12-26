@@ -356,8 +356,8 @@ function BlockTabs({ tabs, activeTab, onTabChange }) {
 
 function QuickReference({ block }) {
   const attributes = block.attributes;
-  const customAttrs = attributes?.filter(attr => attr.description) || [];
-  const baseAttrs = attributes?.filter(attr => !attr.description) || [];
+  const customAttrs = attributes?.filter(attr => !attr.isBaseAttribute) || [];
+  const baseAttrs = attributes?.filter(attr => attr.isBaseAttribute) || [];
 
   return (
     <section className="bg-white rounded-lg border p-6">
@@ -436,7 +436,12 @@ function QuickReference({ block }) {
               {baseAttrs.map((attr, i) => (
                 <span key={attr.name}>
                   {i > 0 && ', '}
-                  <code className="text-gray-600">{attr.name}</code>
+                  <code
+                    className="text-gray-600 cursor-help border-b border-dotted border-gray-400"
+                    title={attr.description || attr.name}
+                  >
+                    {attr.name}
+                  </code>
                 </span>
               ))}
             </div>

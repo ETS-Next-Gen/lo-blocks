@@ -4,7 +4,7 @@
 import React from 'react';
 import { DisplayError } from '@/lib/util/debug';
 import { useComponentState } from '@/lib/state';
-import { useBlockByOLXId } from '@/lib/blocks';
+import { useBlockByOLXId } from '@/lib/blocks/useBlockByOLXId';
 
 export default function _StateViewer(props) {
   const { target, scope, kids = '' } = props;

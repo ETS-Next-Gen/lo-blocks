@@ -5,7 +5,8 @@ import React, { useMemo, useEffect, useRef } from 'react';
 import { render } from '@/lib/render';
 import { useReduxState, useFieldSelector, componentFieldByName } from '@/lib/state';
 import { extendIdPrefix } from '@/lib/blocks/idResolver';
-import { CORRECTNESS, useBlockByOLXId } from '@/lib/blocks';
+import { CORRECTNESS } from '@/lib/blocks';
+import { useBlockByOLXId } from '@/lib/blocks/useBlockByOLXId';
 import { DisplayError } from '@/lib/util/debug';
 
 /**

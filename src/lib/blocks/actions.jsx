@@ -22,7 +22,7 @@ import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import * as lo_event from 'lo_event';
 import { CORRECTNESS } from './correctness';
 import { reduxId } from './idResolver';
-import { getBlockByOLXId } from './index';
+import { getBlockByOLXId } from './getBlockByOLXId';
 
 // Mix-in to make a block an action
 export function action({ action }) {

@@ -19,6 +19,6 @@ export { CORRECTNESS, CORRECTNESS_PRIORITY, VISIBILITY_HANDLERS, computeVisibili
 export { worstCaseCorrectness, proportionalCorrectness, computeScore, formatScore, countCorrectness } from '@/lib/grading';
 export { isInputReadOnly } from './inputInteraction';
 export { baseAttributes, BASE_ATTRIBUTE_NAMES } from './attributeSchemas';
-export { useGraderAnswer } from './useGraderAnswer';
+export { useGraderAnswer, findGrader } from './useGraderAnswer';
 export { createGrader } from './createGrader';
 export { getBlockByOLXId, getBlocksByOLXIds } from './getBlockByOLXId';

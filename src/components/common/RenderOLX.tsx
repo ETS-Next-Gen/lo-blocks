@@ -44,7 +44,7 @@
 //
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, Suspense, use } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense, use, useTransition } from 'react';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
@@ -103,6 +103,10 @@ export default function RenderOLX({
   const [parsed, setParsed] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // useTransition prevents Suspense during edits - React shows stale content
+  // while new content is preparing instead of showing spinners
+  const [isPending, startTransition] = useTransition();
+
   // Build provider stack for src="" resolution during parsing
   const effectiveProvider = useMemo(() => {
     const stack: any[] = [];
@@ -132,8 +136,10 @@ export default function RenderOLX({
   useEffect(() => {
     // Nothing to parse - render from baseIdMap only
     if (!inline && !files) {
-      setParsed(null);
-      setError(null);
+      startTransition(() => {
+        setParsed(null);
+        setError(null);
+      });
       return;
     }
 
@@ -154,8 +160,11 @@ export default function RenderOLX({
             effectiveProvider
           );
           if (!cancelled) {
-            setParsed(result);
-            setError(null);
+            // startTransition prevents Suspense - shows old content while rendering new
+            startTransition(() => {
+              setParsed(result);
+              setError(null);
+            });
           }
           return;
         }
@@ -181,12 +190,14 @@ export default function RenderOLX({
           }
 
           if (!cancelled) {
-            setParsed({
-              root: lastRoot,
-              idMap: mergedIdMap,
-              ids: Object.keys(mergedIdMap)
+            startTransition(() => {
+              setParsed({
+                root: lastRoot,
+                idMap: mergedIdMap,
+                ids: Object.keys(mergedIdMap)
+              });
+              setError(null);
             });
-            setError(null);
           }
         }
       } catch (err) {
@@ -200,7 +211,7 @@ export default function RenderOLX({
 
     doParse();
     return () => { cancelled = true; };
-  }, [inline, files, effectiveProvider, provenance, onError]);
+  }, [inline, files, effectiveProvider, provenance, onError, startTransition]);
 
   // Merge parsed idMap with baseIdMap (parsed overrides base)
   const mergedIdMap = useMemo(() => {

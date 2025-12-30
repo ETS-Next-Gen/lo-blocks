@@ -44,8 +44,9 @@ function findTargetingGrader(props) {
 /**
  * Find the grader for this input, or null if none exists.
  * Does not throw - inputs can legitimately exist without graders.
+ * Exported for conditional rendering (e.g., only render DisplayAnswer if grader exists).
  */
-function findGrader(props) {
+export function findGrader(props) {
   // First try targeting grader (sibling pattern)
   const targetingGrader = findTargetingGrader(props);
   if (targetingGrader) return targetingGrader;
@@ -93,8 +94,9 @@ export function useGraderAnswer(props) {
     }
   );
 
-  // Get grader instance unconditionally (hook must always be called)
-  const graderInstance = useBlockByOLXId(props, graderId || '');
+  // Get grader instance unconditionally (hook must always be called).
+  // Pass graderId directly - getBlockByOLXId handles null gracefully.
+  const graderInstance = useBlockByOLXId(props, graderId);
 
   // Get displayAnswer from grader's blueprint when showAnswer is true
   let displayAnswer = undefined;

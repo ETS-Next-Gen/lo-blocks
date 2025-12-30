@@ -52,6 +52,28 @@ async function fetchBlockFromServer(id) {
  * @returns {Thenable<Object|undefined>} The block entry, or undefined if not found
  */
 export function getBlockByOLXId(props, id) {
+  // null/undefined IDs return undefined synchronously.
+  // This supports React hook patterns where hooks must be called unconditionally
+  // but the ID may legitimately not exist (e.g., inputs without graders).
+  // Callers should pass null directly, not use fallbacks like `id || ''`.
+  if (id == null) {
+    return {
+      status: 'fulfilled',
+      value: undefined,
+      then(onFulfilled) { onFulfilled(undefined); }
+    };
+  }
+
+  // Empty string is likely a bug - caller used `|| ''` instead of passing null
+  if (id === '') {
+    console.warn('getBlockByOLXId: Called with empty string. Pass null instead if ID is optional.');
+    return {
+      status: 'fulfilled',
+      value: undefined,
+      then(onFulfilled) { onFulfilled(undefined); }
+    };
+  }
+
   const key = idMapKey(id);
 
   // Get or create cache for this specific idMap

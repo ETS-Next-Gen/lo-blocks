@@ -36,7 +36,7 @@ it('renders ActionButton and Correctness at runtime', async () => {
   const { container } = rtlRender(
     React.createElement(Provider, { store }, ui)
   );
-  // Uses data-block-type from render wrapper
+  // Sync thenables with status:'fulfilled' are unwrapped synchronously by use()
   const btn = container.querySelector('[data-block-type="ActionButton"]');
   const status = container.querySelector('[data-block-type="Correctness"]');
   expect(btn).toBeTruthy();

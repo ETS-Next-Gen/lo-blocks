@@ -43,16 +43,24 @@ export function getBlockByOLXId(props, id) {
     promiseCacheByIdMap.set(props.idMap, cacheForIdMap);
   }
 
-  // Return cached promise if available (required for React's use() hook)
+  // Return cached thenable if available (required for React's use() hook)
   if (cacheForIdMap.has(key)) {
     return cacheForIdMap.get(key);
   }
 
-  // Currently sync - just wrap in resolved promise
-  // When server fetching is added, this becomes an async fetch
-  const promise = Promise.resolve(props.idMap[key]);
-  cacheForIdMap.set(key, promise);
-  return promise;
+  // Create a "synchronous thenable" that React's use() can inspect without suspending.
+  // React checks for status/value properties before treating it as a real promise.
+  // This avoids the microtask delay that causes Suspense to show fallback unnecessarily.
+  const value = props.idMap[key];
+  const thenable = {
+    status: 'fulfilled',
+    value: value,
+    then(onFulfilled) {
+      onFulfilled(value);
+    }
+  };
+  cacheForIdMap.set(key, thenable);
+  return thenable;
 
   // Future async version:
   // if (key in props.idMap) {
@@ -93,7 +101,20 @@ export function getBlocksByOLXIds(props, ids) {
     return cacheForIdMap.get(cacheKey);
   }
 
-  const promise = Promise.all(ids.map(id => getBlockByOLXId(props, id)));
-  cacheForIdMap.set(cacheKey, promise);
-  return promise;
+  // Get all values synchronously (they're all sync thenables)
+  const values = ids.map(id => {
+    const thenable = getBlockByOLXId(props, id);
+    return thenable.value; // Access sync value directly
+  });
+
+  // Create synchronous thenable for the batch
+  const thenable = {
+    status: 'fulfilled',
+    value: values,
+    then(onFulfilled) {
+      onFulfilled(values);
+    }
+  };
+  cacheForIdMap.set(cacheKey, thenable);
+  return thenable;
 }

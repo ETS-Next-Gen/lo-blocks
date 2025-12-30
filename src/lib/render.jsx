@@ -34,6 +34,9 @@ import { getBlockByOLXId } from '@/lib/blocks/getBlockByOLXId';
 // Cache for renderCompiledKids thenables, keyed by idMap then by kids+prefix
 const renderKidsCache = new WeakMap();
 
+// Cache for render() thenables, keyed by idMap then by node+prefix
+const renderCache = new WeakMap();
+
 /**
  * Generate a stable cache key from kids array and idPrefix.
  * Uses kid IDs/types rather than object identity for stability.
@@ -50,14 +53,85 @@ function getRenderCacheKey(kids, idPrefix) {
   return `${kidsKey}|${idPrefix || ''}`;
 }
 
+/**
+ * Generate a stable cache key for render() from node and idPrefix.
+ */
+function getNodeCacheKey(node, idPrefix) {
+  if (node == null) return `null|${idPrefix || ''}`;
+  if (typeof node === 'string') return `str:${node}|${idPrefix || ''}`;
+  if (React.isValidElement(node)) return `jsx:${node.key || 'nokey'}|${idPrefix || ''}`;
+  if (Array.isArray(node)) return `arr:${getRenderCacheKey(node, '')}|${idPrefix || ''}`;
+  if (typeof node === 'object') {
+    if (node.type === 'block') return `block:${node.id}|${idPrefix || ''}`;
+    if (node.tag) return `tag:${node.tag}:${node.id || '?'}|${idPrefix || ''}`;
+    return `obj:${node.id || JSON.stringify(node).slice(0, 50)}|${idPrefix || ''}`;
+  }
+  return `unknown|${idPrefix || ''}`;
+}
+
 // Root sentinel has minimal blueprint so selectors don't need ?. checks
 // TODO: Give root a real blueprint created via blocks.core() for consistency
 const ROOT_BLUEPRINT = Object.freeze({ name: 'Root', isGrader: false, isInput: false });
 export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {}, blueprint: ROOT_BLUEPRINT });
 
 // Main render function: handles single nodes, strings, JSX, and blocks
-// Async to support fetching blocks not in local idMap
-export async function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
+// Returns a cached thenable to work with React's use() hook.
+// React requires the same thenable instance across re-renders.
+export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
+  // Get or create cache for this idMap
+  let cacheForIdMap = renderCache.get(idMap);
+  if (!cacheForIdMap) {
+    cacheForIdMap = new Map();
+    renderCache.set(idMap, cacheForIdMap);
+  }
+
+  const cacheKey = getNodeCacheKey(node, idPrefix);
+
+  // Return cached thenable if available
+  if (cacheForIdMap.has(cacheKey)) {
+    return cacheForIdMap.get(cacheKey);
+  }
+
+  // Create thenable that will be cached
+  const thenable = {
+    status: 'pending',
+    value: undefined,
+    reason: undefined,
+    _promise: null,
+    then(onFulfilled, onRejected) {
+      if (this.status === 'fulfilled') {
+        if (onFulfilled) onFulfilled(this.value);
+        return;
+      }
+      if (this.status === 'rejected') {
+        if (onRejected) onRejected(this.reason);
+        return;
+      }
+      this._promise.then(onFulfilled, onRejected);
+    }
+  };
+
+  // Start render immediately and update thenable when done
+  thenable._promise = renderInternal({ node, idMap, key, nodeInfo, componentMap, idPrefix }).then(
+    result => {
+      thenable.status = 'fulfilled';
+      thenable.value = result;
+      return result;
+    },
+    err => {
+      thenable.status = 'rejected';
+      thenable.reason = err;
+      console.error('[render] Error:', err);
+      throw err;
+    }
+  );
+
+  cacheForIdMap.set(cacheKey, thenable);
+  return thenable;
+}
+
+// Internal render implementation
+async function renderInternal({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
   if (!node) return null;
   // JSX passthrough
   if (React.isValidElement(node)) return node;

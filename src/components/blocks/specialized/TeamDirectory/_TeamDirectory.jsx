@@ -1,7 +1,7 @@
 // src/components/blocks/specialized/TeamDirectory/_TeamDirectory.jsx
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { useReduxState } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 
@@ -80,10 +80,12 @@ function _TeamDirectory(props) {
     return `/content/${photo}`;
   };
 
+  const renderedKids = use(renderCompiledKids(props));
+
   return (
     <div className="team-directory p-4 border rounded-lg bg-white">
       {/* Render any child content */}
-      {renderCompiledKids(props)}
+      {renderedKids}
 
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">{title}</h3>

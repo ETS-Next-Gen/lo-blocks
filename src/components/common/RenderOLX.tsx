@@ -44,7 +44,7 @@
 //
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense, use } from 'react';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
@@ -220,33 +220,31 @@ export default function RenderOLX({
     }
   }, [mergedIdMap, parsed?.root]);
 
-  // Render content
-  const rendered = useMemo(() => {
+  // Create render promise (render() is async now)
+  // The promise is created in useMemo, then unwrapped by AsyncRenderer via use()
+  const renderPromise = useMemo(() => {
     if (!mergedIdMap) return null;
 
     // Use requested id, fall back to parsed root
     const rootId = mergedIdMap[id] ? id : (parsed?.root || id);
 
     if (!mergedIdMap[rootId]) {
-      return (
+      // Return a resolved promise with error element
+      return Promise.resolve(
         <div className="text-red-600">
           RenderOLX: ID &quot;{rootId}&quot; not found in content
         </div>
       );
     }
 
-    try {
-      return render({
-        key: rootId,
-        node: rootId,
-        idMap: mergedIdMap,
-        nodeInfo: makeRootNode(),
-        componentMap,
-      });
-    } catch (err) {
-      console.error('RenderOLX render error:', err);
-      return null;
-    }
+    // render() now returns a promise
+    return render({
+      key: rootId,
+      node: rootId,
+      idMap: mergedIdMap,
+      nodeInfo: makeRootNode(),
+      componentMap,
+    });
   }, [mergedIdMap, parsed, id, componentMap]);
 
   // Error state
@@ -271,7 +269,7 @@ export default function RenderOLX({
     return <div className="text-gray-500">Loading...</div>;
   }
 
-  if (!rendered) {
+  if (!renderPromise) {
     return <div className="text-gray-500">Loading...</div>;
   }
 
@@ -284,8 +282,14 @@ export default function RenderOLX({
       }}
     >
       <Suspense fallback={<div className="lo-loading">Loading content...</div>}>
-        {rendered}
+        <AsyncRenderer promise={renderPromise} />
       </Suspense>
     </ErrorBoundary>
   );
+}
+
+// Helper component that unwraps the render promise using use()
+function AsyncRenderer({ promise }: { promise: Promise<React.ReactNode> }) {
+  const rendered = use(promise);
+  return <>{rendered}</>;
 }

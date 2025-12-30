@@ -1,7 +1,7 @@
 // src/components/blocks/_TextArea.jsx
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { useReduxInput } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 import { DisplayAnswer } from '@/components/common/DisplayAnswer';
@@ -14,9 +14,11 @@ function _TextArea( props ) {
     { updateValidator }
   );
 
+  const kids = use(renderCompiledKids(props));
+
   return (
     <>
-      {renderCompiledKids( props )}
+      {kids}
       <textarea
         {...inputProps}
         className={className ?? 'large-input'}

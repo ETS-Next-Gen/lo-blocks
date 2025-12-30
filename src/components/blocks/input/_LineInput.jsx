@@ -1,7 +1,7 @@
 // src/components/blocks/_LineInput.jsx
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { useReduxInput } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 import { DisplayAnswer } from '@/components/common/DisplayAnswer';
@@ -16,6 +16,8 @@ export default function _LineInput( props ) {
     { updateValidator }
   );
 
+  const kids = use(renderCompiledKids(props));
+
   const passthrough = Object.fromEntries(
     allowedAttrs
       .filter(key => rest[key] !== undefined)
@@ -24,7 +26,7 @@ export default function _LineInput( props ) {
 
   return (
     <>
-      {renderCompiledKids( props )}
+      {kids}
       <input
         {...inputProps}
         {...passthrough}

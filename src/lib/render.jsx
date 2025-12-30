@@ -16,12 +16,39 @@
 // The dynamic OLX structure enables the actions system to find related blocks
 // and coordinate behaviors across the content hierarchy.
 //
+// render() and renderCompiledKids() are async to support fetching blocks that
+// aren't in the local idMap. Components should use: use(renderCompiledKids(props))
+//
+// IMPORTANT: renderCompiledKids returns a cached thenable to work with React's use().
+// React's use() hook requires the same promise instance across re-renders, otherwise
+// it suspends every time. We cache by idMap + kids IDs + idPrefix.
+//
 import htmlTags from 'html-tags';
 import React from 'react';
 import { DisplayError, DebugWrapper } from '@/lib/util/debug';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { getGrader } from '@/lib/blocks/olxdom';
+import { getBlockByOLXId } from '@/lib/blocks/getBlockByOLXId';
+
+// Cache for renderCompiledKids thenables, keyed by idMap then by kids+prefix
+const renderKidsCache = new WeakMap();
+
+/**
+ * Generate a stable cache key from kids array and idPrefix.
+ * Uses kid IDs/types rather than object identity for stability.
+ */
+function getRenderCacheKey(kids, idPrefix) {
+  if (!Array.isArray(kids)) return `invalid|${idPrefix || ''}`;
+  const kidsKey = kids.map(k => {
+    if (k == null) return 'null';
+    if (typeof k === 'string') return `s:${k}`;
+    if (typeof k !== 'object') return `p:${String(k)}`;
+    // For objects, use type+id as key
+    return `${k.type || 'obj'}:${k.id || k.key || '?'}`;
+  }).join(',');
+  return `${kidsKey}|${idPrefix || ''}`;
+}
 
 // Root sentinel has minimal blueprint so selectors don't need ?. checks
 // TODO: Give root a real blueprint created via blocks.core() for consistency
@@ -29,7 +56,8 @@ const ROOT_BLUEPRINT = Object.freeze({ name: 'Root', isGrader: false, isInput: f
 export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {}, blueprint: ROOT_BLUEPRINT });
 
 // Main render function: handles single nodes, strings, JSX, and blocks
-export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
+// Async to support fetching blocks not in local idMap
+export async function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
   if (!node) return null;
   // JSX passthrough
   if (React.isValidElement(node)) return node;
@@ -44,7 +72,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
   // This path may be deprecated, as we're moving towards always
   // having { type: 'block', id: [id] } for where we once used this.
   if (typeof node === 'string') {
-    const entry = idMap?.[node];
+    const entry = await getBlockByOLXId({ idMap }, node);
     if (!entry) {
       return (
         <DisplayError
@@ -65,7 +93,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
     node.type === 'block' &&
     typeof node.id === 'string'
   ) {
-    const entry = idMap?.[node.id];
+    const entry = await getBlockByOLXId({ idMap }, node.id);
     if (!entry) {
       return (
         <DisplayError
@@ -188,12 +216,77 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
 
 
 // Render kids array that may include: text, JSX, OLX, etc.
-export function renderCompiledKids( props ) {
+// Returns a cached thenable to work with React's use() hook.
+// Components should use: use(renderCompiledKids(props))
+export function renderCompiledKids(props) {
   let { kids, children, idMap, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' } = props;
   if (kids === undefined && children !== undefined) {
     console.log(
       "[renderCompiledKids] WARNING: 'children' prop used instead of 'kids'. Please migrate to 'kids'."
     );
+    kids = children;
+  }
+
+  // Get or create cache for this idMap
+  let cacheForIdMap = renderKidsCache.get(idMap);
+  if (!cacheForIdMap) {
+    cacheForIdMap = new Map();
+    renderKidsCache.set(idMap, cacheForIdMap);
+  }
+
+  const cacheKey = getRenderCacheKey(kids, idPrefix);
+
+  // Return cached thenable if available
+  if (cacheForIdMap.has(cacheKey)) {
+    return cacheForIdMap.get(cacheKey);
+  }
+
+  // Create thenable that will be cached
+  // Start the internal render immediately - this allows it to resolve
+  // before React's use() is called if all data is sync
+  const thenable = {
+    status: 'pending',
+    value: undefined,
+    reason: undefined,
+    _promise: null,
+    then(onFulfilled, onRejected) {
+      if (this.status === 'fulfilled') {
+        // Sync resolution - call callback immediately
+        if (onFulfilled) onFulfilled(this.value);
+        return;
+      }
+      if (this.status === 'rejected') {
+        if (onRejected) onRejected(this.reason);
+        return;
+      }
+      // Still pending - chain to the promise
+      this._promise.then(onFulfilled, onRejected);
+    }
+  };
+
+  // Start render immediately and update thenable when done
+  thenable._promise = renderCompiledKidsInternal(props).then(
+    result => {
+      thenable.status = 'fulfilled';
+      thenable.value = result;
+      return result;
+    },
+    err => {
+      thenable.status = 'rejected';
+      thenable.reason = err;
+      console.error('[renderCompiledKids] Error in internal render:', err);
+      throw err;
+    }
+  );
+
+  cacheForIdMap.set(cacheKey, thenable);
+  return thenable;
+}
+
+// Internal async implementation of renderCompiledKids
+async function renderCompiledKidsInternal(props) {
+  let { kids, children, idMap, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' } = props;
+  if (kids === undefined && children !== undefined) {
     kids = children;
   }
 
@@ -211,8 +304,8 @@ export function renderCompiledKids( props ) {
 
   const keyedKids = assignReactKeys(kids);
 
-
-  return keyedKids.map((child, i) => {
+  // Process all children, awaiting any async renders
+  const renderedKids = await Promise.all(keyedKids.map(async (child, i) => {
     if (typeof child === 'string') {
       return <React.Fragment key={`string-${i}`}>{child}</React.Fragment>;
     }
@@ -225,7 +318,7 @@ export function renderCompiledKids( props ) {
       case 'block':
         return (
           <React.Fragment key={child.key}>
-            {render({ node: child, idMap, key: `${child.key}`, nodeInfo, componentMap, idPrefix })}
+            {await render({ node: child, idMap, key: `${child.key}`, nodeInfo, componentMap, idPrefix })}
           </React.Fragment>
         );
 
@@ -254,7 +347,7 @@ export function renderCompiledKids( props ) {
         return React.createElement(
           child.tag,
           { key: child.key, ...child.attributes },
-          renderCompiledKids({ kids: child.kids ?? [], idMap, nodeInfo, componentMap, idPrefix })
+          await renderCompiledKidsInternal({ kids: child.kids ?? [], idMap, nodeInfo, componentMap, idPrefix })
         );
 
       case 'node':
@@ -274,7 +367,9 @@ export function renderCompiledKids( props ) {
           />
         );
     }
-  });
+  }));
+
+  return renderedKids;
 }
 
 

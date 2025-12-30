@@ -1,6 +1,6 @@
 // src/components/blocks/CapaProblem/_CapaProblem.jsx
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, use } from 'react';
 import { CORRECTNESS, worstCaseCorrectness } from '@/lib/blocks';
 import { inferRelatedNodes } from '@/lib/blocks/olxdom';
 import * as state from '@/lib/state';
@@ -173,10 +173,10 @@ function FooterWrapper({ children }) {
 // --- Main Component ---
 
 export default function _CapaProblem(props) {
-  const { id, kids = [] } = props;
+  const { id } = props;
 
   // Render content first to populate dynamic OLX DOM
-  const content = renderCompiledKids({ ...props, kids });
+  const content = use(renderCompiledKids(props));
 
   // Find child graders and DemandHints
   const childGraderIds = findChildGraderIds(props);

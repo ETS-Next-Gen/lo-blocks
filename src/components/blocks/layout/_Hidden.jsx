@@ -7,14 +7,13 @@
  * nothing appears on screen.
  */
 
-import React from 'react';
+import React, { use } from 'react';
 import { renderCompiledKids } from '@/lib/render';
 
 export default function _Hidden(props) {
   // Render the children to ensure they're included in the OLX DOM
-  if (props.kids) {
-    renderCompiledKids(props);
-  }
+  // use() must be called unconditionally, so always call renderCompiledKids
+  const _kids = use(renderCompiledKids(props));
 
   // Return null to hide the content visually
   return null;

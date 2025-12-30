@@ -1,6 +1,6 @@
 // src/components/blocks/display/Explanation/_Explanation.jsx
 'use client';
-import React from 'react';
+import React, { use } from 'react';
 import * as state from '@/lib/state';
 import { useFieldSelector } from '@/lib/state';
 import { CORRECTNESS, computeVisibility } from '@/lib/blocks';
@@ -22,7 +22,7 @@ import { renderCompiledKids } from '@/lib/render';
 function _Explanation(props) {
   // graderId injected by render (requiresGrader: true)
   // showWhen validated by attributes schema
-  const { kids = [], showWhen = 'correct', title, graderId } = props;
+  const { showWhen = 'correct', title, graderId } = props;
 
   const correctField = state.componentFieldByName(props, graderId, 'correct');
   const correctness = useFieldSelector(
@@ -30,6 +30,9 @@ function _Explanation(props) {
     correctField,
     { id: graderId, fallback: CORRECTNESS.UNSUBMITTED, selector: s => s?.correct }
   ) ?? CORRECTNESS.UNSUBMITTED;
+
+  // use() must be called unconditionally
+  const kids = use(renderCompiledKids(props));
 
   if (!computeVisibility(showWhen, { correctness })) {
     return null;
@@ -43,7 +46,7 @@ function _Explanation(props) {
         {heading}
       </div>
       <div className="lo-explanation__content text-gray-700">
-        {renderCompiledKids({ ...props, kids })}
+        {kids}
       </div>
     </div>
   );

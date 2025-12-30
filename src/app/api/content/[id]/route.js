@@ -2,6 +2,11 @@
 import { syncContentFromStorage } from '@/lib/content/syncContentFromStorage';
 import { getEditPathFromProvenance } from '@/lib/storage/contentPaths';
 
+// Toggle for testing one-at-a-time block fetching.
+// When true: returns only the requested block (stress-tests async loading)
+// When false: returns full idMap (current behavior, fast but sends everything)
+const SINGLE_BLOCK_MODE = true;
+
 /**
  * Add editPath and editError to an entry based on its provenance.
  * editPath is the content-relative path for editing.
@@ -55,10 +60,20 @@ export async function GET(request, { params }) {
       );
     }
 
-    return Response.json({
-      ok: true,
-      idMap
-    });
+    if (SINGLE_BLOCK_MODE) {
+      // Stress-test mode: return only the requested block
+      // This forces the client to fetch each block individually
+      return Response.json({
+        ok: true,
+        idMap: { [id]: idMap[id] }
+      });
+    } else {
+      // Normal mode: return full idMap (current behavior)
+      return Response.json({
+        ok: true,
+        idMap
+      });
+    }
   } catch (error) {
     console.error('Error loading content:', error);
 

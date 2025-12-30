@@ -1,7 +1,7 @@
 // src/components/blocks/layout/Tabs/_Tabs.jsx
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { use } from 'react';
 import { useReduxState } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 import { useBlocksByOLXIds } from '@/lib/blocks/useBlockByOLXId';
@@ -10,18 +10,15 @@ export default function _Tabs(props) {
   const { fields, kids = [] } = props;
   const [activeTab, setActiveTab] = useReduxState(props, fields.activeTab, 0);
 
-  // Extract kid IDs for batch lookup
-  const kidIds = useMemo(
-    () => kids.filter(k => k?.type === 'block' && k?.id).map(k => k.id),
-    [kids]
-  );
+  // Extract kid IDs for batch lookup (for tab labels)
+  const kidIds = kids.filter(k => k?.type === 'block' && k?.id).map(k => k.id);
   const kidBlocks = useBlocksByOLXIds(props, kidIds);
 
   // Create a map for easy lookup by ID
-  const kidBlockMap = useMemo(
-    () => Object.fromEntries(kidIds.map((id, i) => [id, kidBlocks[i]])),
-    [kidIds, kidBlocks]
-  );
+  const kidBlockMap = Object.fromEntries(kidIds.map((id, i) => [id, kidBlocks[i]]));
+
+  // Render all tab content upfront (use() must be called unconditionally)
+  const renderedContent = use(renderCompiledKids(props));
 
   if (kids.length === 0) {
     return <div className="p-4 text-gray-500">No tabs defined</div>;
@@ -67,17 +64,13 @@ export default function _Tabs(props) {
         })}
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content - show only active tab */}
       <div className="p-4">
-        {kids.map((kid, index) => {
-          if (index !== currentTab) return null;
-
-          return (
-            <div key={index}>
-              {renderCompiledKids({ ...props, kids: [kid] })}
-            </div>
-          );
-        })}
+        {renderedContent.map((content, index) => (
+          <div key={index} style={{ display: index === currentTab ? 'block' : 'none' }}>
+            {content}
+          </div>
+        ))}
       </div>
     </div>
   );

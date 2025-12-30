@@ -1,7 +1,7 @@
 // src/components/blocks/_ActionButton.jsx
 'use client';
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { use, useCallback, useEffect, useMemo } from 'react';
 import { executeNodeActions } from '@/lib/blocks';
 import { renderCompiledKids } from '@/lib/render';
 import { checkPrerequisites, parsePrerequisites } from '@/lib/util/prerequisites';
@@ -51,11 +51,13 @@ function _ActionButton(props) {
     };
   }, [evaluatePrerequisites, prerequisites.length]);
 
+  const kids = use(renderCompiledKids(props));
+
   const onClick = () => executeNodeActions(props);
   return (
     <button onClick={onClick} disabled={isDisabled}>
       {label}
-      {renderCompiledKids( props )}
+      {kids}
     </button>
   );
 }

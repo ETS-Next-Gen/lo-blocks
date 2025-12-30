@@ -1,13 +1,16 @@
 // src/components/blocks/layout/Collapsible/_Collapsible.jsx
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { useReduxState } from '@/lib/state';
 import { renderCompiledKids } from '@/lib/render';
 
 export default function _Collapsible(props) {
-  const { fields, kids = [], title, label } = props;
+  const { fields, title, label } = props;
   const [expanded, setExpanded] = useReduxState(props, fields.expanded, false);
+
+  // use() must be called unconditionally, even if we don't display when collapsed
+  const renderedKids = use(renderCompiledKids(props));
 
   const handleToggle = () => {
     setExpanded(!expanded);
@@ -37,7 +40,7 @@ export default function _Collapsible(props) {
 
       {expanded && (
         <div className="collapsible-content p-4 border-t border-gray-200">
-          {renderCompiledKids({ ...props, kids })}
+          {renderedKids}
         </div>
       )}
     </div>

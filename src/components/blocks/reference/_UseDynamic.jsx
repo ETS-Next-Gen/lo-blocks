@@ -1,7 +1,13 @@
 // src/components/blocks/_UseDynamic.jsx
-import React from 'react';
+import React, { use, Suspense } from 'react';
 import { render } from '@/lib/render';
 import { useReduxState, useValue } from '@/lib/state';
+import Spinner from '@/components/common/Spinner';
+
+function DynamicContent({ props, value }) {
+  const rendered = use(render({ ...props, node: value }));
+  return <>{rendered}</>;
+}
 
 export function _UseDynamic( props ) {
   const { fields, target, targetRef } = props;
@@ -17,5 +23,9 @@ export function _UseDynamic( props ) {
     return <pre className="text-red-500">[Missing &lt;Use&gt; resolution]</pre>;
   }
 
-  return render({ ...props, node: value });
+  return (
+    <Suspense fallback={<Spinner>Loading...</Spinner>}>
+      <DynamicContent props={props} value={value} />
+    </Suspense>
+  );
 }

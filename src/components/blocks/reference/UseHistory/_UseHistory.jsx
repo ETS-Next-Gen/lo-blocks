@@ -1,10 +1,16 @@
 // src/components/blocks/_UseHistory.jsx
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { use, useEffect, Suspense } from 'react';
 import { render } from '@/lib/render';
 import { useReduxInput, useReduxState, useValue } from '@/lib/state';
 import HistoryBar from '@/components/common/HistoryBar';
+import Spinner from '@/components/common/Spinner';
+
+function HistoryContent({ props, current }) {
+  const rendered = use(render({ ...props, node: current }));
+  return <>{rendered}</>;
+}
 
 export function _UseHistory(props) {
   const { target, targetRef, fields, initial } = props;
@@ -65,7 +71,9 @@ export function _UseHistory(props) {
         onSelect={handleSelect}
       />
       <div className="mt-2">
-        {render({ ...props, node: current })}
+        <Suspense fallback={<Spinner>Loading...</Spinner>}>
+          <HistoryContent props={props} current={current} />
+        </Suspense>
       </div>
     </div>
   );

@@ -1,8 +1,14 @@
 // src/components/blocks/layout/Navigator/_NavigatorReadingDetail.jsx
 'use client';
 
-import React from 'react';
+import React, { use, Suspense } from 'react';
 import { render } from '@/lib/render';
+import Spinner from '@/components/common/Spinner';
+
+function ReadingContent({ props, ref }) {
+  const rendered = use(render({ ...props, node: ref }));
+  return <>{rendered}</>;
+}
 
 export default function _NavigatorReadingDetail(props) {
   const { ref, name, title, subtitle } = props;
@@ -24,7 +30,9 @@ export default function _NavigatorReadingDetail(props) {
         {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}
       </div>
       <div className="p-6 prose prose-sm max-w-none">
-        {render({ ...props, node: ref })}
+        <Suspense fallback={<Spinner>Loading...</Spinner>}>
+          <ReadingContent props={props} ref={ref} />
+        </Suspense>
       </div>
     </div>
   );

@@ -1,13 +1,14 @@
 // src/components/blocks/specialized/MasteryBank/_MasteryBank.jsx
 'use client';
 
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { use, useMemo, useEffect, useRef, Suspense } from 'react';
 import { render } from '@/lib/render';
 import { useReduxState, useFieldSelector, componentFieldByName } from '@/lib/state';
 import { extendIdPrefix } from '@/lib/blocks/idResolver';
 import { CORRECTNESS } from '@/lib/blocks';
 import { useBlockByOLXId } from '@/lib/blocks/useBlockByOLXId';
 import { DisplayError } from '@/lib/util/debug';
+import Spinner from '@/components/common/Spinner';
 
 /**
  * Fisher-Yates shuffle - returns array of indices [0, length) in random order.
@@ -82,15 +83,23 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
   const { problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode } = masteryState;
   const { setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber } = handlers;
 
-  // Watch the current problem's grader correctness state (scoped by attempt)
+  const scopedProps = { ...props, ...extendIdPrefix(props, `${id}.attempt_${attemptNumber}`) };
   const scopedGraderId = `${problemId}_grader`;
-  const graderField = componentFieldByName(
-    { ...props, ...extendIdPrefix(props, `${id}.attempt_${attemptNumber}`) },
-    scopedGraderId,
-    'correct'
-  );
+
+  // Load problem and grader blocks before accessing fields (suspends if not loaded)
+  const problemBlock = useBlockByOLXId(props, problemId);
+  const graderBlock = useBlockByOLXId(props, scopedGraderId);
+
+  // Render problem (use() because render() is async)
+  const renderedProblem = use(render({ ...scopedProps, node: { type: 'block', id: problemId } }));
+
+  // Now safe to access grader field (grader is loaded)
+  const graderField = graderBlock
+    ? componentFieldByName(scopedProps, scopedGraderId, 'correct')
+    : null;
+
   const currentCorrectness = useFieldSelector(
-    { ...props, ...extendIdPrefix(props, `${id}.attempt_${attemptNumber}`) },
+    scopedProps,
     graderField,
     { id: scopedGraderId, fallback: CORRECTNESS.UNSUBMITTED, selector: s => s?.correct }
   );
@@ -144,7 +153,6 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
     }
   }, [currentCorrectness, firstSubmissionResult, correctStreak, goalNum, problemIds.length, modeState, orderMode, attemptNumber, setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber]);
 
-  const problemBlock = useBlockByOLXId(props, problemId);
   if (!problemBlock) {
     return (
       <DisplayError
@@ -163,7 +171,7 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
 
   return (
     <div className="lo-mastery-bank__problem">
-      {render({ ...props, node: { type: 'block', id: problemId }, ...extendIdPrefix(props, `${id}.attempt_${attemptNumber}`) })}
+      {renderedProblem}
     </div>
   );
 }
@@ -252,13 +260,15 @@ export default function _MasteryBank(props) {
         </div>
       </div>
 
-      <MasteryProblem
-        props={props}
-        problemId={currentProblemId}
-        attemptNumber={attemptNumber}
-        masteryState={{ problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode }}
-        handlers={{ setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber }}
-      />
+      <Suspense fallback={<Spinner>Loading problem...</Spinner>}>
+        <MasteryProblem
+          props={props}
+          problemId={currentProblemId}
+          attemptNumber={attemptNumber}
+          masteryState={{ problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode }}
+          handlers={{ setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber }}
+        />
+      </Suspense>
     </div>
   );
 }

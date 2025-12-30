@@ -49,6 +49,7 @@ import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
+import Spinner from '@/components/common/Spinner';
 import { InMemoryStorageProvider, StackedStorageProvider } from '@/lib/storage';
 import { isOLXFile } from '@/lib/util/fileTypes';
 
@@ -281,7 +282,7 @@ export default function RenderOLX({
         onError?.(err);
       }}
     >
-      <Suspense fallback={<div className="lo-loading">Loading content...</div>}>
+      <Suspense fallback={<Spinner>Loading content...</Spinner>}>
         <AsyncRenderer promise={renderPromise} />
       </Suspense>
     </ErrorBoundary>

@@ -1,9 +1,20 @@
 // src/components/blocks/SideBarPanel/_SideBarPanel.jsx
 'use client';
 
-import React from 'react';
+import React, { use, Suspense } from 'react';
 import { render } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
+import Spinner from '@/components/common/Spinner';
+
+function MainContent({ props, main }) {
+  const rendered = use(render({ ...props, node: main }));
+  return <>{rendered}</>;
+}
+
+function SidebarItem({ props, node, index }) {
+  const rendered = use(render({ ...props, node, key: index }));
+  return <>{rendered}</>;
+}
 
 function _SideBarPanel( props ) {
   const { kids = {}, idMap, parents } = props;
@@ -48,12 +59,16 @@ function _SideBarPanel( props ) {
   return (
     <div className="sidebarpanel-container">
       <div key="MainPane" className="main-pane">
-        {render({ ...props, node: main })}
+        <Suspense fallback={<Spinner>Loading...</Spinner>}>
+          <MainContent props={props} main={main} />
+        </Suspense>
       </div>
       <div key="Sidebar" className="sidebar">
         {sidebar.map((node, i) => (
           <div key={i} className="sidebar-item">
-            {render({ ...props, node, key: i })}
+            <Suspense fallback={<Spinner>Loading...</Spinner>}>
+              <SidebarItem props={props} node={node} index={i} />
+            </Suspense>
           </div>
         ))}
       </div>

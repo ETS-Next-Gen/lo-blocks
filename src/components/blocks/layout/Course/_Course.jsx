@@ -1,9 +1,18 @@
 // src/components/blocks/Course/_Course.jsx
 'use client';
 
-import React from 'react';
+import React, { use, Suspense } from 'react';
 import { useReduxState } from '@/lib/state';
 import { render } from '@/lib/render';
+import Spinner from '@/components/common/Spinner';
+
+function CourseContent({ props, selectedChild }) {
+  const rendered = use(render({
+    ...props,
+    node: selectedChild,
+  }));
+  return <>{rendered}</>;
+}
 
 function _Course(props) {
   const { kids = {}, fields, title = 'Course' } = props;
@@ -23,13 +32,11 @@ function _Course(props) {
     setSelectedChild(childId);
   };
 
-  // Find the currently selected child to render
-  // chapter.children are { type: 'block', id } objects, so we match by id
-  let selectedChildNode = null;
+  // Check if selectedChild is valid (exists in any chapter's children)
+  let hasValidSelection = false;
   for (const chapter of chapters) {
-    const found = chapter.children.find(child => child.id === selectedChild);
-    if (found) {
-      selectedChildNode = props.idMap?.[selectedChild];
+    if (chapter.children.find(child => child.id === selectedChild)) {
+      hasValidSelection = true;
       break;
     }
   }
@@ -84,16 +91,10 @@ function _Course(props) {
 
       {/* Right Content Area */}
       <div className="course-content">
-        {selectedChildNode ? (
-          <div>
-            {render({
-              node: selectedChildNode,
-              idMap: props.idMap,
-              nodeInfo: props.nodeInfo,
-              componentMap: props.componentMap,
-              idPrefix: props.idPrefix
-            })}
-          </div>
+        {hasValidSelection && selectedChild ? (
+          <Suspense fallback={<Spinner>Loading...</Spinner>}>
+            <CourseContent props={props} selectedChild={selectedChild} />
+          </Suspense>
         ) : (
           <div>
             <p>Select a section from the navigation to begin.</p>

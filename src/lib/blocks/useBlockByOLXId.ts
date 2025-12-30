@@ -2,23 +2,28 @@
 //
 // React hooks for accessing blocks by OLX ID during render.
 //
-// Uses React 19's use() hook to unwrap promises from getBlockByOLXId.
-// Currently resolves instantly (sync idMap lookup), but when server fetching
-// is added, these will suspend until data arrives.
+// Currently sync (direct idMap lookup). When server fetching is added,
+// these will switch to use React's use() hook with Suspense:
+//   return use(getBlockByOLXId(props, id));
+//
+// For async contexts (actions, effects), use getBlockByOLXId directly.
 //
 // OLX ID = static ID from markup: <Block id="myblockid">
 // Redux ID = runtime ID with suffixes: myblockid_1, myblockid_2
 //
 'use client';
 
-import { use } from 'react';
-import { getBlockByOLXId, getBlocksByOLXIds } from './getBlockByOLXId';
+import { idMapKey } from './idResolver';
 import type { PropType, OlxJson } from '@/lib/types';
 
 export function useBlockByOLXId(props: PropType, id: string): OlxJson | undefined {
-  return use(getBlockByOLXId(props, id));
+  // Sync for now - when server fetching is added, switch to:
+  // return use(getBlockByOLXId(props, id));
+  return props.idMap[idMapKey(id)];
 }
 
 export function useBlocksByOLXIds(props: PropType, ids: string[]): (OlxJson | undefined)[] {
-  return use(getBlocksByOLXIds(props, ids));
+  // Sync for now - when server fetching is added, switch to:
+  // return use(getBlocksByOLXIds(props, ids));
+  return ids.map(id => props.idMap[idMapKey(id)]);
 }

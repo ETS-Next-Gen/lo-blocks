@@ -14,8 +14,11 @@ import { idMapKey } from './idResolver';
 // React requires the same promise instance on re-renders - creating a new promise
 // each render causes infinite suspension. This cache ensures stable promise identity.
 //
+// Uses WeakMap keyed by idMap object, so different idMaps get separate caches.
+// This prevents stale data when different components/tests use different idMaps.
+//
 // When server fetching is added, this becomes the in-flight deduplication cache.
-const promiseCache = new Map();
+const promiseCacheByIdMap = new WeakMap(); // idMap -> Map<id, Promise>
 
 /**
  * Get a block from the idMap by its OLX ID.
@@ -33,15 +36,22 @@ const promiseCache = new Map();
 export function getBlockByOLXId(props, id) {
   const key = idMapKey(id);
 
+  // Get or create cache for this specific idMap
+  let cacheForIdMap = promiseCacheByIdMap.get(props.idMap);
+  if (!cacheForIdMap) {
+    cacheForIdMap = new Map();
+    promiseCacheByIdMap.set(props.idMap, cacheForIdMap);
+  }
+
   // Return cached promise if available (required for React's use() hook)
-  if (promiseCache.has(key)) {
-    return promiseCache.get(key);
+  if (cacheForIdMap.has(key)) {
+    return cacheForIdMap.get(key);
   }
 
   // Currently sync - just wrap in resolved promise
   // When server fetching is added, this becomes an async fetch
   const promise = Promise.resolve(props.idMap[key]);
-  promiseCache.set(key, promise);
+  cacheForIdMap.set(key, promise);
   return promise;
 
   // Future async version:
@@ -69,14 +79,21 @@ export function getBlockByOLXId(props, id) {
  * @returns {Promise<Array<Object|undefined>>} Array of block entries
  */
 export function getBlocksByOLXIds(props, ids) {
+  // Get or create cache for this specific idMap
+  let cacheForIdMap = promiseCacheByIdMap.get(props.idMap);
+  if (!cacheForIdMap) {
+    cacheForIdMap = new Map();
+    promiseCacheByIdMap.set(props.idMap, cacheForIdMap);
+  }
+
   // Create a cache key from sorted unique IDs
   const cacheKey = `batch:${[...new Set(ids)].sort().join(',')}`;
 
-  if (promiseCache.has(cacheKey)) {
-    return promiseCache.get(cacheKey);
+  if (cacheForIdMap.has(cacheKey)) {
+    return cacheForIdMap.get(cacheKey);
   }
 
   const promise = Promise.all(ids.map(id => getBlockByOLXId(props, id)));
-  promiseCache.set(cacheKey, promise);
+  cacheForIdMap.set(cacheKey, promise);
   return promise;
 }

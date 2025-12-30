@@ -44,7 +44,7 @@
 //
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
@@ -283,7 +283,9 @@ export default function RenderOLX({
         onError?.(err);
       }}
     >
-      {rendered}
+      <Suspense fallback={<div className="lo-loading">Loading content...</div>}>
+        {rendered}
+      </Suspense>
     </ErrorBoundary>
   );
 }

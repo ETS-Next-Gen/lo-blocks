@@ -18,6 +18,14 @@ import { idMapKey } from './idResolver';
 // This prevents stale data when different components/tests use different idMaps.
 const thenableCacheByIdMap = new WeakMap(); // idMap -> Map<id, Thenable>
 
+// Singleton thenable for null/empty IDs - must be same instance every time
+// to satisfy React's use() hook requirement for stable thenable identity.
+const NULL_THENABLE = Object.freeze({
+  status: 'fulfilled',
+  value: undefined,
+  then(onFulfilled) { onFulfilled(undefined); }
+});
+
 /**
  * Fetch a block from the server by ID.
  * Returns the block data or undefined if not found.
@@ -52,26 +60,18 @@ async function fetchBlockFromServer(id) {
  * @returns {Thenable<Object|undefined>} The block entry, or undefined if not found
  */
 export function getBlockByOLXId(props, id) {
-  // null/undefined IDs return undefined synchronously.
+  // null/undefined IDs return undefined synchronously via singleton thenable.
   // This supports React hook patterns where hooks must be called unconditionally
   // but the ID may legitimately not exist (e.g., inputs without graders).
   // Callers should pass null directly, not use fallbacks like `id || ''`.
   if (id == null) {
-    return {
-      status: 'fulfilled',
-      value: undefined,
-      then(onFulfilled) { onFulfilled(undefined); }
-    };
+    return NULL_THENABLE;
   }
 
   // Empty string is likely a bug - caller used `|| ''` instead of passing null
   if (id === '') {
     console.warn('getBlockByOLXId: Called with empty string. Pass null instead if ID is optional.');
-    return {
-      status: 'fulfilled',
-      value: undefined,
-      then(onFulfilled) { onFulfilled(undefined); }
-    };
+    return NULL_THENABLE;
   }
 
   const key = idMapKey(id);

@@ -63,7 +63,7 @@ async function stubOpenAI(request, path) {
       id: 'stub-completion-id',
       object: 'chat.completion',
       created: Math.floor(Date.now() / 1000),
-      model: body.model || 'gpt-3.5-turbo',
+      model: body.model || 'gpt-3.5-nano',
       choices: [{
         index: 0,
         message: {

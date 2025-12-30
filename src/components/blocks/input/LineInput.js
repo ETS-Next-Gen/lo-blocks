@@ -4,7 +4,7 @@ import { core } from '@/lib/blocks';
 import * as state from '@/lib/state';
 import { fieldSelector, fieldByName } from '@/lib/state';
 import * as parsers from '@/lib/content/parsers';
-import { baseAttributes } from '@/lib/blocks/attributeSchemas';
+import { baseAttributes, placeholder } from '@/lib/blocks/attributeSchemas';
 import _LineInput from './_LineInput';
 
 export const fields = state.fields(['value']);
@@ -27,10 +27,10 @@ const LineInput = core({
   fields,
   getValue: (props, state, id) => fieldSelector(state, { ...props, id }, fieldByName('value'), { fallback: '' }),
   attributes: baseAttributes.extend({
+    ...placeholder,
     min: z.string().optional().describe('Minimum allowed value (for numeric types)'),
     max: z.string().optional().describe('Maximum allowed value (for numeric types)'),
     step: z.string().optional().describe('Step increment (for numeric types)'),
-    placeholder: z.string().optional().describe('Placeholder text shown when empty'),
     type: z.enum(INPUT_TYPES).optional().describe('HTML input type'),
   }),
 });

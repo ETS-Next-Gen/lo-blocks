@@ -26,11 +26,11 @@ export default function _Tabs(props) {
         {kids.map((kid, index) => {
           const isActive = index === currentTab;
 
-          // Extract label from the child block's attributes
+          // Extract title from the child block's attributes
           let tabLabel = `Tab ${index + 1}`;
           if (kid.type === 'block' && kid.id && idMap?.[kid.id]) {
             const childBlock = idMap[kid.id];
-            tabLabel = childBlock.attributes?.label || childBlock.attributes?.title || tabLabel;
+            tabLabel = childBlock.attributes?.title || tabLabel;
           }
 
           return (

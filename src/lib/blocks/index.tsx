@@ -18,6 +18,6 @@ export { action, executeNodeActions, grader, input, isAction, isInput, isMatch }
 export { CORRECTNESS, CORRECTNESS_PRIORITY, VISIBILITY_HANDLERS, computeVisibility, isValidCorrectness, validateCorrectness, getAllCorrectnessStates } from './correctness';
 export { worstCaseCorrectness, proportionalCorrectness, computeScore, formatScore, countCorrectness } from '@/lib/grading';
 export { isInputReadOnly } from './inputInteraction';
-export { baseAttributes } from './attributeSchemas';
+export { baseAttributes, BASE_ATTRIBUTE_NAMES } from './attributeSchemas';
 export { useGraderAnswer } from './useGraderAnswer';
 export { createGrader } from './createGrader';

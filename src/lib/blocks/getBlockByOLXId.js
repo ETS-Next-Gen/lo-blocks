@@ -10,9 +10,12 @@
 //
 import { idMapKey } from './idResolver';
 
-// Future: cache for in-flight fetch promises to avoid duplicate requests
-// during the window between fetch start and idMap population.
-// const inFlightFetches = new Map();
+// Promise cache for React's use() hook.
+// React requires the same promise instance on re-renders - creating a new promise
+// each render causes infinite suspension. This cache ensures stable promise identity.
+//
+// When server fetching is added, this becomes the in-flight deduplication cache.
+const promiseCache = new Map();
 
 /**
  * Get a block from the idMap by its OLX ID.
@@ -21,40 +24,59 @@ import { idMapKey } from './idResolver';
  * use this function (via useBlockByOLXId hook) rather than accessing props.idMap
  * directly. This enables future server fetching without changing call sites.
  *
+ * Returns a cached promise for React's use() hook compatibility.
+ *
  * @param {Object} props - Component props containing idMap
  * @param {string} id - The OLX ID to look up
  * @returns {Promise<Object|undefined>} The block entry, or undefined if not found
  */
-export async function getBlockByOLXId(props, id) {
+export function getBlockByOLXId(props, id) {
   const key = idMapKey(id);
-// We'll need the commented-out code as soon as we switch to not sending everything to the client at once :)
 
-//  if (key in props.idMap) {
-    return props.idMap[key];
-//  }
-//  // Not in idMap - fetch from server
-//  if (inFlightFetches.has(key)) {
-//    return inFlightFetches.get(key); // Already fetching, return same promise
-//  }
-//  const promise = fetchFromServer(id).then(block => {
-//    props.idMap[key] = block;
-//    inFlightFetches.delete(key);
-//    return block;
-//  });
-//  inFlightFetches.set(key, promise);
-//  return promise;
+  // Return cached promise if available (required for React's use() hook)
+  if (promiseCache.has(key)) {
+    return promiseCache.get(key);
+  }
+
+  // Currently sync - just wrap in resolved promise
+  // When server fetching is added, this becomes an async fetch
+  const promise = Promise.resolve(props.idMap[key]);
+  promiseCache.set(key, promise);
+  return promise;
+
+  // Future async version:
+  // if (key in props.idMap) {
+  //   const promise = Promise.resolve(props.idMap[key]);
+  //   promiseCache.set(key, promise);
+  //   return promise;
+  // }
+  // // Not in idMap - fetch from server
+  // const promise = fetchFromServer(id).then(block => {
+  //   props.idMap[key] = block;
+  //   return block;
+  // });
+  // promiseCache.set(key, promise);
+  // return promise;
 }
 
 /**
  * Get multiple blocks from the idMap by their OLX IDs.
  *
+ * Returns a cached promise for React's use() hook compatibility.
+ *
  * @param {Object} props - Component props containing idMap
  * @param {string[]} ids - Array of OLX IDs to look up
  * @returns {Promise<Array<Object|undefined>>} Array of block entries
  */
-export async function getBlocksByOLXIds(props, ids) {
-  // Future: for real async fetching, we'll need promise caching here too.
-  // Key could be: [...new Set(ids)].sort().join(",")  (Python: ",".join(sorted(set(ids))))
-  // This avoids re-fetching when the same set of IDs is requested during a render cycle.
-  return Promise.all(ids.map(id => getBlockByOLXId(props, id)));
+export function getBlocksByOLXIds(props, ids) {
+  // Create a cache key from sorted unique IDs
+  const cacheKey = `batch:${[...new Set(ids)].sort().join(',')}`;
+
+  if (promiseCache.has(cacheKey)) {
+    return promiseCache.get(cacheKey);
+  }
+
+  const promise = Promise.all(ids.map(id => getBlockByOLXId(props, id)));
+  promiseCache.set(cacheKey, promise);
+  return promise;
 }

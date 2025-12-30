@@ -17,7 +17,7 @@
 // and coordinate behaviors across the content hierarchy.
 //
 import htmlTags from 'html-tags';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { DisplayError, DebugWrapper } from '@/lib/util/debug';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
@@ -165,24 +165,31 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
   // very nice for debugging and introspectoin.
 
   // TODO: Should the wrapper be a <div> or a <span>?
+
+  // Wrap in Suspense for async block loading support
+  // Components using use() for data fetching will suspend until data arrives
+  const loadingFallback = <div className="lo-loading" data-block-type={tag}>Loading {tag}...</div>;
+
   return (
-    <DebugWrapper props={wrapperProps} blueprint={componentMap[tag].blueprint}>
-      <div className={combinedClassName} data-block-type={tag}>
-        <Component
-          { ...attributes }
-          id={node.id}
-          kids={ kids }
-          idMap={ idMap }
-          blueprint={ componentMap[tag].blueprint }
-          locals={ componentMap[tag].locals }
-          fields={ componentMap[tag].blueprint?.fields?.fieldInfoByField }
-          nodeInfo={ childNodeInfo }
-          componentMap={ componentMap }
-          idPrefix={ idPrefix }
-          { ...(graderId && { graderId }) }
-        />
-      </div>
-    </DebugWrapper>
+    <Suspense fallback={loadingFallback}>
+      <DebugWrapper props={wrapperProps} blueprint={componentMap[tag].blueprint}>
+        <div className={combinedClassName} data-block-type={tag}>
+          <Component
+            { ...attributes }
+            id={node.id}
+            kids={ kids }
+            idMap={ idMap }
+            blueprint={ componentMap[tag].blueprint }
+            locals={ componentMap[tag].locals }
+            fields={ componentMap[tag].blueprint?.fields?.fieldInfoByField }
+            nodeInfo={ childNodeInfo }
+            componentMap={ componentMap }
+            idPrefix={ idPrefix }
+            { ...(graderId && { graderId }) }
+          />
+        </div>
+      </DebugWrapper>
+    </Suspense>
   );
 }
 

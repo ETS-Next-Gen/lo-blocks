@@ -31,6 +31,7 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { getGrader } from '@/lib/blocks/olxdom';
 import { getBlockByOLXId } from '@/lib/blocks/getBlockByOLXId';
+import { assignReactKeys, cacheKey as nodeCacheKeyBase } from '@/lib/blocks/idResolver';
 
 // Cache for renderCompiledKids thenables, keyed by idMap then by kids+prefix
 const renderKidsCache = new WeakMap();
@@ -47,64 +48,43 @@ const NULL_RENDER_THENABLE = {
 };
 
 /**
- * Generate a stable cache key from kids array and idPrefix.
- * Uses kid IDs/types rather than object identity for stability.
- * Uses ',' to separate kids and '.' to combine with prefix (per idResolver.js conventions).
+ * Generate cache key for kids array.
+ * Uses cacheKey for each child, joined with commas.
  */
-function getRenderCacheKey(kids, idPrefix) {
+function kidsCacheKey(kids, idPrefix) {
   if (!Array.isArray(kids)) return idPrefix ? `invalid.${idPrefix}` : 'invalid';
   const kidsKey = kids.map(k => {
     if (k == null) return 'null';
-    if (typeof k === 'string') return `s-${k}`;
-    if (typeof k !== 'object') return `p-${String(k)}`;
-    // For objects, use type+id as key (use - as separator within, since . separates scope)
-    return `${k.type || 'obj'}-${k.id || k.key || '?'}`;
+    if (typeof k === 'string') return `s.${k}`;
+    if (typeof k !== 'object') return `p.${String(k)}`;
+    return nodeCacheKeyBase(k, { idPrefix: '' });
   }).join(',');
   return idPrefix ? `${kidsKey}.${idPrefix}` : kidsKey;
 }
 
 /**
- * Combine cache key parts using consistent separator.
- * Uses '.' as separator, matching extendIdPrefix and ID conventions.
- * See idResolver.js for ID format documentation.
+ * Generate cache key for render() from node.
+ * Handles string refs, arrays, and object nodes.
+ * See idResolver.js for cacheKey documentation.
  */
-function combineCacheKey(type, id, idPrefix) {
-  // Format: type.idPrefix.id (or type.id if no prefix)
-  // This mirrors how extendIdPrefix combines prefix.scope
-  return idPrefix ? `${type}.${idPrefix}.${id}` : `${type}.${id}`;
-}
-
-/**
- * Generate a stable cache key for render() from node and idPrefix.
- * Precondition: node is not null/undefined and not a React element (handled before caching).
- *
- * IMPORTANT: Different node types may have the same ID (e.g., a string reference "myblock"
- * resolves to an object with id="myblock"). They still need DIFFERENT cache keys, hence
- * the type prefix (ref, tag, obj, etc.). Without this, we saw infinite suspension.
- */
-function getNodeCacheKey(node, idPrefix) {
-  // String node = ID reference that will be looked up in idMap
+function nodeCacheKey(node, idPrefix) {
+  // String node = ID reference
   if (typeof node === 'string') {
-    return combineCacheKey('ref', node, idPrefix);
+    return idPrefix ? `ref.${idPrefix}.${node}` : `ref.${node}`;
   }
 
   // Array of kids
   if (Array.isArray(node)) {
-    return combineCacheKey('arr', getRenderCacheKey(node, ''), idPrefix);
+    const arrKey = kidsCacheKey(node, '');
+    return idPrefix ? `arr.${idPrefix}.${arrKey}` : `arr.${arrKey}`;
   }
 
-  // Object nodes - the actual block data
+  // Object nodes - use cacheKey from idResolver (includes overrides!)
   if (typeof node === 'object') {
-    if (node.type === 'block') {
-      if (!node.id) throw new Error('render: block node missing id');
-      return combineCacheKey('block', node.id, idPrefix);
+    if (!node.id && !node.tag) {
+      throw new Error('render: object node missing id');
     }
-    if (node.tag) {
-      if (!node.id) throw new Error(`render: ${node.tag} node missing id`);
-      return combineCacheKey('tag', node.id, idPrefix);
-    }
-    if (!node.id) throw new Error('render: object node missing id');
-    return combineCacheKey('obj', node.id, idPrefix);
+    return nodeCacheKeyBase(node, { idPrefix });
   }
 
   throw new Error(`render: unexpected node type: ${typeof node}`);
@@ -118,7 +98,7 @@ export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {}, bluepri
 // Main render function: handles single nodes, strings, JSX, and blocks
 // Returns a cached thenable to work with React's use() hook.
 // React requires the same thenable instance across re-renders.
-export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
+export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' }) {
   // Handle null - return singleton thenable (callers may use(render(...)))
   if (!node) return NULL_RENDER_THENABLE;
 
@@ -134,11 +114,11 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
     renderCache.set(idMap, cacheForIdMap);
   }
 
-  const cacheKey = getNodeCacheKey(node, idPrefix);
+  const key = nodeCacheKey(node, idPrefix);
 
   // Return cached thenable if available
-  if (cacheForIdMap.has(cacheKey)) {
-    return cacheForIdMap.get(cacheKey);
+  if (cacheForIdMap.has(key)) {
+    return cacheForIdMap.get(key);
   }
 
   // Create thenable that will be cached
@@ -161,7 +141,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
   };
 
   // Start render immediately and update thenable when done
-  thenable._promise = renderInternal({ node, idMap, key, nodeInfo, componentMap, idPrefix }).then(
+  thenable._promise = renderInternal({ node, idMap, nodeInfo, componentMap, idPrefix }).then(
     result => {
       thenable.status = 'fulfilled';
       thenable.value = result;
@@ -175,7 +155,7 @@ export function render({ node, idMap, key, nodeInfo, componentMap = COMPONENT_MA
     }
   );
 
-  cacheForIdMap.set(cacheKey, thenable);
+  cacheForIdMap.set(key, thenable);
   return thenable;
 }
 
@@ -352,11 +332,11 @@ export function renderCompiledKids(props) {
     renderKidsCache.set(idMap, cacheForIdMap);
   }
 
-  const cacheKey = getRenderCacheKey(kids, idPrefix);
+  const key = kidsCacheKey(kids, idPrefix);
 
   // Return cached thenable if available
-  if (cacheForIdMap.has(cacheKey)) {
-    return cacheForIdMap.get(cacheKey);
+  if (cacheForIdMap.has(key)) {
+    return cacheForIdMap.get(key);
   }
 
   // Create thenable that will be cached
@@ -397,7 +377,7 @@ export function renderCompiledKids(props) {
     }
   );
 
-  cacheForIdMap.set(cacheKey, thenable);
+  cacheForIdMap.set(key, thenable);
   return thenable;
 }
 
@@ -516,91 +496,3 @@ async function renderCompiledKidsInternal(props) {
 }
 
 
-/**
- * assignReactKeys
- * ----------------
- * Assigns unique React keys to an array of child data, ensuring stability and uniqueness
- * even if some children share the same id property.
- *
- * Rationale:
- * React requires unique keys for each child element in a list to efficiently reconcile changes
- * and preserve component identity and state. In OLX/edX-style data, nodes may share the same
- * id (e.g., for repeated references in a DAG), so we generate keys by appending a stable, deterministic
- * suffix to duplicates (e.g., "foo", "foo.1", "foo.2"). If a child already has a "key" property,
- * an exception is thrown to avoid accidental double-keying.
- *
- * Note: This does not guarantee stability if the *order* of repeated ids changes, but for most
- * DAG-like OLX data, this is sufficient. If you need reordering stability, consider a persistent
- * unique identifier per node.
- *
- * Example:
- *   Input:
- *     [
- *       { id: "foo" },
- *       { id: "bar" },
- *       { id: "foo" },
- *       { id: "baz" },
- *       { id: "foo" }
- *     ]
- *
- *   Output:
- *     [
- *       { id: "foo", key: "foo" },
- *       { id: "bar", key: "bar" },
- *       { id: "foo", key: "foo.1" },
- *       { id: "baz", key: "baz" },
- *       { id: "foo", key: "foo.2" }
- *     ]
- *
- * Key Assignment Table:
- *
- * | Scenario                  | Key Example      | Uniqueness | Stability on reorder |
- * |---------------------------|------------------|------------|---------------------|
- * | Unique id in siblings     | "foo"            | Yes        | Yes                 |
- * | Duplicate id in siblings  | "foo", "foo.1"   | Yes        | No                  |
- * | No id property            | "__idx__0"       | Yes        | Yes                 |
- *
- * @param {Array<object>} children - Array of child objects, each optionally with an 'id'
- * @returns {Array<object>} - New array of children with unique 'key' property assigned
- *
- * @throws {Error} If a child already has a 'key' property.
- *
- * TODO:
- * * Move to a more logical place in the code
- * * Add runner for test case below
- */
-function assignReactKeys(children) {
-  const idCounts = {};
-  return children.map((child, i) => {
-    if (child == null || typeof child !== 'object') {
-      // Pass through primitives and non-objects unchanged
-      return child;
-    }
-    if ('key' in child) {
-      // We might consider allowing keys to be assigned upstream, but perhaps
-      // we'll use a _reactKey instead.
-      throw new Error(
-        `assignReactKeys: Child at index ${i} already has a 'key' property. ` +
-        `Don't double-key children.`
-      );
-    }
-    let key;
-    if ('id' in child && child.id != null) {
-      if (!idCounts[child.id]) {
-        idCounts[child.id] = 1;
-        key = child.id;
-      } else {
-        key = `${child.id}.${idCounts[child.id]}`;
-        idCounts[child.id]++;
-      }
-    } else {
-      key = `__idx__${i}`;
-    }
-    return { ...child, key };
-  });
-}
-
-
-export const __testables = {
-  assignReactKeys,
-};

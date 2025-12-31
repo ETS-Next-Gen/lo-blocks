@@ -3,9 +3,7 @@
 // Unit tests for render utilities. Integration tests for rendering
 // are in demo-render.test.js which tests all .olx files.
 //
-import { __testables } from './render.jsx';
-
-const { assignReactKeys } = __testables;
+import { assignReactKeys } from '@/lib/blocks/idResolver';
 
 describe('assignReactKeys', () => {
   it('assigns keys correctly and passes through primitives', () => {

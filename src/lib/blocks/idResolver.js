@@ -1,24 +1,79 @@
 // src/lib/blocks/idResolver.js
 //
-// ID resolution system - handles the complex mapping between different ID types.
+// ID Resolution System
+// ====================
 //
-// IDs are complex (see /docs/). We would like explicit logic for managing IDs.
-// This is a first stab at it and is half-baked:
-// - We don't know the ID Resolution Matrix is correct
-// - We do want to have a central place to do this
-// - We may want to add different types of context in the future
-//   (e.g. add prefixes, namespaces, etc. to various IDs)
+// Single source of truth for converting between different ID types.
+// See docs/architecture/id-*.md for detailed design documentation.
 //
-// Learning Observer blocks need multiple types of IDs for different purposes:
-// - `reduxId`: Key for storing state in Redux (may include prefixes for lists)
-// - `nodeId`: Reference in the OLX content tree (for lookups in idMap)
-// - `htmlId`: DOM element ID for accessibility and styling
-// - `reactKey`: React reconciliation key for list rendering
-// - `urlName`: Human-friendly URL component (like edX url_name)
+// WHY MULTIPLE ID TYPES?
+// ----------------------
+// OLX is a DAG (directed acyclic graph). The same element can appear multiple
+// times on a page - either reused with the same logical ID, or instantiated
+// with different IDs (e.g., in a DynamicList).
 //
-// Some of these may be identical, but for example, an OLX node repeated
-// twice will have one ID in the static DOM, but need two IDs in anything
-// render-time (like React keys)
+// HTML and React are trees. IDs and keys MUST be unique per position.
+//
+// This creates tension:
+//   - Same element reused twice → MUST share Redux state (same reduxId)
+//   - Same element in two list items → MUST have separate state (different reduxId)
+//   - Both cases → MUST have unique React keys (different reactKey)
+//
+// ID TYPES AND THEIR RELATIONSHIPS
+// --------------------------------
+//
+//   ref (OLX input)     What's written in OLX: "/foo", "./foo", "foo"
+//         ↓
+//   idMapKey            Resolved key for idMap lookup: "foo"
+//         ↓             (strips /, ./, namespaces)
+//   reduxId             State storage key: "list.0.foo"
+//                       (adds idPrefix for scoped instances)
+//
+//   For rendering:
+//   kids[]  → assignReactKeys() → reactKey per child (unique among siblings)
+//   node    → cacheKey()        → thenable cache key (includes overrides)
+//
+// | ID Type    | Purpose                    | Uniqueness           | Example              |
+// |------------|----------------------------|----------------------|----------------------|
+// | ref        | ID as written in OLX       | n/a (input form)     | "/foo", "./foo"      |
+// | idMapKey   | Definition lookup          | Per definition       | "foo"                |
+// | reduxId    | State storage              | Per logical instance | "list.0.foo"         |
+// | reactKey   | React reconciliation       | Per sibling position | "foo", "foo.1"       |
+// | htmlId     | DOM element ID             | Per rendered element | "foo"                |
+// | cacheKey   | Render thenable cache      | Per render operation | "block.list.0.foo.{...}" |
+//
+// NOTE ON cacheKey: Currently includes serialized overrides because the same
+// block can be rendered with different overrides (e.g., Tabs rendering same
+// component with different labels). In the future, if we eliminate overrides,
+// cacheKey could potentially just use reduxId.
+//
+// REFERENCE FORMS
+// ---------------
+// IDs in OLX can be written in different forms:
+//   "/foo"     - Absolute: bypasses idPrefix, always resolves to "foo"
+//   "./foo"    - Explicit relative: applies idPrefix
+//   "foo"      - Bare: applies idPrefix (most common)
+//   "../foo"   - Parent scope (TODO: not yet implemented)
+//
+// OPERATIONS
+// ----------
+// Resolution:
+//   reduxId(props)              - "prefix.id" for state storage
+//   idMapKey(id)                - strips prefix, gets base ID for idMap lookup
+//   htmlId(props)               - DOM-safe ID
+//   cacheKey(node, props)       - render cache key (TODO: move from render.jsx)
+//
+// Scoping:
+//   extendIdPrefix(props, scope)  - { idPrefix: "parent.scope" }
+//
+// Arrays:
+//   assignReactKeys(children)     - unique keys for siblings (TODO: move from render.jsx)
+//
+// ID CONSTRAINTS
+// --------------
+// OLX IDs should NOT contain: ".", "/", ":", or whitespace
+// These characters are reserved as namespace/path delimiters.
+//
 
 const ID_RESOLUTION_MATRIX = {
   reduxId:      ["stateId", "id", "urlName", "url_name"],
@@ -170,4 +225,83 @@ export function extendIdPrefix(props, scope) {
   return { idPrefix: props.idPrefix ? `${props.idPrefix}.${scope}` : scope };
 }
 
-export const __testables = { ID_RESOLUTION_MATRIX };
+/**
+ * Assigns unique React keys to an array of children.
+ *
+ * React requires unique keys for siblings to efficiently reconcile changes.
+ * In OLX, the same block can appear multiple times (DAG reuse), so we need
+ * to handle duplicate IDs by appending suffixes: "foo", "foo.1", "foo.2".
+ *
+ * @param {Array} children - Array of child objects, each optionally with an 'id'
+ * @returns {Array} New array with unique 'key' property assigned to each child
+ * @throws {Error} If a child already has a 'key' property (double-keying bug)
+ *
+ * @example
+ * // Input:  [{ id: "foo" }, { id: "bar" }, { id: "foo" }]
+ * // Output: [{ id: "foo", key: "foo" }, { id: "bar", key: "bar" }, { id: "foo", key: "foo.1" }]
+ */
+export function assignReactKeys(children) {
+  const idCounts = {};
+  return children.map((child, i) => {
+    if (child == null || typeof child !== 'object') {
+      // Pass through primitives and non-objects unchanged
+      return child;
+    }
+    if ('key' in child) {
+      throw new Error(
+        `assignReactKeys: Child at index ${i} already has a 'key' property. ` +
+        `Don't double-key children.`
+      );
+    }
+    let key;
+    if ('id' in child && child.id != null) {
+      if (!idCounts[child.id]) {
+        idCounts[child.id] = 1;
+        key = child.id;
+      } else {
+        key = `${child.id}.${idCounts[child.id]}`;
+        idCounts[child.id]++;
+      }
+    } else {
+      key = `__idx__${i}`;
+    }
+    return { ...child, key };
+  });
+}
+
+/**
+ * Generate a cache key for render thenable caching.
+ *
+ * Used to cache render() results for React's use() hook, which requires
+ * the same thenable instance across re-renders.
+ *
+ * @param {object} node - The node being rendered
+ * @param {string} node.type - Node type: 'block', 'text', 'html', etc.
+ * @param {string} node.id - Node ID
+ * @param {object} [node.overrides] - Attribute overrides (e.g., from Tabs)
+ * @param {object} props - Render props
+ * @param {string} [props.idPrefix] - Scope prefix for list contexts
+ * @returns {string} Unique cache key for this render operation
+ */
+export function cacheKey(node, props) {
+  if (!node || typeof node !== 'object') {
+    return `primitive.${String(node)}`;
+  }
+
+  const { idPrefix = '' } = props || {};
+  const type = node.type || node.tag || 'unknown';
+  const id = node.id || '?';
+
+  // Base key: type.prefix.id or type.id
+  let key = idPrefix ? `${type}.${idPrefix}.${id}` : `${type}.${id}`;
+
+  // Include overrides in cache key - same block with different overrides
+  // must cache separately (e.g., Tabs rendering same component with different labels)
+  if (node.overrides && Object.keys(node.overrides).length > 0) {
+    key += `.${JSON.stringify(node.overrides)}`;
+  }
+
+  return key;
+}
+
+export const __testables = { ID_RESOLUTION_MATRIX, assignReactKeys };

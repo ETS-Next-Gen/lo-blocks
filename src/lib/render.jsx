@@ -48,47 +48,62 @@ const NULL_RENDER_THENABLE = {
 /**
  * Generate a stable cache key from kids array and idPrefix.
  * Uses kid IDs/types rather than object identity for stability.
+ * Uses ',' to separate kids and '.' to combine with prefix (per idResolver.js conventions).
  */
 function getRenderCacheKey(kids, idPrefix) {
-  if (!Array.isArray(kids)) return `invalid|${idPrefix || ''}`;
+  if (!Array.isArray(kids)) return idPrefix ? `invalid.${idPrefix}` : 'invalid';
   const kidsKey = kids.map(k => {
     if (k == null) return 'null';
-    if (typeof k === 'string') return `s:${k}`;
-    if (typeof k !== 'object') return `p:${String(k)}`;
-    // For objects, use type+id as key
-    return `${k.type || 'obj'}:${k.id || k.key || '?'}`;
+    if (typeof k === 'string') return `s-${k}`;
+    if (typeof k !== 'object') return `p-${String(k)}`;
+    // For objects, use type+id as key (use - as separator within, since . separates scope)
+    return `${k.type || 'obj'}-${k.id || k.key || '?'}`;
   }).join(',');
-  return `${kidsKey}|${idPrefix || ''}`;
+  return idPrefix ? `${kidsKey}.${idPrefix}` : kidsKey;
+}
+
+/**
+ * Combine cache key parts using consistent separator.
+ * Uses '.' as separator, matching extendIdPrefix and ID conventions.
+ * See idResolver.js for ID format documentation.
+ */
+function combineCacheKey(type, id, idPrefix) {
+  // Format: type.idPrefix.id (or type.id if no prefix)
+  // This mirrors how extendIdPrefix combines prefix.scope
+  return idPrefix ? `${type}.${idPrefix}.${id}` : `${type}.${id}`;
 }
 
 /**
  * Generate a stable cache key for render() from node and idPrefix.
  * Precondition: node is not null/undefined and not a React element (handled before caching).
  *
- * IMPORTANT: String IDs and object nodes with the same ID must have DIFFERENT cache keys!
- * render("myblock") fetches the object then calls render(object), and if they share
- * a cache key, the outer thenable waits for inner which returns the same thenable → deadlock.
+ * IMPORTANT: Different node types may have the same ID (e.g., a string reference "myblock"
+ * resolves to an object with id="myblock"). They still need DIFFERENT cache keys, hence
+ * the type prefix (ref, tag, obj, etc.). Without this, we saw infinite suspension.
  */
 function getNodeCacheKey(node, idPrefix) {
   // String node = ID reference that will be looked up in idMap
-  // Prefix with 'ref:' to distinguish from resolved object nodes
-  if (typeof node === 'string') return `ref:${node}|${idPrefix}`;
+  if (typeof node === 'string') {
+    return combineCacheKey('ref', node, idPrefix);
+  }
 
   // Array of kids
-  if (Array.isArray(node)) return `arr:${getRenderCacheKey(node, '')}|${idPrefix}`;
+  if (Array.isArray(node)) {
+    return combineCacheKey('arr', getRenderCacheKey(node, ''), idPrefix);
+  }
 
   // Object nodes - the actual block data
   if (typeof node === 'object') {
     if (node.type === 'block') {
       if (!node.id) throw new Error('render: block node missing id');
-      return `block:${node.id}|${idPrefix}`;
+      return combineCacheKey('block', node.id, idPrefix);
     }
     if (node.tag) {
       if (!node.id) throw new Error(`render: ${node.tag} node missing id`);
-      return `tag:${node.id}|${idPrefix}`;
+      return combineCacheKey('tag', node.id, idPrefix);
     }
     if (!node.id) throw new Error('render: object node missing id');
-    return `obj:${node.id}|${idPrefix}`;
+    return combineCacheKey('obj', node.id, idPrefix);
   }
 
   throw new Error(`render: unexpected node type: ${typeof node}`);

@@ -62,7 +62,7 @@ test('Next.js server basic endpoints work', async () => {
   }
 }, 60000);
 
-async function waitForServer(url, { timeout = 20000, interval = 200 } = {}) {
+async function waitForServer(url, { timeout = 20000, interval = 2000 } = {}) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
     try {

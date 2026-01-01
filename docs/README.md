@@ -3,24 +3,159 @@ Learning Observer Blocks -- Design Documentation
 
 This is design documentation for both humans and LLMs.
 
-Directory Structure
--------------------
+# Blocks
 
+Learning Observer blocks are similar to Open edX XBlocks and React components: each block defines an XML tag, which can then be used in courseware.
 
-Blocks
-------
+## Block lifespan and flow
 
-Learning Observer blocks are similar to Open edX XBlocks and React
-components: each block will typically define an XML tag, which can
-then be used in courseware.
+We will walk through the lifespan of a typical block. The most confusing parts the different types of IDs a block might have, and data types at varies stages of the block's lifespan. 
 
-### Inputs and graders
+### Block blueprint
 
-Blocks can advertise themselves as **inputs** by supplying a `getValue`
-function. Other blocks can then query their values directly from the
-Redux store. A **grader** is an action block that collects values
-from related inputs (via `target` or inference) and passes them to a
-grader function.
+A block is defined with a **block blueprint**. A minimal example is:
+
+```
+import * as parsers from '@/lib/content/parsers';
+import { dev } from '@/lib/blocks'; // adjust import path as needed
+import _Spinner from './_Spinner';
+
+const Spinner = dev({    // Functions to register in different namespaces (e.g. dev, test, core; you'll want your own)
+  ...parsers.ignore(),   // How should OLX be parsed?
+  name: 'Spinner',       // What am I called?
+  component: _Spinner,   // Where is my react component?
+});
+
+export default Spinner;
+```
+
+This should **not** include `JSX`, as we would like blueprints usable in both server-side and client-side code. By convention, the blueprint is in `BLOCKNAME.[js/ts]`, and the React component in `_BLOCKNAME.[jsx/tsx]`
+
+Running `npm run build` (or, more narrowly, `npm run-script build:gen-block-registry`) collects all block blueprints into `src/components/blockRegistry.js`. At this point, we can use the blocks in courseware.
+
+NOTE: Once we're more dynamic, we will want to do this dynamically. The static build is bridge code.
+
+A typical example has quite a bit more:
+
+```
+import { z } from 'zod';
+import { core } from '@/lib/blocks';
+import * as state from '@/lib/state';
+import * as parsers from '@/lib/content/parsers';
+import { baseAttributes, placeholder } from '@/lib/blocks/attributeSchemas';
+import _LineInput from './_LineInput';
+
+export const fields = state.fields(['value']);
+
+const LineInput = core({
+  ...parsers.blocks(),                                                 // Parser so line label can be any OLX block
+  name: 'LineInput',
+  description: 'Single-line text input field for student responses',   // For documentation
+  component: _LineInput,
+  fields,                                                              // Where we store our state in redux
+  getValue: (props, state, id) =>                                      // What data we send to a grader
+    state.fieldSelector(state, { ...props, id }, state.fieldByName('value'), { fallback: '' }),
+  attributes: baseAttributes.extend({                                  // Validation for our attributes
+    ...placeholder,
+    type: z.enum(['text', 'number', 'email']).optional().describe('HTML input type'),
+  }),
+});
+```
+As well as a `LineInput.md` file describing the block, and one or more example OLX files (also beginning with `LineInput`) showing how to use it (and acting as test cases). The first example (LineInput.olx) should be relatively minimal (ideally, usable as a template in the editor -- e.g. include as many features as possible as concisely as possible). Further examples can be more creative, showcase interesting ways to use a block, or show the block in contexts (e.g. `LineInputGraded.olx`). Symlinks are okay too (e.g. `NumberInput` and `NumericalGrader` are often used together).
+
+We'll walk through this piece-by-piece.
+
+### Parser
+
+Parsers define how to transform OLX content into the internal representation. You can write your own, but we provide a library of parsers which suffice for most use-cases:
+
+| Parser                                       | Usage                         | Description                                     |
+|----------------------------------------------|-------------------------------|-------------------------------------------------|
+| parsers.ignore()                             | ...parsers.ignore()           | No children. For leaf blocks like <Spinner/>.   |
+| parsers.blocks()                             | ...parsers.blocks()           | Children are blocks. Filters out text/comments. |
+| parsers.blocks.allowHTML()                   | ...parsers.blocks.allowHTML() | Mixed content: blocks + HTML tags + text.       |
+| parsers.text()                               | ...parsers.text()             | Text content only. No nested XML allowed.       |
+| parsers.text({ postprocess: 'stripIndent' }) | For Markdown                  | Strips leading indentation from multiline text. |
+| parsers.text({ postprocess: 'none' })        | Raw text                      | Preserves all whitespace.                       |
+| parsers.xmljson()                            | ...parsers.xmljson()          | Pass through raw parsed XML structure.          |
+| parsers.xml                                  | parser: parsers.xml.parser    | Reconstructs XML as a string.                   |
+| parsers.peggyParser(grammar)                 | ...parsers.peggyParser(cp)    | Parse with a PEG grammar (see below).           |
+
+For major, reusable blocks, it is reasonable (and not hard) to define your own XML grammar. If you do craft your own parser, **clean error messages are key**.
+
+#### peggyParser
+
+One of the parsers worth highlighting is peggyParser. One of the most loved features in Open edX were simplified authoring markups. Experienced authors **much** preferred this to GUIs. It was very rapid (like authoring markdown). For example, a basic multiple choice question could be written as:
+
+```
+Cognitive Load Theory
+===
+
+A student is learning to solve quadratic equations while simultaneously trying to remember the quadratic formula. According to cognitive load theory, this represents:
+
+( ) Germane load - it's helping build schemas
+(x) Extraneous load - it could be eliminated with a formula sheet
+( ) Intrinsic load - it's inherent to the task
+( ) There is no cognitive load issue here
+```
+The Open edX formats were ad-hoc. In Learning Observer blocks, these are formally defined with a PEG grammar. This:
+* Allows LLMs to author content easily
+* The system to validate block markup, both at load time and in the editor
+```
+
+In most cases, we recommend using the `src=` attribute (valid markup is often invalid XML), but these can be in-lined, optionally using XML `CDATA`. The flow is:
+* Define a `.pegjs` grammar (e.g. `chat.pegjs`).
+* This is compiled into a parser (e.g. `_chatParser.js`) by the build system.
+* The parser generates the `kids` attribute for your component.
+
+#### `kids`
+
+The output of the parser comes into a block through the `react` attribute `kids`. This is similar to react `children`, but:
+* Supports free-form formats (e.g. from the `PEG` or text parser)
+* Is not rendered `react` (we want to support e.g. lazy loading)
+
+This can be annoying for some types of introspection. Blocks can define a method `staticKids` to allow introspection of children known at OLX parse time. Note that many children are dynamic, so a **static OLX tree is rarely the same as the dynamic OLX DOM**. Adaptive learning blocks like `MasteryBank` can pull in content as they see fit!
+
+#### `zod` Attribute Validation
+
+In addition to internal `xml`, OLX has attributes. For our aforementioned `InputLine` block, we might have `<InputLine placeholder="Enter your name" id="name-entry"\>` (and so on). This can be validated through `zod`:
+
+```
+attributes: baseAttributes.extend({                                                  // id=, title=, etc.
+  ...placeholder,                                                                    // mix-in for allowing placeholder=
+  type: z.enum(['text', 'number', 'email']).optional().describe('HTML input type'),  // Our own attributes
+})
+```
+This is, again, used to validate OLX, both in the editor and at load time. The description becomes part of the auto-generated documentation.
+
+#### `locals` / (Block-specific API)
+
+`locals` allow us to expose block logic for use internally, by graders, or other blocks:
+
+const ChoiceInput = core({
+  // ...
+  locals: {
+    getChoices: (props, state, id) => {
+      // Return list of Key/Distractor children with metadata
+      return [{ id: 'key1', tag: 'Key', value: 'A' }, ...];
+    }
+  }
+});
+
+`locals` is relatively new. Our goal is to:
+* Move as much of the block logic into locals
+* Keep the `react` component, as much as possible, limited to rendering
+
+This serves several goals:
+* Block logic should be understanable without diving into UX/HTML/CSS (which is often quite large!)
+* Block logic should be callable from node (e.g. during offline analytics, in test cases, or in server code) as needed
+* Block logic may eventually be reusable in mobile or other views
+
+`locals` is passed back into the block through its attributes.
+
+#### Inputs, graders, and problems
+
+Blocks can advertise themselves as **inputs** by supplying a `getValue` function. Other blocks can then query their values directly from the Redux store. A **grader** is an action block that collects values from related inputs (via `target` or inference) and passes them to a grader function.
 
 ```javascript
 const SimpleCheck = blocks.test({
@@ -48,17 +183,6 @@ human-friendly.
 
 We did this slightly already; graders, in LON-CAPA and then edX, were
 called response types.
-
-Block Registry
---------------
-
-We put our blocks in the `/src/components/blocks` directory. The
-command `npm run-script build:gen-block-registry` then creates a file
-`src/components/blockRegistry.js` which has all the blocks re-exported
-(e.g. `export { default as HelloAction } from './blocks/HelloAction';`
-
-Once we're more dynamic, we will want to do this dynamically. That may
-necessitate a move away from next.js.
 
 Validation, TypeScript, and zod
 -------------------------------

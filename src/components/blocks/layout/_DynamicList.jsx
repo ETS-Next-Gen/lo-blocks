@@ -1,11 +1,21 @@
 // src/components/blocks/_DynamicList.jsx
 'use client';
 
-import React, { use } from 'react';
+import React from 'react';
 import { useReduxState } from '@/lib/state';
 import { extendIdPrefix } from '@/lib/blocks/idResolver';
-import { render } from '@/lib/render';
+import { useKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
+
+// Each entry renders independently - avoids Promise.all suspense issues
+function DynamicListEntry({ props, template, index, id }) {
+  const { kids } = useKids({
+    ...props,
+    kids: [template],
+    ...extendIdPrefix(props, `${id}.${index}`),
+  });
+  return <div className="mb-2">{kids}</div>;
+}
 
 export default function _DynamicList(props) {
   const {
@@ -47,26 +57,10 @@ export default function _DynamicList(props) {
     );
   }
 
-  // use() must be called unconditionally - batch render all entries
-  // Each entry needs different idPrefix, so we use Promise.all
-  const renderedEntries = use(
-    Promise.all(
-      Array.from({ length: count }, (_, i) =>
-        render({
-          ...props,
-          node: template,
-          ...extendIdPrefix(props, `${id}.${i}`),
-        })
-      )
-    )
-  );
-
   return (
     <div>
-      {renderedEntries.map((entry, i) => (
-        <div key={i} className="mb-2">
-          {entry}
-        </div>
+      {Array.from({ length: count }, (_, i) => (
+        <DynamicListEntry key={i} props={props} template={template} index={i} id={id} />
       ))}
       <div className="space-x-2 mt-2">
         <button onClick={handleRemove} disabled={count <= parsedMin} className="px-2 py-1 border rounded">[-]</button>

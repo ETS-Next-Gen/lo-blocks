@@ -9,9 +9,9 @@ Learning Observer blocks are similar to Open edX XBlocks and React components: e
 
 ## Block lifespan and flow
 
-We will walk through the lifespan of a typical block. The most confusing parts the different types of IDs a block might have, and data types at varies stages of the block's lifespan. 
+We will walk through the lifespan of a typical block. The most confusing parts the different types of IDs a block might have, and data types at various stages of the block's lifespan. 
 
-### Block blueprint
+### `BlockBlueprint`
 
 A block is defined with a **block blueprint**. A minimal example is:
 
@@ -61,9 +61,23 @@ const LineInput = core({
   }),
 });
 ```
-As well as a `LineInput.md` file describing the block, and one or more example OLX files (also beginning with `LineInput`) showing how to use it (and acting as test cases). The first example (LineInput.olx) should be relatively minimal (ideally, usable as a template in the editor -- e.g. include as many features as possible as concisely as possible). Further examples can be more creative, showcase interesting ways to use a block, or show the block in contexts (e.g. `LineInputGraded.olx`). Symlinks are okay too (e.g. `NumberInput` and `NumericalGrader` are often used together).
+As well as associated documentation files
+
+**Note**: `core` / `dev` / `test` are defined in `src/lib/blocks/namespaces.js` as `lib.blocks.factory.blocks('org.mitros.core')`. We expect institutions to create their own blocks, namespaces, and to avoid conflicts, to eventually implement the possibility to use fully-referenced names (`<edu.mit.Video>` versus `<edu.cmu.Video>`, with `<Video>` defaulting to the local one, and even `xmlns` support). But that's overkill for now.
 
 We'll walk through this piece-by-piece.
+
+### Documentation files
+
+Alongside a block (like `LineInput.js`), we can include several documentation files:
+
+* A `LineInput.md` file should describe the block. We can embed live-editable OLX examples with code blocks of type `olx:playground` (as well as players or just code)
+* A **minimal** example, `LineInput.olx`, which should show **as many features as possible, as concisely as possible**. Editors can use this as a template.
+* More examples, with a prefix of the name of the block (e.g. `LineInputGraded.olx`) which might show how to use the block in different contexts, more advanced features, creative uses, etc.
+
+All of the examples are also rendered as part of the test / validation suite!
+
+In the future, we may consider an explicit template (`LineInput.template.olx`) to override using the base example as a template in the editor. This is helpful mostly for blocks which can't be used in isolation (e.g. `<Key>` and `<Distractor>` need to be in the context of an MCQ).
 
 ### Parser
 
@@ -101,7 +115,6 @@ A student is learning to solve quadratic equations while simultaneously trying t
 The Open edX formats were ad-hoc. In Learning Observer blocks, these are formally defined with a PEG grammar. This:
 * Allows LLMs to author content easily
 * The system to validate block markup, both at load time and in the editor
-```
 
 In most cases, we recommend using the `src=` attribute (valid markup is often invalid XML), but these can be in-lined, optionally using XML `CDATA`. The flow is:
 * Define a `.pegjs` grammar (e.g. `chat.pegjs`).
@@ -118,7 +131,7 @@ This can be annoying for some types of introspection. Blocks can define a method
 
 #### `zod` Attribute Validation
 
-In addition to internal `xml`, OLX has attributes. For our aforementioned `InputLine` block, we might have `<InputLine placeholder="Enter your name" id="name-entry"\>` (and so on). This can be validated through `zod`:
+In addition to internal `xml`, OLX has attributes. For our aforementioned `LineInput` block, we might have `<LineInput placeholder="Enter your name" id="name-entry"\>` (and so on). This can be validated through `zod`:
 
 ```
 attributes: baseAttributes.extend({                                                  // id=, title=, etc.
@@ -132,6 +145,7 @@ This is, again, used to validate OLX, both in the editor and at load time. The d
 
 `locals` allow us to expose block logic for use internally, by graders, or other blocks:
 
+```
 const ChoiceInput = core({
   // ...
   locals: {
@@ -141,21 +155,64 @@ const ChoiceInput = core({
     }
   }
 });
+```
 
 `locals` is relatively new. Our goal is to:
 * Move as much of the block logic into locals
 * Keep the `react` component, as much as possible, limited to rendering
 
 This serves several goals:
-* Block logic should be understanable without diving into UX/HTML/CSS (which is often quite large!)
-* Block logic should be callable from node (e.g. during offline analytics, in test cases, or in server code) as needed
+* Block logic should be readable without diving into UX/HTML/CSS (which is often quite large!), and, perhaps, vice-versa
+* Block logic should be usable from node, for example, for offline analytics, in test cases, or in server code
 * Block logic may eventually be reusable in mobile or other views
 
-`locals` is passed back into the block through its attributes.
+`locals` is passed back into the block through its attributes, so UX code can all its own locals.
 
-#### Inputs, graders, and problems
+#### Graded activities
 
-Blocks can advertise themselves as **inputs** by supplying a `getValue` function. Other blocks can then query their values directly from the Redux store. A **grader** is an action block that collects values from related inputs (via `target` or inference) and passes them to a grader function.
+In general, graded activities are broken up into two parts:
+
+* Inputs
+* Graders (in Open edX and LON-CAPA, these were called _response types_)
+
+These can mix-and-match. For example, a grader which expects a number could have one from a:
+* Numberline
+* Type-in-a-number
+* Drop-down with numbers
+* ...
+
+Conversely, an input which outputs a number could be connected to:
+* A grader which compares a number with a tolerance
+* As one of **two** inputs to a grader which checks for a ratio
+* To a code grader which checks the value with JavaScript code (e.g. whether it is a square number)
+* etc.
+
+Unlike Open edX or LON-CAPA, inputs should be children of the related grader:
+```
+<NumericalGrader answer="9.8" tolerance="0.1">
+  <NumberInput />
+</NumericalGrader>
+```
+
+If this is impossible, this can be overridden with `target=`. In most cases, both sit inside of a `<CapaProblem>` component, but this is just a template for wiring together a `Correctness` display to show the grade, an `ActionButton` to trigger the grader, a `StatusText` to show feedback, etc. It's possible to do this manually too.
+
+##### Inputs
+
+Blocks can advertise themselves as **inputs** by supplying a `getValue` selector, e.g.:
+
+```
+  getValue: (props, state, id) => fieldSelector(state, props, fieldByName('value'), { fallback: '', id }),
+```
+
+This is almost certainly the wrong way to do this. `value` is the default place to keep the state of *any* block, and `useValue` will either use the `value` field or call `getValue` function on any block. In the future, we should make a:
+```
+...input
+```
+mix-in which, by default, returns the value, but allows richer selectors.
+
+##### Graders
+
+A **grader** is an action block that collects values from related inputs (via `target` or inference e.g. `inferRelatedNodes`) and grades them:
 
 ```javascript
 const SimpleCheck = blocks.test({
@@ -168,21 +225,289 @@ const SimpleCheck = blocks.test({
 });
 ```
 
-The result of a grader is logged via the `UPDATE_CORRECT` event and stored
-in Redux under the `correct` field. Possible values are defined in
-`blocks.CORRECTNESS`.
+The result of a grader is logged via the `UPDATE_CORRECT` event and stored in Redux under the `correct` field. Possible values are defined in `blocks.CORRECTNESS`.
 
-When actions execute, they inherit the `idPrefix` from the triggering
-component. This ensures that graders in scoped contexts (like a problem
-inside a MasteryBank) update the correct scoped state rather than global
-state. See "ID Prefixes for Scoped State" below.
+Notes:
 
-This terminology may change slightly by the time you read this for
-better alignment with existing systems, as well as for being more
-human-friendly.
+Graders automatically receive:
+- input - Single input value (typical use case)
+- inputs - Array of all input values (for when we expect multiple inputs)
+- inputApi - Bound locals from the input block
+- inputApis - Array of all input APIs
 
-We did this slightly already; graders, in LON-CAPA and then edX, were
-called response types.
+TODO: The above should be handled more declaratively (e.g. if a grader expects one or multiple inputs)
+
+Correctness states are defined in `src/lib/blocks/correctness.js` and currently include:  UNSUBMITTED, SUBMITTED, CORRECT, PARTIALLY_CORRECT, INCORRECT, INCOMPLETE, and INVALID. This is inspired by Open edX, but may extend in the future.
+
+TODO: We also need a Doneness, as well as more standard scoring.
+
+When actions execute, they inherit the `idPrefix` from the triggering component. This ensures that graders in scoped contexts (like a problem inside a MasteryBank) update the correct scoped state rather than global state. See "ID Prefixes for Scoped State" below.
+
+TODO: Graders are also used to auto-generate Match components for use in hinting. E.g. `<StringGrader>` also generates a `<StringMatch>` which can be used to give feedback for specific answers. We should document how (and perhaps improve the API here).
+
+#### Actions
+
+Graders are a specialized type of `action`. An action is a block which does something when triggered like:
+* Grade
+* Call an LLM
+* Pop up a dialog
+* Etc.
+
+A simple action:
+```
+import * as blocks from '@/lib/blocks';
+
+const HelloAction = core({
+  ...blocks.action({
+    action: async ({ targetId, targetInstance, props }) => {
+      console.log('Action executed!');
+    }
+  }),
+  name: 'HelloAction',
+  // ...
+});
+```
+
+The easiest way to trigger an action is to put it inside of an `<ActionButton>` component, which triggers all child actions (or ones pointed to with `target=`).
+
+#### Synopsis:
+
+| Property         | Type                  | Description                                                |
+|------------------|-----------------------|------------------------------------------------------------|
+| description      | string                | Human-readable description (shows in docs).                |
+| category         | string                | Override documentation category (default: directory name). |
+| internal         | boolean               | Hide from main docs. For system/helper blocks.             |
+| requiresUniqueId | boolean|'children'|fn | ID uniqueness requirement (default: true).                 |
+| requiresGrader   | boolean               | Block needs a parent grader.                               |
+| isGrader         | boolean               | Auto-set by grader() mixin. Adds grader fields.            |
+| getDisplayAnswer | fn                    | Returns answer for "Show Answer" feature.                  |
+
+requiresUniqueId options:
+- true (default) - All instances must have unique IDs
+- false - Duplicates allowed (e.g., Markdown, TextBlock)
+- 'children' - Require uniqueness if any child requires it
+
+### `Block`s
+
+`BlockBlueprint`s are parsed through zod and a bit of logic into a `Block`. This is quite similar, but with:
+* Type validation
+* Inference for defaults
+* Additions (e.g. documentation and template files belong here, eventually)
+* Etc.
+
+TODO: Consider renaming to `BlockType`.
+
+## Instantiating Blocks -- Part 1: Static OLX
+
+Blocks can be instantiated into specific nodes in OLX. For example `Markdown` is a block, while:
+```
+<Markdown id="helloblock">
+# Hello World!
+- One
+- Two
+- Three
+</Markdown>
+```
+creates an instance of that block. The OLX is the archival format-of-record for course content. It is parsed into OLX JSON, which at present looks like:
+
+```
+"helloblock": {
+  "attributes": {
+     "id": "helloblock"
+  },
+  "id": "HelloBlock",
+  "kids": "# Hello World!\n- One\n- Two\n- Three",
+  "provenance": [
+    "inline"
+  ],
+  "rawParsed": {
+    "Markdown": [
+      {
+        "#text": "# Hello World!\n- One\n- Two\n- Three",
+      }
+    ]
+  },
+  "tag": "Markdown"
+}
+```
+
+TODO: Consider renaming to `StaticInstance`
+
+## Instantiating Blocks -- Part 2: Dynamic DOM
+
+Finally, OLX is dynamically rendered into a JSX DOM with an OLX shadow DOM. The dynamic hierarchy can be -- and often is -- quite different from the static hierarchy.
+
+For example, a `MasteryBank` will pull in kids from a bank of items. A DynamicList can render an item multiple times. Etc. Sadly, this means that static IDs and dynamic IDs might not be the same. If we put the above node into a dynamic list:
+
+```
+<DynamicList id="list">
+  <Use id="helloblock">
+</DynamicList>
+```
+
+If the `helloblock` was something with state, and we pulled up redux developer tools, we would see `list.0.helloblock`, `list.1.helloblock`, etc. as IDs for the specific child nodes.
+
+TODO: Consider renaming to DynamicInstance
+
+# IDs
+
+This will explain why IDs are among the most confusing parts of this system. We have many types of IDs:
+
+Type            |  Example                                                                        | Description
+----------------|---------------------------------------------------------------------------------|------------
+OLX Reference   | `/mit.edu/6002x/resistorProblem`, `resistorProblem`, `../6002x/resistorProblem` | As found in source OLX
+OLX Key         | `/mit.edu/6002x/resistorProblem`                                                | As found in key-value stores, etc.
+Redux State key | `AdaptivePractice:/mit.edu/6002x/resistorProblem`                               | Modified by OLX namespaces, CapaProblem, DynamicList, etc.
+React key | | Most be unique per element
+HTML ID   | | Must be unique per page
+
+A few notes:
+* An OLX Reference is **not** unique (many-to-many). We need absolute and relative references. **This is unimplemented as of this writing** 
+* An OLX Key is **not** unique (one-to-many). It's a DAG, not a tree, and with `Use`, the same key can occur multiple times on the same page.
+* In OLX, we write `id=`
+* The same Redux State key can occur multiple times on the same page (one-to-many)
+* React keys are unique per list
+* HTML IDs are unique per page
+
+Notice: We use `/` for namespacing in static OLX, and `:` in the dynamic DOM. **Note:** The current version of the codebase uses `.` instead of `:` as of this writing. This should be fixed soon.
+
+In most cases, namespacing in the OLX DOM is done by attaching an `idPrefix` (which is accumulated in `props`).
+
+## ID Format
+
+OLX IDs should NOT contain: ., /, :, or whitespace (unless being used as part of namespaces), as these characters are reserved as namespace/path delimiters.
+
+However, we are currently doing our best to restrict IDs to [a-z][A-Z]_[0-9]. This is because we're still figuring out formats. We plan to relax this once we know more about what we're doing. If tomorrow, we'd like to introduce ^, #, or otherwise, we want that option. It's not unlikely we'll want to be able to refer to specific versions (e.g. use older content) by version number, git hash, or whatnot, and have other features. Until we figure that out, it makes sense to be conservative in content authoring.
+
+We also have a lot of hacks in code. Common one:
+```
+  // HACK: Force absolute path for cross-block references.
+  const absoluteId = id.startsWith('/') ? id : `/${id}`;
+```
+And similar. Much of this will go away with branded types.
+
+## Branded types (planned)
+
+```typescript
+// === Destination Types (where the ID addresses) ===
+type OlxReference = string & { __brand: 'OlxReference' };
+type OlxKey = string & { __brand: 'OlxKey' };
+type ReduxStateKey = string & { __brand: 'ReduxStateKey' };
+type ReactKey = string & { __brand: 'ReactKey' };
+type HtmlId = string & { __brand: 'HtmlId' };
+```
+
+With explicit functions for conversion (e.g. prefix + OLX Ket => React Key, etc), e.g.:
+```typescript
+// Reference → IdMapKey (for idMap lookup)
+toIdMapKey(props, ref: OlxReference, options = {}): OlxKey
+
+// Reference → ReduxStateKey (for state access, applies prefix)
+toReduxStateKey(props, ref: OlxReference, options = {}): ReduxStateKey
+```
+
+## Key Assignment Contexts and Helpers
+
+We need to work through key assignment strategy if `id=` is not specified (and sometimes, if it is!).
+
+We would like to have an abstracted set of helpers:
+
+```
+// For React reconciliation - handles duplicate IDs in siblings
+assignReactKeys(kids: KidNode[]): (KidNode & { key: ReactKey })[]
+```
+
+Right now, if an `id` is not provided, we assign one based on a hash of the OLX. This only works-ish. With naive assignment, both of these `ComplexInputs` would share their react state:
+
+**Example of the problem:**
+```xml
+<CapaProblem id="problem_1">
+  <NumericalGrader><ComplexInput /></NumericalGrader>
+</CapaProblem>
+<CapaProblem id="problem_2">
+  <NumericalGrader><ComplexInput /></NumericalGrader>
+</CapaProblem>
+
+Without special logic in `CapaProblem`, both `ComplexInput` blocks would get the same hash ID (since their XML content is identical), causing them to update together.
+
+This can lead to many bugs! Container blocks like `CapaProblem` need to assign predictable, unique IDs to all descendant blocks, and the system should provide means to do that (as of this writing, CapaProblem has a hack: Recursively traverse all descendants and MUTATE the XML nodes to add IDs before any parsing -- which might break caching, memoization, static analysis, ...)
+
+Conversely, flagging every duplicate ID as a problem is also not great. The ID for most nodes does not matter, and shared IDs are okay:
+
+```olx
+<Markdown>Intro</Markdown>
+...
+<Markdown>Intro</Markdown>
+```
+Markdown just renders content -- no state -- and it does not matter if the above share state.
+
+Approaches we'd like to consider:
+* Blocks declaratively advertise in their blueprint:
+  - Whether shared state is okay
+  - Whether an explicit `id=` is required
+  - Whether state can mutate under parses (in most cases, this is okay; even a random GUID would be fine -- but this would be downright dangerous for inputs and graders; a changing ID in a course update would cause students to lose their work!)
+* Blocks provide *contexts* for child key assignment -- see CapaProblem and DynamicList
+* Perhaps, two-stage parsing, to add IDs to OLX
+* Perhaps, automatically adding `id=` in the editor / linter / loader, where required
+
+Strategies might include:
+
+  | Strategy            | Deterministic? | Unique?                                        | Stable?                       |
+  |---------------------|----------------|------------------------------------------------|-------------------------------|
+  | Explicit (id="foo") | Yes            | Author's job                                   | Yes                           |
+  | Content hash        | Yes            | No (collisions)                                | Across runs, not edits        |
+  | Position-based      | Yes            | Within siblings (globally, with parent prefix) | Across edits, not reorder     |
+  | Path-based          | Yes            | Yes                                            | Across runs, not restructure  |
+  | Parent-based        | Yes            | Yes                                            | Assuming same parent/siblings |
+  | Parent-assigned     | Yes            | Within parent (globally, with parent prefix)   | Depends on parent             |
+  | GUID                | No             | Yes                                            | No                            |
+
+
+Parent-based is helpful for resolving the canonical issue: `<Key>True</Key>` which can appear in hundred of MCQs. A stable key of `[parent]key[sluggified_text]` `hw11Problem3KeyTrue` can resolve this.
+
+It's also very easy for authors to write: `<TextArea id="answer" />` and similar, which can be resolved with prefixes (or author training! or a smart editor!).
+
+Note that we favor semantic ids:
+
+* **Good**: `id=`harvard.edu/writing_101/graphic_organizer_thesis`` (semantic, complete)
+* **Okay**: `id=`hw2_problem2` (semantic)
+* **Medicocre**: `id=[SHA HASH]` (at least, traceable)
+* **Bad**: `id=[GUID]` (impossible to debug)
+
+Note: LLMs can generate very decent semantic IDs.
+
+Also: Namespaces still need to be figured out.
+
+## Kid nodes
+
+We would like most parsers to return renderable portions of their kids in this format:
+
+```typescript
+type KidNode =
+  | BlockRef                          // Reference to a ParsedNode in idMap
+  | TextNode                          // Inline text
+  | HtmlNode;                         // Inline HTML
+
+type BlockRef = {
+  type: 'block';
+  id: IdMapKey;                       // Points to ParsedNode in idMap
+  overrides?: Record<string, any>;    // Attribute overrides for this instance
+};
+
+type TextNode = {
+  type: 'text';
+  text: string;
+};
+
+type HtmlNode = {
+  type: 'html';
+  tag: string;
+  attributes: Record<string, any>;
+  kids: KidNode[];
+};
+```
+
+Kids might still be strings (for Markdown, PEG), hierarchies (for various navigation blocks), etc. but where convenient, the above should be used. This allows us to use Kids with the simplified `useKids()`.
 
 Validation, TypeScript, and zod
 -------------------------------
@@ -201,6 +526,7 @@ equality.
 ```
 const parsed = ZodSchema.parse(config); // Validate config
 ```
+
 But to continue to use `config` rather than `parsed`, or to only use
 `parsed` for relatively simple types. 
 

@@ -1,4 +1,5 @@
-// src/lib/blocks/idResolver.js
+// src/lib/blocks/idResolver.ts
+import type { OlxReference, OlxKey, ReduxStateKey, ReactKey, HtmlId } from '../types';
 //
 // ID Resolution System
 // ====================
@@ -141,20 +142,28 @@ function resolveIdForContext(context, matrix = ID_RESOLUTION_MATRIX) {
  * refToReduxKey({ id: './foo', idPrefix: 'scope' }) // => 'scope.foo'
  * refToReduxKey({ id: 'foo' })                      // => 'foo'
  */
+/** Input type for refToReduxKey - either a string ref or props object with id */
+type RefToReduxKeyInput = OlxReference | string | {
+  id?: OlxReference | string;
+  stateId?: string;
+  idPrefix?: string;
+  [key: string]: unknown;
+};
+
 const _refToReduxKey = resolveIdForContext("refToReduxKey");
-export const refToReduxKey = (input, defaultValue) => {
+export const refToReduxKey = (input: RefToReduxKeyInput, defaultValue?: string): ReduxStateKey => {
   const base = _refToReduxKey(input, defaultValue);
 
   // Absolute references (starting with /) bypass the prefix
   if (base.startsWith('/')) {
-    return base.slice(1);
+    return base.slice(1) as ReduxStateKey;
   }
 
   // Explicit relative (starting with ./) - strip prefix marker
   const resolvedBase = base.startsWith('./') ? base.slice(2) : base;
 
-  const prefix = input?.idPrefix ?? '';
-  return prefix ? `${prefix}.${resolvedBase}` : resolvedBase;
+  const prefix = (input as { idPrefix?: string })?.idPrefix ?? '';
+  return (prefix ? `${prefix}.${resolvedBase}` : resolvedBase) as ReduxStateKey;
 };
 
 // If we would like to look ourselves up in idMap.
@@ -187,8 +196,8 @@ export const nodeId = (input) => {
  * refToOlxKey('mastery.attempt_0.q1')    // => 'q1'
  * refToOlxKey('/list.0.child')           // => 'child'
  */
-export const refToOlxKey = (ref) => {
-  if (typeof ref !== 'string') return ref;
+export const refToOlxKey = (ref: OlxReference | string): OlxKey => {
+  if (typeof ref !== 'string') return ref as unknown as OlxKey;
 
   // Strip path prefixes first
   let result = ref;
@@ -201,13 +210,13 @@ export const refToOlxKey = (ref) => {
     result = result.slice(lastDot + 1);
   }
 
-  return result;
+  return result as OlxKey;
 };
 
-// And, e.g.:
+// Other ID resolvers - these extract IDs from props objects
 export const urlName = resolveIdForContext("urlName");
-export const htmlId = resolveIdForContext("htmlId");
-export const reactKey = resolveIdForContext("reactKey");
+export const htmlId: (input: unknown, defaultValue?: string) => HtmlId = resolveIdForContext("htmlId");
+export const reactKey: (input: unknown, defaultValue?: string) => ReactKey = resolveIdForContext("reactKey");
 export const displayName = resolveIdForContext("displayName");
 
 /**

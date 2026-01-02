@@ -17,7 +17,7 @@
 import React from 'react';
 import { z } from 'zod';
 
-import { BlockBlueprint, BlockBlueprintSchema, Block, FieldInfoByField } from '../types';
+import { BlockBlueprint, BlockBlueprintSchema, Block, FieldInfoByField, OLXTag } from '../types';
 import { baseAttributes } from './attributeSchemas';
 import * as state from '@/lib/state';
 
@@ -95,7 +95,7 @@ function createBlock(config: BlockBlueprint): Block {
     parsed.name ??
     (Component.displayName || Component.name);
 
-  const olxName = rawName.startsWith('_') ? rawName.slice(1) : rawName;
+  const olxName = (rawName.startsWith('_') ? rawName.slice(1) : rawName) as OLXTag;
 
   if (typeof rawName !== 'string' || rawName.trim() === '') {
     throw new Error(

@@ -17,7 +17,7 @@
 //
 import { XMLBuilder } from 'fast-xml-parser';
 import path from 'path';
-import type { OLXLoadingError } from '@/lib/types';
+import type { OLXLoadingError, OlxReference, OlxKey } from '@/lib/types';
 import { isContentFile, CATEGORY, extensionsWithDots } from '@/lib/util/fileTypes';
 
 // === Setup ===
@@ -316,7 +316,7 @@ function createBlocksParser(options: { allowHTML?: boolean } = {}) {
           type: 'html',
           tag,
           attributes,
-          id: attributes.id,
+          id: attributes.id as OlxKey | undefined,
           kids: childResults
         });
       }

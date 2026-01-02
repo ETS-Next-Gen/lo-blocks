@@ -31,7 +31,7 @@ import * as idResolver from '../blocks/idResolver';
 import { fieldByName } from './fields';
 
 import { scopes } from '../state/scopes';
-import { FieldInfo } from '../types';
+import { FieldInfo, OlxReference, OlxKey } from '../types';
 import { assertValidField } from './fields';
 
 
@@ -311,7 +311,7 @@ export function useReduxCheckbox(
  * @returns {FieldInfo} The field info
  * @throws {Error} If component or field not found
  */
-export function componentFieldByName(props, targetId, fieldName) {
+export function componentFieldByName(props, targetId: OlxReference, fieldName: string) {
   // TODO: Flip around. If x not in y: raise exception. Then grab it.
   // TODO: More human-friendly errors. This is for programmers, but teachers might see these editing.
   // Possible TODO: Extract context from props for human-friendly errors.
@@ -364,7 +364,7 @@ export function componentFieldByName(props, targetId, fieldName) {
  * @param {Object} options - Options object with fallback and other settings
  * @returns {any} The component's current value
  */
-export function valueSelector(props, state, id, { fallback } = {} as { fallback?: any }) {
+export function valueSelector(props, state, id: OlxReference | null | undefined, { fallback } = {} as { fallback?: any }) {
   // If no ID provided, return fallback (supports optional targetRef patterns)
   if (id === undefined || id === null) {
     return fallback;
@@ -431,7 +431,7 @@ export function useValue(props, id, options = {}) {
  */
 export function useComponentState(
   props,
-  targetId: string,
+  targetId: OlxReference,
   { scope = scopes.component }: { scope?: string } = {}
 ) {
   const resolvedId = idResolver.refToReduxKey({ ...props, id: targetId });

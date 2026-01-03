@@ -57,6 +57,7 @@ export interface GenericProvenance {
   * And it stops being interchangeable with strings.
   */
 export type ProvenanceURI = string;
+// TODO: Rename variables from 'name' to 'tag' throughout codebase for consistency with OLXTag
 export type OLXTag = string & { __brand: 'OLXTag' };
 
 // ID Types (Branded)
@@ -91,6 +92,18 @@ export interface Fields {
   fieldInfoByEvent: FieldInfoByEvent;
 }
 
+/**
+ * A valid JavaScript identifier (e.g., foo, getChoices, _private).
+ * Must match /^[a-zA-Z_$][a-zA-Z0-9_$]*$/
+ */
+export type JavaScriptId = string;
+
+/**
+ * Block-local API functions. Keys must be valid JS identifiers
+ * since they're called as locals.foo(). Values are any.
+ */
+export type LocalsAPI = Record<JavaScriptId, any>;
+
 // Blocks
 // Blueprint: How we declare / register them.
 
@@ -113,7 +126,9 @@ export const BlockBlueprintSchema = z.object({
   namespace: z.string().nonempty(),
   component: z.custom<React.ComponentType<any>>().optional(),
   action: z.function().optional(),
-  isGrader: z.boolean().optional(),
+  isGrader: z.boolean().optional().default(false),
+  isInput: z.boolean().optional().default(false),
+  isMatch: z.boolean().optional().default(false),
   parser: z.function().optional(),
   staticKids: z.function().optional(),
   reducers: z.array(z.function()).optional(),
@@ -188,8 +203,9 @@ export const BlockBlueprintSchema = z.object({
 
 export type BlockBlueprint = z.infer<typeof BlockBlueprintSchema>;
 
-// Blocks don't pass in the namespace; that's added by the partial
-type BlockBlueprintReg = Omit<BlockBlueprint, "namespace">;
+// For registration: use z.input to allow optional fields without requiring defaults
+export type BlockBlueprintInput = z.input<typeof BlockBlueprintSchema>;
+export type BlockBlueprintReg = Omit<BlockBlueprintInput, "namespace">;
 
 // Blueprints get processed into a block
 export interface Block {
@@ -252,7 +268,19 @@ export interface Block {
    * Returns the answer to display (may differ from grading answer).
    */
   getDisplayAnswer?: (props: any) => any;
-  blueprint: BlockBlueprint;
+  blueprint: BlockBlueprintInput;
+
+  // Documentation properties (added by generateRegistry at build time)
+  /** Path to the block's source file relative to project root */
+  source?: string;
+  /** Path to the block's README.md documentation file */
+  readme?: string;
+  /** Git status of the README file: 'committed' | 'modified' | 'untracked' */
+  readmeGitStatus?: 'committed' | 'modified' | 'untracked';
+  /** Array of example OLX files for this block */
+  examples?: Array<{ path: string; gitStatus?: 'committed' | 'modified' | 'untracked' }>;
+  /** Git status of the block source file: 'committed' | 'modified' | 'untracked' */
+  gitStatus?: 'committed' | 'modified' | 'untracked';
 }
 
 export interface ComponentMap {
@@ -283,7 +311,11 @@ export interface NodeInfo {
   renderedKids: Record<OlxKey, NodeInfo>;
   parent?: NodeInfo;
   blueprint: BlockBlueprint;
+  sentinel?: string;  // 'root' for root node
 }
+
+/** Selector function for filtering nodes in DOM traversal */
+export type NodeSelector = (nodeInfo: NodeInfo) => boolean;
 
 export interface PropType {
   id: string;
@@ -300,7 +332,7 @@ export interface PropType {
 export interface OlxJson {
   id: OlxKey;
   tag: string;
-  attributes?: Record<string, JSONValue>;
+  attributes: Record<string, JSONValue>;  // Always present, defaults to {} in parsing
   provenance: Provenance;
   rawParsed: JSONValue;
   [key: string]: JSONValue | undefined;

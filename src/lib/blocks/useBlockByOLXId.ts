@@ -15,12 +15,13 @@
 
 import { use } from 'react';
 import { getBlockByOLXId, getBlocksByOLXIds } from './getBlockByOLXId';
-import type { PropType, OlxJson } from '@/lib/types';
+import type { PropType, OlxJson, OlxReference } from '@/lib/types';
 
-export function useBlockByOLXId(props: PropType, id: string): OlxJson | undefined {
+export function useBlockByOLXId(props: PropType, id: OlxReference | null): OlxJson | undefined {
+  if (!id) return undefined;
   return use(getBlockByOLXId(props, id));
 }
 
-export function useBlocksByOLXIds(props: PropType, ids: string[]): (OlxJson | undefined)[] {
+export function useBlocksByOLXIds(props: PropType, ids: OlxReference[]): (OlxJson | undefined)[] {
   return use(getBlocksByOLXIds(props, ids));
 }

@@ -287,9 +287,9 @@ requiresUniqueId options:
 - false - Duplicates allowed (e.g., Markdown, TextBlock)
 - 'children' - Require uniqueness if any child requires it
 
-### `Block`s
+### `BlockSpecification`s
 
-`BlockBlueprint`s are parsed through zod and a bit of logic into a `Block`. This is quite similar, but with:
+`BlockBlueprint`s are parsed through zod and a bit of logic into a `BlockSpec` (confusing, still named `blueprint` in most of the code, as of this writing; we're redoing naming). This is quite similar, but with:
 * Type validation
 * Inference for defaults
 * Additions (e.g. documentation and template files belong here, eventually)

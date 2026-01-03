@@ -17,7 +17,7 @@
 import React from 'react';
 import { z } from 'zod';
 
-import { BlockBlueprint, BlockBlueprintSchema, Block, FieldInfoByField, OLXTag } from '../types';
+import { BlockBlueprint, BlockBlueprintInput, BlockBlueprintReg, BlockBlueprintSchema, Block, FieldInfoByField, OLXTag } from '../types';
 import { baseAttributes } from './attributeSchemas';
 import * as state from '@/lib/state';
 
@@ -45,7 +45,7 @@ const GRADER_ATTRIBUTES = baseAttributes.extend({
  * Extend config for grader blocks.
  * Adds standard fields (correct, message, showAnswer) and attributes (answer, displayAnswer, target).
  */
-function applyGraderExtensions(config: BlockBlueprint): BlockBlueprint {
+function applyGraderExtensions(config: BlockBlueprintInput): BlockBlueprintInput {
   if (!config.isGrader) return config;
 
   // Extend fields - only add grader fields not already defined
@@ -83,10 +83,17 @@ function applyGraderExtensions(config: BlockBlueprint): BlockBlueprint {
 // Future: applyInputExtensions, applyActionExtensions, etc.
 
 // === Main factory ===
-function createBlock(config: BlockBlueprint): Block {
+function createBlock(config: BlockBlueprintInput): Block {
   // Apply mixin extensions
   const effectiveConfig = applyGraderExtensions(config);
 
+  // We are using zod primarily for **validation** rather than parsing.
+  //
+  // Zod will strip away a lot of metadata on functions, react
+  // components, etc. in ways which would break the system
+  //
+  // For a long time, we were very mindful for when we used parsed.X
+  // versus config.x, but some of this may need a cleanup still.
   const parsed = BlockBlueprintSchema.parse(effectiveConfig);
   const Component: React.ComponentType<any> = effectiveConfig.component ?? (() => null);
 
@@ -103,11 +110,6 @@ function createBlock(config: BlockBlueprint): Block {
     );
   }
 
-  // HACK: Blocks should be react components with properties. We wrapped this up in a dictionary for debugging.
-  // We should annotate the component itself with:
-  // (Block as any)._isBlock = true
-  // And similar.
-  // Commit 430ab50f062a538d95c7d5d9630e7783d696de25 is the last one using the preferred format.
   const block: Block = {
     component: Component,
     _isBlock: true,
@@ -131,6 +133,10 @@ function createBlock(config: BlockBlueprint): Block {
     isGrader: effectiveConfig.isGrader,
     getDisplayAnswer: effectiveConfig.getDisplayAnswer,
 
+    // TODO: This should rarely be used. But I see .blueprint in code
+    // a lot. I suspect each of these should be replaced with:
+    // - Moving anything missing into this type
+    // - Removing .blueprint
     blueprint: effectiveConfig
   }
   assertUnimplemented(parsed.reducers, 'reducers');
@@ -139,5 +145,5 @@ function createBlock(config: BlockBlueprint): Block {
 }
 
 export const blocks = (namespace: string) =>
-  (config: Omit<BlockBlueprint, 'namespace'>, locals?: any) =>
+  (config: BlockBlueprintReg, locals?: any) =>
     createBlock({ ...config, namespace, locals: locals ?? config.locals });

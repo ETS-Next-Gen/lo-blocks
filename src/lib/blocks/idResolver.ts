@@ -76,6 +76,51 @@ import type { OlxReference, OlxKey, ReduxStateKey, ReactKey, HtmlId } from '../t
 // These characters are reserved as namespace/path delimiters.
 //
 
+// Valid ID pattern: alphanumeric, underscores, hyphens
+// Path prefixes (/, ./, ../) are allowed for references
+const VALID_ID_SEGMENT = /^[a-zA-Z0-9_-]+$/;
+const INVALID_CHARS_DISPLAY = /[^\w\s/-]/g;  // For error messages
+
+/**
+ * Validate and brand a user-provided ID string as OlxReference.
+ * Use this at system boundaries where user input enters the type system.
+ *
+ * @param input - Raw string from OLX id= attribute or target= attribute
+ * @param context - Description for error messages (e.g., "id attribute", "target")
+ * @returns Branded OlxReference
+ * @throws Error with human-friendly message if invalid
+ */
+export function toOlxReference(input: string, context = 'ID'): OlxReference {
+  if (!input || typeof input !== 'string') {
+    throw new Error(`${context}: ID is required but got "${input}"`);
+  }
+
+  const trimmed = input.trim();
+  if (!trimmed) {
+    throw new Error(`${context}: ID cannot be empty or whitespace`);
+  }
+
+  // Strip path prefix for validation (/, ./, ../)
+  const pathPrefix = trimmed.match(/^(\.\.?\/|\/)/)?.[0] || '';
+  const idPart = trimmed.slice(pathPrefix.length);
+
+  if (!idPart) {
+    throw new Error(`${context}: ID "${input}" has path prefix but no ID`);
+  }
+
+  // Check for invalid characters
+  if (!VALID_ID_SEGMENT.test(idPart)) {
+    const invalidChars = idPart.match(INVALID_CHARS_DISPLAY);
+    const charList = invalidChars ? [...new Set(invalidChars)].join(' ') : 'special characters';
+    throw new Error(
+      `${context}: ID "${input}" contains invalid characters: ${charList}\n` +
+      `IDs should only contain letters, numbers, underscores, and hyphens.`
+    );
+  }
+
+  return trimmed as OlxReference;
+}
+
 const ID_RESOLUTION_MATRIX = {
   refToReduxKey: ["stateId", "id", "urlName", "url_name"],
   nodeId:       "nodeId.sentinel",  // Handled out-of-line; included for introspection in test case

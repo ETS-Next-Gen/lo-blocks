@@ -6,7 +6,7 @@
 import * as state from '@/lib/state';
 import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import { refToOlxKey, toOlxReference } from './idResolver';
-import type { NodeInfo, NodeSelector, OlxKey, OlxReference, RuntimeProps } from '@/lib/types';
+import type { OlxDomNode, OlxDomSelector, OlxKey, OlxReference, RuntimeProps } from '@/lib/types';
 //
 // The OLX DOM is Learning Observer's internal representation of educational content,
 // distinct from both the React virtual DOM and the browser DOM. It represents the
@@ -31,8 +31,8 @@ import type { NodeInfo, NodeSelector, OlxKey, OlxReference, RuntimeProps } from 
  * @param {Function} selector - Predicate on nodeInfo (default: always true)
  * @returns {Array} Array of matching parent nodeInfos
  */
-export function getParents(nodeInfo: NodeInfo, { selector = (_: NodeInfo) => true, includeRoot = false }: { selector?: NodeSelector; includeRoot?: boolean } = {}) {
-  const results: NodeInfo[] = [];
+export function getParents(nodeInfo: OlxDomNode, { selector = (_: OlxDomNode) => true, includeRoot = false }: { selector?: OlxDomSelector; includeRoot?: boolean } = {}) {
+  const results: OlxDomNode[] = [];
   let current = includeRoot ? nodeInfo : nodeInfo.parent;
 
   while (current) {
@@ -48,9 +48,9 @@ export function getParents(nodeInfo: NodeInfo, { selector = (_: NodeInfo) => tru
  * Returns all descendant nodeInfos of the given nodeInfo,
  * matching the selector, in BFS order (optionally including root).
  */
-export function getKidsBFS(nodeInfo: NodeInfo, { selector = (_: NodeInfo) => true, includeRoot = false }: { selector?: NodeSelector; includeRoot?: boolean } = {}) {
-  const results: NodeInfo[] = [];
-  const queue: NodeInfo[] = includeRoot
+export function getKidsBFS(nodeInfo: OlxDomNode, { selector = (_: OlxDomNode) => true, includeRoot = false }: { selector?: OlxDomSelector; includeRoot?: boolean } = {}) {
+  const results: OlxDomNode[] = [];
+  const queue: OlxDomNode[] = includeRoot
     ? [nodeInfo]
     : Object.values(nodeInfo.renderedKids ?? {});
 
@@ -69,8 +69,8 @@ export function getKidsBFS(nodeInfo: NodeInfo, { selector = (_: NodeInfo) => tru
  * Returns all descendant nodeInfos of the given nodeInfo,
  * matching the selector, in DFS preorder (optionally including root).
  */
-export function getKidsDFS(nodeInfo: NodeInfo, { selector = (_: NodeInfo) => true, includeRoot = false }: { selector?: NodeSelector; includeRoot?: boolean } = {}) {
-  const results: NodeInfo[] = [];
+export function getKidsDFS(nodeInfo: OlxDomNode, { selector = (_: OlxDomNode) => true, includeRoot = false }: { selector?: OlxDomSelector; includeRoot?: boolean } = {}) {
+  const results: OlxDomNode[] = [];
   function visit(ni, isRoot) {
     if ((includeRoot || !isRoot) && selector(ni)) {
       results.push(ni);
@@ -151,7 +151,7 @@ function normalizeInfer(
 }
 
 
-function root(nodeInfo: NodeInfo): NodeInfo {
+function root(nodeInfo: OlxDomNode): OlxDomNode {
   while (nodeInfo.parent) nodeInfo = nodeInfo.parent;
   return nodeInfo;
 }
@@ -163,7 +163,7 @@ function root(nodeInfo: NodeInfo): NodeInfo {
  * @returns {string} The node ID
  * @throws {Error} If nodeInfo.node or nodeInfo.node.id is missing
  */
-function getNodeId(nodeInfo: NodeInfo, context = 'getNodeId'): OlxKey {
+function getNodeId(nodeInfo: OlxDomNode, context = 'getNodeId'): OlxKey {
   if (!nodeInfo.node) {
     // Root node has sentinel instead of node
     if (nodeInfo.sentinel === 'root') {
@@ -186,7 +186,7 @@ function getNodeId(nodeInfo: NodeInfo, context = 'getNodeId'): OlxKey {
   return nodeInfo.node.id;
 }
 
-export function getAllNodes(nodeInfo: NodeInfo, { selector = (_: NodeInfo) => true }: { selector?: NodeSelector } = {}) {
+export function getAllNodes(nodeInfo: OlxDomNode, { selector = (_: OlxDomNode) => true }: { selector?: OlxDomSelector } = {}) {
   return getKidsDFS(root(nodeInfo), { selector, includeRoot: true });
 }
 
@@ -211,7 +211,7 @@ export function inferRelatedNodes(props: RuntimeProps, {
   infer,
   targets,
   closest = false,
-}: { selector?: NodeSelector; infer?; targets?; closest?: boolean } = {}): OlxKey[] {
+}: { selector?: OlxDomSelector; infer?; targets?; closest?: boolean } = {}): OlxKey[] {
   const { nodeInfo } = props;
   if (!nodeInfo) { console.log(props); throw new Error("inferRelatedNodes: props.nodeInfo is required"); };
   if (!selector) throw new Error("inferRelatedNodes: selector is required");

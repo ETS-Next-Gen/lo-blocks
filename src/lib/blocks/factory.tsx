@@ -17,7 +17,7 @@
 import React from 'react';
 import { z } from 'zod';
 
-import { BlockBlueprint, BlockBlueprintInput, BlockBlueprintReg, BlockBlueprintSchema, Block, FieldInfoByField, OLXTag } from '../types';
+import { BlockBlueprint, BlockBlueprintInput, BlockBlueprintReg, BlockBlueprintSchema, BlockType, FieldInfoByField, OLXTag } from '../types';
 import { baseAttributes } from './attributeSchemas';
 import * as state from '@/lib/state';
 
@@ -83,7 +83,7 @@ function applyGraderExtensions(config: BlockBlueprintInput): BlockBlueprintInput
 // Future: applyInputExtensions, applyActionExtensions, etc.
 
 // === Main factory ===
-function createBlock(config: BlockBlueprintInput): Block {
+function createBlock(config: BlockBlueprintInput): BlockType {
   // Apply mixin extensions
   const effectiveConfig = applyGraderExtensions(config);
 
@@ -110,7 +110,7 @@ function createBlock(config: BlockBlueprintInput): Block {
     );
   }
 
-  const block: Block = {
+  const block: BlockType = {
     component: Component,
     _isBlock: true,
 

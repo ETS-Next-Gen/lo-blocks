@@ -322,10 +322,10 @@ export function ChatComponent({
   id,
   messages,
   initialScrollPosition = 'bottom',
-  subtitle,
+  subtitle = null,
   footer,
   height = 'h-96',
-  onAdvance,
+  onAdvance = null,
   theme = 'light',
 }) {
   const t = themes[theme];

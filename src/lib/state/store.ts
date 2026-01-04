@@ -21,17 +21,51 @@ import { consoleLogger } from 'lo_event/lo_event/consoleLogger.js';
 import { websocketLogger } from 'lo_event/lo_event/websocketLogger.js';
 import { scopes, Scope } from './scopes';
 import type { FieldInfo, Fields } from '../types';
+import {
+  olxjsonReducer,
+  initialOlxJsonState,
+  LOAD_OLXJSON,
+  OLXJSON_LOADING,
+  OLXJSON_ERROR,
+  CLEAR_OLXJSON,
+} from './olxjson';
 
 // TODO this ought to come from settings instead
 const WEBSOCKET_URL = 'ws://localhost:8888/wsapi/in/'
+
+// Initial state - includes olxjson alongside component state
+//
+// TODO: olxjson is content (parsed OLX), not application state (user interactions).
+// It lives here because lo_event's reduxLogger wraps the reducer output under
+// `application_state`, so we can't put it at a sibling level without modifying lo_event.
+//
+// Future: Add multi-reducer support to lo_event so content can live at state.olxjson
+// instead of state.application_state.olxjson. This would better reflect the semantic
+// difference between content definitions and runtime application state.
+//
 const initialState = {
   component: {},
   componentSetting: {},
   system: {},
-  storage: {}
+  storage: {},
+  olxjson: initialOlxJsonState,
 };
 
+// Event types for olxjson state
+const OLXJSON_EVENT_TYPES = [LOAD_OLXJSON, OLXJSON_LOADING, OLXJSON_ERROR, CLEAR_OLXJSON];
+
+// Combined reducer handling both component state and olxjson
 export const updateResponseReducer = (state = initialState, action) => {
+  // Handle olxjson events first (they don't use scope)
+  // Note: lo_event passes payload with .event, not .type
+  const eventType = action.type || action.event;
+  if (OLXJSON_EVENT_TYPES.includes(eventType)) {
+    return {
+      ...state,
+      olxjson: olxjsonReducer(state.olxjson, { ...action, type: eventType }),
+    };
+  }
+
   const { scope = scopes.component, id, tag, ...rest } = action;
 
   // TODO: This should be simplified now that we can use [scope] instead of
@@ -104,7 +138,8 @@ function collectEventTypes(extraFields: ExtraFieldsParam = []) {
   return Array.from(new Set([
     ...commonEventTypes,
     ...componentEventTypes,
-    ...extraEventTypes
+    ...extraEventTypes,
+    ...OLXJSON_EVENT_TYPES,
   ]));
 }
 
@@ -139,3 +174,9 @@ function configureStore({ extraFields = [] }: { extraFields?: ExtraFieldsParam }
 }
 
 export const store = { init: configureStore };
+
+// Debug helper - expose lo_event on window for console testing
+// Usage: __lo.logEvent('LOAD_OLXJSON', { source: 'test', blocks: { foo: { id: 'foo', tag: 'Markdown' } } })
+if (typeof window !== 'undefined') {
+  (window as any).__lo = lo_event;
+}

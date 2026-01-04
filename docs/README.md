@@ -9,7 +9,19 @@ Learning Observer blocks are similar to Open edX XBlocks and React components: e
 
 ## Block lifespan and flow
 
-We will walk through the lifespan of a typical block. The most confusing parts the different types of IDs a block might have, and data types at various stages of the block's lifespan. 
+We will walk through the lifespan of a typical block. The most confusing parts the different types of IDs a block might have, and data types at various stages of the block's lifespan. The pathway is
+
+```
+           BlockBlueprint  What a developer writes)
+                 ↓
+              LoBlock      Compiled / validated / cleaned up by the system)
+                 ↓
+   OLX →      OlxJson      Static content (**instance** of a LoBlock)
+                 ↓
+             OlxDomNode    Dynamic content (close to 1:1 to static content, but not always, with components like <DynamicList> and other forms of reuse / rewriting)
+                 ↓
+          Rendered Block   React component (close to 1:1 to dynamic content, but not always; react shadow DOM is a tree, OLX shadow DOM is a DAG)
+```
 
 ### `BlockBlueprint`
 

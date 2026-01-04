@@ -343,7 +343,6 @@ export interface RuntimeProps {
   kids: BlueprintKidEntry[];
 
   // Opaque context - thread through
-  idMap: IdMap;
   nodeInfo: OlxDomNode;
   componentMap: ComponentMap;
   idPrefix?: string;

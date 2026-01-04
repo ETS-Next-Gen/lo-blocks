@@ -16,9 +16,7 @@
 // The dynamic OLX structure enables the actions system to find related blocks
 // and coordinate behaviors across the content hierarchy.
 //
-// SYNCHRONOUS RENDERING: All render functions are synchronous. If a block is not
-// found in idMap, an error is displayed (no async fetching). Content must be
-// loaded into idMap before rendering.
+// SYNCHRONOUS RENDERING: All render functions are synchronous.
 //
 import htmlTags from 'html-tags';
 import React from 'react';
@@ -28,6 +26,8 @@ import type { OlxKey } from '@/lib/types';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { getGrader } from '@/lib/blocks/olxdom';
 import { assignReactKeys, refToOlxKey } from '@/lib/blocks/idResolver';
+import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
+import { selectBlock } from '@/lib/state/olxjson';
 
 // Root sentinel has minimal loBlock so selectors don't need ?. checks
 // TODO: Give root a real loBlock created via blocks.core() for consistency
@@ -44,9 +44,8 @@ export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {}, loBlock
  *
  * @returns React element(s) or null
  */
-export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '', olxJsonSources }: {
+export function render({ node, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '', olxJsonSources }: {
   node: any;
-  idMap: any;
   nodeInfo: any;
   componentMap?: any;
   idPrefix?: string;
@@ -61,7 +60,7 @@ export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, id
 
   // Handle list of kids
   if (Array.isArray(node)) {
-    return renderCompiledKids({ kids: node, idMap, nodeInfo, componentMap, idPrefix, olxJsonSources });
+    return renderCompiledKids({ kids: node, nodeInfo, componentMap, idPrefix, olxJsonSources });
   }
 
   // Handle { type: 'block', id, overrides }
@@ -71,9 +70,10 @@ export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, id
     node.type === 'block' &&
     typeof node.id === 'string'
   ) {
-    // Synchronous lookup in idMap - no async fetching
+    // Synchronous lookup in Redux store
     const olxKey = refToOlxKey(node.id);
-    const entry = idMap?.[olxKey];
+    const sources = olxJsonSources ?? ['content'];
+    const entry = selectBlock(reduxLogger.store?.getState(), sources, olxKey);
     if (!entry) {
       return (
         <DisplayError
@@ -87,7 +87,7 @@ export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, id
     const entryWithOverrides = node.overrides
       ? { ...entry, attributes: { ...entry.attributes, ...node.overrides } }
       : entry;
-    return render({ node: entryWithOverrides, idMap, nodeInfo, componentMap, idPrefix, olxJsonSources });
+    return render({ node: entryWithOverrides, nodeInfo, componentMap, idPrefix, olxJsonSources });
   }
 
   // Handle structured OLX-style node
@@ -149,7 +149,7 @@ export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, id
   let graderId: OlxKey | null = null;
   if (blockType.requiresGrader) {
     try {
-      graderId = getGrader({ ...wrapperProps, idMap });
+      graderId = getGrader({ ...wrapperProps });
     } catch (e) {
       return (
         <DisplayError
@@ -180,7 +180,6 @@ export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, id
           {...attributes}
           id={node.id}
           kids={kids}
-          idMap={idMap}
           loBlock={blockType}
           locals={blockType.locals}
           fields={blockType.fields}
@@ -197,12 +196,11 @@ export function render({ node, idMap, nodeInfo, componentMap = COMPONENT_MAP, id
 
 /**
  * Render kids array that may include: text, block references, HTML, etc.
- * Synchronous - all content must already be in idMap.
  *
  * @returns Array of React elements
  */
 export function renderCompiledKids(props): React.ReactNode[] {
-  let { kids, children, idMap, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '', olxJsonSources } = props;
+  let { kids, children, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '', olxJsonSources } = props;
   if (kids === undefined && children !== undefined) {
     console.log(
       "[renderCompiledKids] WARNING: 'children' prop used instead of 'kids'. Please migrate to 'kids'."
@@ -242,7 +240,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
     if (child.type === 'block') {
       return (
         <React.Fragment key={child.key}>
-          {render({ node: child, idMap, nodeInfo, componentMap, idPrefix, olxJsonSources })}
+          {render({ node: child, nodeInfo, componentMap, idPrefix, olxJsonSources })}
         </React.Fragment>
       );
     }
@@ -259,7 +257,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
       return React.createElement(
         child.tag,
         { key: child.key, ...child.attributes },
-        renderCompiledKids({ kids: child.kids ?? [], idMap, nodeInfo, componentMap, idPrefix, olxJsonSources })
+        renderCompiledKids({ kids: child.kids ?? [], nodeInfo, componentMap, idPrefix, olxJsonSources })
       );
     }
 
@@ -268,7 +266,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
     if (child.tag && typeof child.tag === 'string') {
       return (
         <React.Fragment key={child.key}>
-          {render({ node: child, idMap, nodeInfo, componentMap, idPrefix, olxJsonSources })}
+          {render({ node: child, nodeInfo, componentMap, idPrefix, olxJsonSources })}
         </React.Fragment>
       );
     }
@@ -297,13 +295,32 @@ export function renderCompiledKids(props): React.ReactNode[] {
 // - useKids(props) - Render children from props.kids
 // - useKidsWithState(props) - Like useKids but exposes ready/error state
 //
-export { useBlock, useKids, useKidsWithState } from '@/lib/blocks/useRenderedBlock.tsx';
+export { useBlock, useKids, useKidsWithState } from '@/lib/blocks/useRenderedBlock';
+
+/**
+ * Render an OlxJson node directly (no idMap lookup needed).
+ *
+ * Use this when you have the OlxJson object already (e.g., from useOlxJson hook).
+ * This is the preferred method for components that use hooks to access content.
+ *
+ * @param props - Render props (nodeInfo, componentMap, idPrefix, etc.)
+ * @param props.node - The OlxJson to render
+ */
+export function renderOlxJson(props: {
+  node: any;
+  nodeInfo: any;
+  componentMap?: any;
+  idPrefix?: string;
+}): React.ReactNode {
+  const { node, nodeInfo, componentMap = COMPONENT_MAP, idPrefix = '' } = props;
+  return render({ node, nodeInfo, componentMap, idPrefix });
+}
 
 /**
  * Helper to render a virtual block without exposing OLX node shape.
  * Used for programmatically creating blocks (e.g., CapaProblem status icons).
  *
- * @param {object} props - Component props (must include idMap, nodeInfo, componentMap)
+ * @param {object} props - Component props (must include nodeInfo, componentMap)
  * @param {string} tag - The component tag (e.g., 'Correctness')
  * @param {object} options - { id, ...attributes }
  * @param {Array} kids - Child nodes
@@ -312,7 +329,7 @@ export { useBlock, useKids, useKidsWithState } from '@/lib/blocks/useRenderedBlo
  * @example
  * renderBlock(props, 'Correctness', { id: 'x_status', target: '...' })
  */
-export function renderBlock(props, tag, options: { id?: string; [key: string]: any } = {}, kids = []): React.ReactNode {
+export function renderBlock(props, tag, options: { id?: string;[key: string]: any } = {}, kids = []): React.ReactNode {
   const { id, ...attributes } = options;
   const node = { id, tag, attributes, kids };
   return render({ ...props, node });

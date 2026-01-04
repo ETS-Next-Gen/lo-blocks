@@ -57,10 +57,17 @@ export interface GenericProvenance {
   * And it stops being interchangeable with strings.
   */
 export type ProvenanceURI = string;
-export type OLXId = string;
-export type OLXTag = string;
+// TODO: Rename variables from 'name' to 'tag' throughout codebase for consistency with OLXTag
+export type OLXTag = string & { __brand: 'OLXTag' };
 
-// TODO: Add similar tagged types for things like Block ID, etc.
+// ID Types (Branded)
+// See docs/README.md "IDs" section for documentation.
+export type OlxReference = string & { __brand: 'OlxReference' };  // "/foo", "./foo", "foo"
+export type OlxKey = OlxReference & { __resolved: true };         // idMap lookup key
+export type ReduxStateKey = string & { __brand: 'ReduxStateKey' }; // state key with idPrefix
+export type ReactKey = string & { __brand: 'ReactKey' };          // React reconciliation
+export type HtmlId = string & { __brand: 'HtmlId' };              // DOM element ID
+
 
 /** Primary representation for provenance references */
 export type Provenance = ProvenanceURI[];
@@ -85,6 +92,18 @@ export interface Fields {
   fieldInfoByEvent: FieldInfoByEvent;
 }
 
+/**
+ * A valid JavaScript identifier (e.g., foo, getChoices, _private).
+ * Must match /^[a-zA-Z_$][a-zA-Z0-9_$]*$/
+ */
+export type JavaScriptId = string;
+
+/**
+ * Block-local API functions. Keys must be valid JS identifiers
+ * since they're called as locals.foo(). Values are any.
+ */
+export type LocalsAPI = Record<JavaScriptId, any>;
+
 // Blocks
 // Blueprint: How we declare / register them.
 
@@ -107,7 +126,9 @@ export const BlockBlueprintSchema = z.object({
   namespace: z.string().nonempty(),
   component: z.custom<React.ComponentType<any>>().optional(),
   action: z.function().optional(),
-  isGrader: z.boolean().optional(),
+  isGrader: z.boolean().optional().default(false),
+  isInput: z.boolean().optional().default(false),
+  isMatch: z.boolean().optional().default(false),
   parser: z.function().optional(),
   staticKids: z.function().optional(),
   reducers: z.array(z.function()).optional(),
@@ -182,11 +203,15 @@ export const BlockBlueprintSchema = z.object({
 
 export type BlockBlueprint = z.infer<typeof BlockBlueprintSchema>;
 
-// Blocks don't pass in the namespace; that's added by the partial
-type BlockBlueprintReg = Omit<BlockBlueprint, "namespace">;
-
-// Blueprints get processed into a block
-export interface Block {
+/**
+ * LoBlock - a Learning Observer block type (code, not content).
+ *
+ * Created from BlockBlueprint by factory.tsx. Stored in ComponentMap.
+ *
+ * The block lifecycle:
+ *   BlockBlueprint (what devs write) → LoBlock (processed) → OlxJson (instance) → OlxDomNode (rendered)
+ */
+export interface LoBlock {
   component: React.ComponentType<any>;
   _isBlock: true;
   action?: Function;
@@ -196,9 +221,13 @@ export interface Block {
   getValue?: Function;
   locals?: Record<string, any>;
   fields: FieldInfoByField;
+  name?: string;  // Block name for selector matching
   OLXName: OLXTag;
   description?: string;
   namespace: string;
+  isInput: boolean;
+  isMatch: boolean;
+  isGrader: boolean;
   /**
    * Marks this block as internal/system use only.
    * Internal blocks are hidden from the main documentation navigation.
@@ -239,18 +268,25 @@ export interface Block {
    */
   requiresGrader?: boolean;
   /**
-   * Marks this block as a grader. Factory auto-extends fields and schema.
-   */
-  isGrader?: boolean;
-  /**
    * Returns the answer to display (may differ from grading answer).
    */
   getDisplayAnswer?: (props: any) => any;
-  blueprint: BlockBlueprint;
+
+  // Documentation properties (added by generateRegistry at build time)
+  /** Path to the block's source file relative to project root */
+  source?: string;
+  /** Path to the block's README.md documentation file */
+  readme?: string;
+  /** Git status of the README file: 'committed' | 'modified' | 'untracked' */
+  readmeGitStatus?: 'committed' | 'modified' | 'untracked';
+  /** Array of example OLX files for this block */
+  examples?: Array<{ path: string; gitStatus?: 'committed' | 'modified' | 'untracked' }>;
+  /** Git status of the block source file: 'committed' | 'modified' | 'untracked' */
+  gitStatus?: 'committed' | 'modified' | 'untracked';
 }
 
 export interface ComponentMap {
-  [tag: string]: Block;
+  [tag: string]: LoBlock;
 }
 
 export type ComponentError = string | null;
@@ -264,44 +300,74 @@ export type ParseError = string | null | {
 // A list of kids can have any of these; renderedCompiledChildren should handle all of these.
 // TODO: These should probably all be of type kidEntry, and the current type should move under a different key.
 export type BlueprintKidEntry =
-  | { type: 'block'; id: OLXId; overrides?: Record<string, JSONValue> }
+  | { type: 'block'; id: OlxReference; overrides?: Record<string, JSONValue> }
   | { type: 'text'; text: string }
   | { type: 'xml'; xml: string }
   | { type: 'cdata'; value: string }
   | { type: 'html'; tag: string; attributes: any; kids: BlueprintKidEntry[] }
   | { type: 'node'; rawParsed: any };
 
-// TODO: Rename to indicate the type of node. This is a _dynamic_ node, as generated by render.
-export interface NodeInfo {
+/**
+ * OlxDomNode - a node in the dynamic OLX DOM tree.
+ *
+ * Created at render time (not parse time). Has parent/child relationships
+ * for traversal by the action system. Distinct from:
+ * - OlxJson (static parsed content in idMap)
+ * - React DOM (the actual browser rendering)
+ */
+export interface OlxDomNode {
   node: OlxJson;
-  renderedKids: Record<OLXId, NodeInfo>;
-  parent?: NodeInfo;
-  blueprint: BlockBlueprint;
+  renderedKids: Record<OlxKey, OlxDomNode>;
+  parent?: OlxDomNode;
+  loBlock: LoBlock;
+  sentinel?: string;  // 'root' for root node
 }
 
-export interface PropType {
+/** Selector function for filtering OlxDomNodes in DOM traversal */
+export type OlxDomSelector = (node: OlxDomNode) => boolean;
+
+/**
+ * RuntimeProps - the context bag passed through the system.
+ *
+ * This is a hybrid of three things (pragmatic compromise for React):
+ * 1. Opaque context (idMap, nodeInfo, componentMap, idPrefix) - thread through, don't inspect
+ * 2. Block machinery (loBlock, fields, locals) - framework injects these
+ * 3. OLX attributes - flow in via [key: string]: any
+ *
+ * Most functions just pass props through without inspecting. Blocks destructure
+ * only what they need (usually just attributes and fields).
+ */
+export interface RuntimeProps {
+  // This block's identity and content
   id: string;
   kids: BlueprintKidEntry[];
-  idMap: IdMap;
-  blueprint: BlockBlueprint;
-  fields: FieldInfoByField;
-  nodeInfo: NodeInfo;
+
+  // Opaque context - thread through
+  nodeInfo: OlxDomNode;
   componentMap: ComponentMap;
   idPrefix?: string;
+  olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
+
+  // Block machinery - framework injects these
+  loBlock: LoBlock;
+  fields: FieldInfoByField;
+  locals: LocalsAPI;  // {} if none, not undefined
+
+  // OLX attributes flow in here
   [key: string]: any;
 }
 
 export interface OlxJson {
-  id: OLXId;
+  id: OlxKey;
   tag: string;
-  attributes?: Record<string, JSONValue>;
+  attributes: Record<string, JSONValue>;  // Always present, defaults to {} in parsing
   provenance: Provenance;
   rawParsed: JSONValue;
   [key: string]: JSONValue | undefined;
 }
 
 export interface IdMap {
-  [id: OLXId]: OlxJson;
+  [id: OlxKey]: OlxJson;
 }
 
 export interface GraphNode {

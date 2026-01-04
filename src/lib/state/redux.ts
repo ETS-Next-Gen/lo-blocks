@@ -31,8 +31,9 @@ import * as idResolver from '../blocks/idResolver';
 import { fieldByName } from './fields';
 
 import { scopes } from '../state/scopes';
-import { FieldInfo } from '../types';
+import { FieldInfo, OlxReference, OlxKey } from '../types';
 import { assertValidField } from './fields';
+import { selectBlock } from './olxjson';
 
 
 const UPDATE_INPUT = 'UPDATE_INPUT'; // TODO: Import
@@ -68,7 +69,7 @@ export const fieldSelector = <T>(
       case scopes.componentSetting: {
         const tag =
           optTag ??
-          props?.blueprint?.OLXName ??
+          props?.loBlock?.OLXName ??
           props.nodeInfo?.node?.tag;
         return selector(scopedState?.[tag]);
       }
@@ -76,11 +77,11 @@ export const fieldSelector = <T>(
         return selector(scopedState);
       case scopes.storage:
       case scopes.component: {
-        // If optId is provided, apply prefix via reduxId (supports /absolute syntax)
+        // If optId is provided, apply prefix via refToReduxKey (supports /absolute syntax)
         // Otherwise, use the component's own ID from props
         const id = optId !== undefined
-          ? idResolver.reduxId({ ...props, id: optId })
-          : idResolver.reduxId(props);
+          ? idResolver.refToReduxKey({ ...props, id: optId })
+          : idResolver.refToReduxKey(props);
         return selector(scopedState?.[id]);
       }
       default:
@@ -121,14 +122,14 @@ export function updateReduxField(
   assertValidField(field);
   const scope = field.scope;
   const fieldName = field.name;
-  // If id override is provided, apply prefix via reduxId (supports /absolute syntax)
+  // If id override is provided, apply prefix via refToReduxKey (supports /absolute syntax)
   // Otherwise, use the component's own ID from props
   const resolvedId = (scope === scopes.component || scope === scopes.storage)
     ? (id !== undefined
-        ? idResolver.reduxId({ ...props, id })
-        : idResolver.reduxId(props))
+      ? idResolver.refToReduxKey({ ...props, id })
+      : idResolver.refToReduxKey(props))
     : undefined;
-  const resolvedTag = tag ?? props?.blueprint?.OLXName;
+  const resolvedTag = tag ?? props?.loBlock?.OLXName;
 
   lo_event.logEvent(field.event, {
     scope,
@@ -231,8 +232,8 @@ export function useReduxInput(
     }
   );
 
-  const id = idResolver.reduxId(props);
-  const tag = props?.blueprint.OLXName;
+  const id = idResolver.refToReduxKey(props);
+  const tag = props?.loBlock.OLXName;
 
   const onChange = useCallback((event) => {
     const val = event.target.value;
@@ -305,34 +306,32 @@ export function useReduxCheckbox(
  * fields as if they were an enum or symbol, and only use as
  * `fields.field`
  *
- * @param {Object} props - Component props with idMap and componentMap
+ * @param {Object} props - Component props with componentMap and olxJsonSources
  * @param {string} targetId - ID of the target component
  * @param {string} fieldName - Name of the field to access (e.g., 'value')
  * @returns {FieldInfo} The field info
  * @throws {Error} If component or field not found
  */
-export function componentFieldByName(props, targetId, fieldName) {
-  // TODO: Flip around. If x not in y: raise exception. Then grab it.
+export function componentFieldByName(props, targetId: OlxReference, fieldName: string) {
   // TODO: More human-friendly errors. This is for programmers, but teachers might see these editing.
-  // Possible TODO: Extract context from props for human-friendly errors.
   // Possible TODO: Move to OLXDom or similar. I'm not sure this is the best place for this.
-  // Optimization: In production, we could go directly into the global field name maps. But this is better for dev + editing. The global map risks referencing a field which exists in the system, but not in the target component.
 
-  // Use idMapKey to normalize the ID for idMap lookup
-  const normalizedId = idResolver.idMapKey(targetId);
-  const targetNode = props.idMap?.[normalizedId];
+  // Use refToOlxKey to normalize the ID for Redux lookup
+  const normalizedId = idResolver.refToOlxKey(targetId);
+  const sources = props.olxJsonSources ?? ['content'];
+  const targetNode = selectBlock(reduxLogger.store?.getState(), sources, normalizedId);
   if (!targetNode) {
-    throw new Error(`componentFieldByName: Component "${targetId}" not found in idMap`);
+    throw new Error(`componentFieldByName: Component "${targetId}" not found in content`);
   }
 
-  const targetBlueprint = props.componentMap?.[targetNode.tag];
-  if (!targetBlueprint) {
-    throw new Error(`componentFieldByName: No blueprint found for component type "${targetNode.tag}"`);
+  const targetLoBlock = props.componentMap?.[targetNode.tag];
+  if (!targetLoBlock) {
+    throw new Error(`componentFieldByName: No LoBlock found for component type "${targetNode.tag}"`);
   }
 
-  const field = targetBlueprint.blueprint.fields.fieldInfoByField?.[fieldName];
+  const field = targetLoBlock.fields?.[fieldName];
   if (!field) {
-    const availableFields = Object.keys(targetBlueprint.blueprint.fields.fieldInfoByField || {});
+    const availableFields = Object.keys(targetLoBlock.fields || {});
     throw new Error(`componentFieldByName: Field "${fieldName}" not found in component "${targetId}" (${targetNode.tag}). Available fields: ${availableFields.join(', ')}`);
   }
 
@@ -343,39 +342,40 @@ export function componentFieldByName(props, targetId, fieldName) {
  * Selector function to get a component's value by ID.
  * Tries getValue method first, falls back to direct field access.
  *
- * @param {Object} props - Component props with idMap and componentMap
+ * @param {Object} props - Component props with componentMap and olxJsonSources
  * @param {Object} state - Redux state
  * @param {string} id - ID of the component to get value from
  * @param {Object} options - Options object with fallback and other settings
  * @returns {any} The component's current value
  */
-export function valueSelector(props, state, id, { fallback } = {} as { fallback?: any }) {
+export function valueSelector(props, state, id: OlxReference | null | undefined, { fallback } = {} as { fallback?: any }) {
   // If no ID provided, return fallback (supports optional targetRef patterns)
   if (id === undefined || id === null) {
     return fallback;
   }
 
-  // Use idMapKey to strip prefixes - idMap uses plain IDs (last dot-separated segment)
-  const mapKey = idResolver.idMapKey(id);
-  const targetNode = props?.idMap?.[mapKey];
-  const blueprint = targetNode ? props?.componentMap?.[targetNode.tag] : null;
+  // Use refToOlxKey to strip prefixes for Redux lookup
+  const mapKey = idResolver.refToOlxKey(id);
+  const sources = props?.olxJsonSources ?? ['content'];
+  const targetNode = selectBlock(reduxLogger.store?.getState(), sources, mapKey);
+  const loBlock = targetNode ? props?.componentMap?.[targetNode.tag] : null;
 
-  if (!targetNode || !blueprint) {
+  if (!targetNode || !loBlock) {
     const missing: string[] = [];
     if (!targetNode) missing.push('targetNode');
-    if (!blueprint) missing.push('blueprint');
+    if (!loBlock) missing.push('loBlock');
 
     throw new Error(
       `valueSelector: Missing ${missing.join(' and ')} for component id "${id}"` +
-      (id !== mapKey ? ` (idMap key: "${mapKey}")` : '') + `\n` +
+      (id !== mapKey ? ` (olxKey: "${mapKey}")` : '') + `\n` +
       `  targetNode: ${!!targetNode}\n` +
-      `  blueprint: ${!!blueprint}`
+      `  loBlock: ${!!loBlock}`
     );
   }
 
   // Try getValue first (for computed values like wordcount)
-  if (blueprint.getValue) {
-    return blueprint.getValue(props, state, id);
+  if (loBlock.getValue) {
+    return loBlock.getValue(props, state, id);
   }
 
   // Fall back to direct field access using the 'value' field
@@ -393,7 +393,7 @@ export function valueSelector(props, state, id, { fallback } = {} as { fallback?
 /**
  * React hook to get a component's value by ID with automatic re-rendering.
  *
- * @param {Object} props - Component props with idMap and componentMap
+ * @param {Object} props - Component props with componentMap and olxJsonSources
  * @param {string} id - ID of the component to get value from
  * @param {Object} options - Options object with fallback and other settings
  * @returns {any} The component's current value
@@ -416,10 +416,10 @@ export function useValue(props, id, options = {}) {
  */
 export function useComponentState(
   props,
-  targetId: string,
+  targetId: OlxReference,
   { scope = scopes.component }: { scope?: string } = {}
 ) {
-  const resolvedId = idResolver.reduxId({ ...props, id: targetId });
+  const resolvedId = idResolver.refToReduxKey({ ...props, id: targetId });
 
   return useSelector(
     (state: any) => state?.application_state?.[scope]?.[resolvedId] || null,

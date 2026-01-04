@@ -23,7 +23,7 @@ import { COMPONENT_MAP } from '@/components/componentMap';
 import { transformTagName } from '@/lib/content/xmlTransforms';
 
 import * as parsers from '@/lib/content/parsers';
-import { Provenance, IdMap, OLXLoadingError } from '@/lib/types';
+import { Provenance, IdMap, OLXLoadingError, OlxReference, OlxKey } from '@/lib/types';
 import { formatProvenanceList } from '@/lib/storage/provenance';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { OLXMetadataSchema, type OLXMetadata } from '@/lib/content/metadata';
@@ -380,10 +380,10 @@ export async function parseOLX(
       }
 
       const { ref, ...overrides } = attributes;
-      return { type: 'block', id: ref, overrides };
+      return { type: 'block', id: ref as OlxReference, overrides };
     }
 
-    const id = attributes.id ?? attributes.url_name ?? createId(node);
+    const id: OlxKey = (attributes.id ?? createId(node)) as OlxKey;
 
     const Component = COMPONENT_MAP[tag] || COMPONENT_MAP[tag.charAt(0).toUpperCase() + tag.slice(1)];
     if (!Component) {
@@ -538,11 +538,10 @@ export async function parseOLX(
   return { ids: parsedIds, idMap, root: rootId, errors };
 }
 
-function createId(node) {
+function createId(node): OlxKey {
   const attributes = node[':@'] ?? {};
-  const id = attributes.url_name ?? attributes.id;
-  if (id) return id;
+  if (attributes.id) return attributes.id as OlxKey;
 
   const canonical = JSON.stringify(node);
-  return SHA1(canonical).toString();
+  return SHA1(canonical).toString() as OlxKey;
 }

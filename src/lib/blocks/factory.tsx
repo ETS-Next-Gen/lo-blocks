@@ -17,7 +17,11 @@
 import React from 'react';
 import { z } from 'zod';
 
-import { BlockBlueprint, BlockBlueprintSchema, Block, FieldInfoByField } from '../types';
+import { BlockBlueprintSchema, LoBlock, FieldInfoByField, OLXTag } from '../types';
+
+// Factory-local type aliases derived from the schema
+type BlueprintInput = z.input<typeof BlockBlueprintSchema>;
+type BlueprintReg = Omit<BlueprintInput, "namespace">;
 import { baseAttributes } from './attributeSchemas';
 import * as state from '@/lib/state';
 
@@ -45,7 +49,7 @@ const GRADER_ATTRIBUTES = baseAttributes.extend({
  * Extend config for grader blocks.
  * Adds standard fields (correct, message, showAnswer) and attributes (answer, displayAnswer, target).
  */
-function applyGraderExtensions(config: BlockBlueprint): BlockBlueprint {
+function applyGraderExtensions(config: BlueprintInput): BlueprintInput {
   if (!config.isGrader) return config;
 
   // Extend fields - only add grader fields not already defined
@@ -83,10 +87,17 @@ function applyGraderExtensions(config: BlockBlueprint): BlockBlueprint {
 // Future: applyInputExtensions, applyActionExtensions, etc.
 
 // === Main factory ===
-function createBlock(config: BlockBlueprint): Block {
+function createBlock(config: BlueprintInput): LoBlock {
   // Apply mixin extensions
   const effectiveConfig = applyGraderExtensions(config);
 
+  // We are using zod primarily for **validation** rather than parsing.
+  //
+  // Zod will strip away a lot of metadata on functions, react
+  // components, etc. in ways which would break the system
+  //
+  // For a long time, we were very mindful for when we used parsed.X
+  // versus config.x, but some of this may need a cleanup still.
   const parsed = BlockBlueprintSchema.parse(effectiveConfig);
   const Component: React.ComponentType<any> = effectiveConfig.component ?? (() => null);
 
@@ -95,7 +106,7 @@ function createBlock(config: BlockBlueprint): Block {
     parsed.name ??
     (Component.displayName || Component.name);
 
-  const olxName = rawName.startsWith('_') ? rawName.slice(1) : rawName;
+  const olxName = (rawName.startsWith('_') ? rawName.slice(1) : rawName) as OLXTag;
 
   if (typeof rawName !== 'string' || rawName.trim() === '') {
     throw new Error(
@@ -103,12 +114,7 @@ function createBlock(config: BlockBlueprint): Block {
     );
   }
 
-  // HACK: Blocks should be react components with properties. We wrapped this up in a dictionary for debugging.
-  // We should annotate the component itself with:
-  // (Block as any)._isBlock = true
-  // And similar.
-  // Commit 430ab50f062a538d95c7d5d9630e7783d696de25 is the last one using the preferred format.
-  const block: Block = {
+  const block: LoBlock = {
     component: Component,
     _isBlock: true,
 
@@ -120,18 +126,21 @@ function createBlock(config: BlockBlueprint): Block {
     fields: parsed?.fields?.fieldInfoByField as FieldInfoByField ?? {},
     locals: effectiveConfig.locals,
 
+    name: rawName,
     OLXName: olxName,
     description: parsed.description,
     namespace: parsed.namespace,
+    // TODO: isInput/isMatch currently derived from getValue/locals.match presence.
+    // Should be explicit in blueprint for better semantics.
+    isInput: typeof effectiveConfig.getValue === 'function',
+    isMatch: typeof effectiveConfig.locals?.match === 'function',
+    isGrader: parsed.isGrader,
     internal: effectiveConfig.internal,
     category: effectiveConfig.category,
     requiresUniqueId: effectiveConfig.requiresUniqueId,
     attributes: effectiveConfig.attributes,
     requiresGrader: effectiveConfig.requiresGrader,
-    isGrader: effectiveConfig.isGrader,
     getDisplayAnswer: effectiveConfig.getDisplayAnswer,
-
-    blueprint: effectiveConfig
   }
   assertUnimplemented(parsed.reducers, 'reducers');
 
@@ -139,5 +148,5 @@ function createBlock(config: BlockBlueprint): Block {
 }
 
 export const blocks = (namespace: string) =>
-  (config: Omit<BlockBlueprint, 'namespace'>, locals?: any) =>
+  (config: BlueprintReg, locals?: any) =>
     createBlock({ ...config, namespace, locals: locals ?? config.locals });

@@ -44,13 +44,15 @@
 //
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useTransition } from 'react';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { COMPONENT_MAP } from '@/components/componentMap';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
+import Spinner from '@/components/common/Spinner';
 import { InMemoryStorageProvider, StackedStorageProvider } from '@/lib/storage';
 import { isOLXFile } from '@/lib/util/fileTypes';
+import { dispatchOlxJson } from '@/lib/state/olxjson';
 
 /**
  * Props for RenderOLX component.
@@ -84,6 +86,8 @@ interface RenderOLXProps {
   onParsed?: (result: { idMap: Record<string, any>; root: string | null }) => void;
   /** Custom component map (defaults to COMPONENT_MAP) */
   componentMap?: Record<string, any>;
+  /** Source name for Redux state namespacing (e.g., 'content', 'inline', 'studio'). Defaults to 'content'. */
+  source?: string;
 }
 
 export default function RenderOLX({
@@ -98,9 +102,14 @@ export default function RenderOLX({
   onError,
   onParsed,
   componentMap = COMPONENT_MAP,
+  source = 'content',
 }: RenderOLXProps) {
   const [parsed, setParsed] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // useTransition prevents Suspense during edits - React shows stale content
+  // while new content is preparing instead of showing spinners
+  const [isPending, startTransition] = useTransition();
 
   // Build provider stack for src="" resolution during parsing
   const effectiveProvider = useMemo(() => {
@@ -131,8 +140,10 @@ export default function RenderOLX({
   useEffect(() => {
     // Nothing to parse - render from baseIdMap only
     if (!inline && !files) {
-      setParsed(null);
-      setError(null);
+      startTransition(() => {
+        setParsed(null);
+        setError(null);
+      });
       return;
     }
 
@@ -153,8 +164,13 @@ export default function RenderOLX({
             effectiveProvider
           );
           if (!cancelled) {
-            setParsed(result);
-            setError(null);
+            // Dispatch to Redux for reactive block access
+            dispatchOlxJson(source, result.idMap);
+            // startTransition prevents Suspense - shows old content while rendering new
+            startTransition(() => {
+              setParsed(result);
+              setError(null);
+            });
           }
           return;
         }
@@ -180,12 +196,16 @@ export default function RenderOLX({
           }
 
           if (!cancelled) {
-            setParsed({
-              root: lastRoot,
-              idMap: mergedIdMap,
-              ids: Object.keys(mergedIdMap)
+            // Dispatch to Redux for reactive block access
+            dispatchOlxJson(source, mergedIdMap);
+            startTransition(() => {
+              setParsed({
+                root: lastRoot,
+                idMap: mergedIdMap,
+                ids: Object.keys(mergedIdMap)
+              });
+              setError(null);
             });
-            setError(null);
           }
         }
       } catch (err) {
@@ -199,7 +219,7 @@ export default function RenderOLX({
 
     doParse();
     return () => { cancelled = true; };
-  }, [inline, files, effectiveProvider, provenance, onError]);
+  }, [inline, files, effectiveProvider, provenance, onError, startTransition, source]);
 
   // Merge parsed idMap with baseIdMap (parsed overrides base)
   const mergedIdMap = useMemo(() => {
@@ -220,35 +240,6 @@ export default function RenderOLX({
     }
   }, [mergedIdMap, parsed?.root]);
 
-  // Render content
-  const rendered = useMemo(() => {
-    if (!mergedIdMap) return null;
-
-    // Use requested id, fall back to parsed root
-    const rootId = mergedIdMap[id] ? id : (parsed?.root || id);
-
-    if (!mergedIdMap[rootId]) {
-      return (
-        <div className="text-red-600">
-          RenderOLX: ID &quot;{rootId}&quot; not found in content
-        </div>
-      );
-    }
-
-    try {
-      return render({
-        key: rootId,
-        node: rootId,
-        idMap: mergedIdMap,
-        nodeInfo: makeRootNode(),
-        componentMap,
-      });
-    } catch (err) {
-      console.error('RenderOLX render error:', err);
-      return null;
-    }
-  }, [mergedIdMap, parsed, id, componentMap]);
-
   // Error state
   if (error) {
     return (
@@ -268,12 +259,27 @@ export default function RenderOLX({
         </div>
       );
     }
-    return <div className="text-gray-500">Loading...</div>;
+    return <Spinner>Loading...</Spinner>;
   }
 
-  if (!rendered) {
-    return <div className="text-gray-500">Loading...</div>;
+  // Use requested id, fall back to parsed root
+  const rootId = mergedIdMap[id] ? id : (parsed?.root || id);
+
+  if (!mergedIdMap[rootId]) {
+    return (
+      <div className="text-red-600">
+        RenderOLX: ID &quot;{rootId}&quot; not found in content
+      </div>
+    );
   }
+
+  // Render synchronously - content is in Redux via dispatchOlxJson above
+  const rendered = render({
+    node: { type: 'block', id: rootId },
+    nodeInfo: makeRootNode(),
+    componentMap,
+    olxJsonSources: [source],
+  });
 
   return (
     <ErrorBoundary

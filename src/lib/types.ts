@@ -347,6 +347,7 @@ export interface RuntimeProps {
   nodeInfo: OlxDomNode;
   componentMap: ComponentMap;
   idPrefix?: string;
+  olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
 
   // Block machinery - framework injects these
   loBlock: LoBlock;

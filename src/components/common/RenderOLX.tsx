@@ -263,8 +263,9 @@ export default function RenderOLX({
       idMap: mergedIdMap,
       nodeInfo: makeRootNode(),
       componentMap,
+      olxJsonSources: [source],
     });
-  }, [mergedIdMap, parsed, id, componentMap]);
+  }, [mergedIdMap, parsed, id, componentMap, source]);
 
   // Error state
   if (error) {

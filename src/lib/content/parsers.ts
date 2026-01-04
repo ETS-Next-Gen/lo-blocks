@@ -17,7 +17,7 @@
 //
 import { XMLBuilder } from 'fast-xml-parser';
 import path from 'path';
-import type { OLXLoadingError } from '@/lib/types';
+import type { OLXLoadingError, OlxReference, OlxKey } from '@/lib/types';
 import { isContentFile, CATEGORY, extensionsWithDots } from '@/lib/util/fileTypes';
 
 // === Setup ===
@@ -244,8 +244,8 @@ export function childParser(fn: ChildParserFn, nameOverride?: string) {
 
 // === Parsers ===
 
-// No internal information.
-const ignoreFactory = childParser(() => null);
+// No internal information - returns empty kids array (not null).
+const ignoreFactory = childParser(() => []);
 ignoreFactory.staticKids = () => [];
 export const ignore = ignoreFactory;
 
@@ -316,7 +316,7 @@ function createBlocksParser(options: { allowHTML?: boolean } = {}) {
           type: 'html',
           tag,
           attributes,
-          id: attributes.id,
+          id: attributes.id as OlxKey | undefined,
           kids: childResults
         });
       }
@@ -428,7 +428,7 @@ export function peggyParser(
 ) {
   const {
     preprocess = (x) => ({ text: x.text }),
-    postprocess = (x) => x,
+    postprocess = ({ parsed }) => ({ type: 'parsed', parsed }),  // Default: wrap in standard structure, excluding functions
     skipStoreEntry = false
   } = options;
   async function parser({

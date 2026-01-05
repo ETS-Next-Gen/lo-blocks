@@ -6,7 +6,6 @@ import { useBlock } from '@/lib/render';
 import { useReduxState, useFieldSelector, fieldByName } from '@/lib/state';
 import { extendIdPrefix, toOlxReference } from '@/lib/blocks/idResolver';
 import { CORRECTNESS } from '@/lib/blocks';
-import { useOlxJson } from '@/lib/blocks/useOlxJson';
 import { DisplayError } from '@/lib/util/debug';
 
 /**
@@ -83,14 +82,10 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
   const { setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber } = handlers;
 
   const scopedProps = { ...props, ...extendIdPrefix(props, `${id}.attempt_${attemptNumber}`) };
-  const problemRef = toOlxReference(problemId, 'MasteryBank problem');
   const scopedGraderRef = toOlxReference(`${problemId}_grader`, 'MasteryBank grader');
 
-  // Load problem block (grader field is now a system field, always available)
-  const { olxJson: problemBlock } = useOlxJson(problemRef);
-
-  // Render problem
-  const { block: renderedProblem } = useBlock(scopedProps, problemId);
+  // Render problem - useBlock handles loading state with Spinner
+  const { block: renderedProblem, error } = useBlock(scopedProps, problemId);
 
   // HACK: 'correct' is registered as a system field, so fieldByName always works
   // even if the grader block isn't loaded yet. See fields.ts SYSTEM_FIELDS.
@@ -151,7 +146,8 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
     }
   }, [currentCorrectness, firstSubmissionResult, correctStreak, goalNum, problemIds.length, modeState, orderMode, attemptNumber, setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber]);
 
-  if (!problemBlock) {
+  // Show helpful error for content authors if problem not found
+  if (error) {
     return (
       <DisplayError
         props={props}
@@ -160,13 +156,15 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
         technical={{
           hint: 'Make sure this problem is defined elsewhere in your content.',
           problemId,
-          blockId: props.id
+          blockId: props.id,
+          error
         }}
         id={`${props.id}_problem_not_found`}
       />
     );
   }
 
+  // useBlock returns Spinner when loading - just render the block
   return (
     <div className="lo-mastery-bank__problem">
       {renderedProblem as React.ReactNode}

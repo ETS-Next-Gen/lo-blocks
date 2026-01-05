@@ -1,5 +1,5 @@
 // src/lib/blocks/idResolver.ts
-import type { OlxReference, OlxKey, ReduxStateKey } from '../types';
+import type { OlxReference, OlxKey, ReduxStateKey, IdPrefix } from '../types';
 //
 // ID Resolution System
 // ====================
@@ -158,7 +158,7 @@ export function toOlxReference(input: string, context = 'ID'): OlxReference {
  */
 type RefToReduxKeyInput = OlxReference | string | {
   id?: OlxReference | string;
-  idPrefix?: string;
+  idPrefix?: IdPrefix;
   [key: string]: unknown;
 };
 
@@ -254,13 +254,16 @@ export const refToOlxKey = (ref: OlxReference | string): OlxKey => {
  * extendIdPrefix(props, 'child')
  */
 export function extendIdPrefix(
-  props: { idPrefix?: string; [key: string]: unknown },
+  props: { idPrefix?: IdPrefix; [key: string]: unknown },
   scope: string | (string | number)[]
-): { idPrefix: string } {
+): { idPrefix: IdPrefix } {
   const scopeStr = Array.isArray(scope)
     ? scope.join(REDUX_SCOPE_SEPARATOR)
     : scope;
-  return { idPrefix: props.idPrefix ? `${props.idPrefix}${REDUX_SCOPE_SEPARATOR}${scopeStr}` : scopeStr };
+  const newPrefix = props.idPrefix
+    ? `${props.idPrefix}${REDUX_SCOPE_SEPARATOR}${scopeStr}`
+    : scopeStr;
+  return { idPrefix: newPrefix as IdPrefix };
 }
 
 /**

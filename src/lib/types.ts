@@ -64,6 +64,7 @@ export type OLXTag = string & { __brand: 'OLXTag' };
 // See docs/README.md "IDs" section for documentation.
 export type OlxReference = string & { __brand: 'OlxReference' };  // "/foo", "./foo", "foo"
 export type OlxKey = OlxReference & { __resolved: true };         // idMap lookup key
+export type IdPrefix = string & { __brand: 'IdPrefix' };          // scope prefix for Redux keys
 export type ReduxStateKey = string & { __brand: 'ReduxStateKey' }; // state key with idPrefix
 export type ReactKey = string & { __brand: 'ReactKey' };          // React reconciliation
 export type HtmlId = string & { __brand: 'HtmlId' };              // DOM element ID
@@ -348,7 +349,7 @@ export interface RuntimeProps {
   // Opaque context - thread through
   nodeInfo: OlxDomNode;
   blockRegistry: BlockRegistry;
-  idPrefix?: string;
+  idPrefix?: IdPrefix;
   olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
 
   // Block machinery - framework injects these

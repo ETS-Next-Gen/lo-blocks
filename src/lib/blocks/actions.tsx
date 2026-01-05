@@ -247,7 +247,7 @@ export async function executeNodeActions(props) {
       kids: targetInstance.kids || [],     // Children of the action block
       id: targetId,
       loBlock: targetBlueprint,
-      fields: targetBlueprint.fields?.fieldInfoByField || {}, // Transformed fields like render.jsx:127
+      fields: targetBlueprint.fields || {}, // Fields are now directly { fieldName: FieldInfo }
       nodeInfo: actionNodeInfo,
     };
 

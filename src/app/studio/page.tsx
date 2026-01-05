@@ -80,7 +80,7 @@ function StudioPageContent() {
 
   // Content stored in Redux - enables analytics and persistence
   const [content, setContent] = useEditComponentState(
-    editorFields.fieldInfoByField.content,
+    editorFields.content,
     filePath,
     DEMO_CONTENT,
   );
@@ -113,7 +113,7 @@ function StudioPageContent() {
   const getDirtyFiles = useCallback((): Set<string> => {
     const dirty = new Set<string>();
     for (const [path, saved] of fileStateRef.current.entries()) {
-      const current = selectFromStore(editorFields.fieldInfoByField.content, { id: path });
+      const current = selectFromStore(editorFields.content, { id: path });
       if (current !== undefined && current !== saved.content) {
         dirty.add(path);
       }

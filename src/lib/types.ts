@@ -88,6 +88,9 @@ export interface FieldInfo {
 export interface FieldInfoByField { [name: string]: FieldInfo; }
 export interface FieldInfoByEvent { [event: string]: FieldInfo; }
 
+/**
+ * @deprecated Use FieldInfoByField directly. The old two-tier structure is gone.
+ */
 export interface Fields {
   fieldInfoByField: FieldInfoByField;
   fieldInfoByEvent: FieldInfoByEvent;
@@ -114,12 +117,13 @@ const ReduxFieldInfo = z.object({
   event: z.string(),
   scope: z.string(),
 }).strict();
-const ReduxFieldInfoMap = z.record(ReduxFieldInfo);
-export const ReduxFieldsReturn = z.object({
-  fieldInfoByField: ReduxFieldInfoMap,
-  fieldInfoByEvent: ReduxFieldInfoMap,
-  extend: z.function(),
-}).strict();
+
+// Fields schema: { fieldName: FieldInfo, ..., extend?: fn }
+// Uses record for dynamic field names. The extend method is validated separately
+// since Zod records require uniform value types.
+export const ReduxFieldsReturn = z.record(
+  z.union([ReduxFieldInfo, z.function()])
+);
 
 // === Schema ===
 export const BlockBlueprintSchema = z.object({

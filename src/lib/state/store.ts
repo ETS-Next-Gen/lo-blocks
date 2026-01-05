@@ -20,7 +20,7 @@ import * as debug from 'lo_event/lo_event/debugLog.js';
 import { consoleLogger } from 'lo_event/lo_event/consoleLogger.js';
 import { websocketLogger } from 'lo_event/lo_event/websocketLogger.js';
 import { scopes, Scope } from './scopes';
-import type { FieldInfo, Fields } from '../types';
+import type { FieldInfo, FieldInfoByField } from '../types';
 import {
   olxjsonReducer,
   initialOlxJsonState,
@@ -108,24 +108,24 @@ export const updateResponseReducer = (state = initialState, action) => {
   }
 };
 
-type ExtraFieldsParam = Fields | (FieldInfo | string)[];
+type ExtraFieldsParam = FieldInfoByField | (FieldInfo | string)[];
 
 function collectEventTypes(extraFields: ExtraFieldsParam = []) {
+  // Extract FieldInfo objects from either array or object form
   const fieldList = Array.isArray(extraFields)
     ? extraFields
-    : Object.values(extraFields.fieldInfoByField);
+    : Object.values(extraFields).filter((v): v is FieldInfo =>
+        v && typeof v === 'object' && v.type === 'field'
+      );
 
-  // TODO: This type annotation is a workaround so we could build, but
-  // it's not clear it's correct. The fields structure has a confusing
-  // two-tier design (fieldInfoByField/fieldInfoByEvent/extend at
-  // blueprint level vs flattened at component props level). Claude
-  // believes the code below returns undefined for all values since
-  // entry.fields contains maps, not FieldInfo objects and the event
-  // types are actually registered elsewhere. I'm not sure that's
-  // right, but this whole architecture needs rethinking.
+  // Fields are now directly { fieldName: FieldInfo } on both blueprints and registry
   const componentEventTypes = Object.values(BLOCK_REGISTRY)
     .flatMap(entry =>
-      entry.fields ? Object.values(entry.fields).map((info: { event?: string }) => info.event) : []
+      entry.fields
+        ? Object.values(entry.fields)
+            .filter((v): v is FieldInfo => v && typeof v === 'object' && v.type === 'field')
+            .map(info => info.event)
+        : []
     );
   const commonEventTypes = [
     'LOAD_DATA_EVENT', 'LOAD_STATE', 'NAVIGATE', 'SHOW_SECTION',

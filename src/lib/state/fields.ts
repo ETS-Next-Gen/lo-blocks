@@ -126,6 +126,8 @@ export function concatFields(...lists: FieldsResult[]): FieldsResult {
   return result;
 }
 
+type FieldSpec = string | FieldInfo | { name: string; event?: string; scope?: Scope };
+
 /**
  * Declare fields for a block. Returns an object where field names map to FieldInfo.
  *
@@ -135,6 +137,11 @@ export function concatFields(...lists: FieldsResult[]): FieldsResult {
  * // fields.value is FieldInfo { name: 'value', event: 'UPDATE_VALUE', scope: 'component' }
  *
  * @example
+ * // Using common fields (preferred for value, correct, etc.)
+ * export const fields = state.fields([commonFields.value]);
+ * // Reuses the pre-registered field definition
+ *
+ * @example
  * // Custom event or scope
  * export const fields = state.fields([
  *   'value',
@@ -142,11 +149,12 @@ export function concatFields(...lists: FieldsResult[]): FieldsResult {
  *   { name: 'setting', scope: scopes.componentSetting }
  * ]);
  */
-export function fields(fieldList: (string | { name: string; event?: string; scope?: Scope })[]): FieldsResult {
+export function fields(fieldList: FieldSpec[]): FieldsResult {
   const infos: FieldInfo[] = fieldList.map(item => {
     if (typeof item === 'string') {
       return { type: 'field', name: item, event: fieldNameToDefaultEventName(item), scope: scopes.component };
     }
+    // Object with name - fill in any missing defaults
     const name = item.name;
     const event = item.event ?? fieldNameToDefaultEventName(name);
     const scope = item.scope ?? scopes.component;

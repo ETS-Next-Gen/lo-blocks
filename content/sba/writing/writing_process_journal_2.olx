@@ -1,0 +1,69 @@
+<!--
+---
+description: Survey exploring students' writing habits across different contexts—school, social media, creative, and everyday communication
+category: writing
+---
+-->
+<!-- content/sba/writing/writing_process_journal_2.olx -->
+<Sequential id="writing_self_eval_demo" title="Writing Process Journal 2" launchable="true">
+    <Vertical id="wpj2_Introduction">
+       <Markdown>
+            # Writing Process Journal 2
+            ## Introduction
+            
+            One of the myths about writing is that people are either born good or bad writers,
+            but research tells us that "writing requires practice for everyone, and all writers
+            have more to learn" (Wardle and Downs 12). Yet if your teachers thought of writing
+            like an innate talent rather than a learned skill, then you may have received feedback
+            that reinforced the idea that you were born a good or bad writer. In fact, one of the
+            threshold concepts _Writing About Writing_ introduces is, "writing is influenced by
+            identities and prior experiences" (Wardle and Downs 12). Our experiences with writing
+            start very early, and each time we encounter a new writing task, we come to that task
+            with identities formed by all our prior experiences.            
+            
+            In this assignment, you'll reflect about the experiences that have shaped your
+            understanding of what writing is, what makes someone a good writer, and how people
+            learn to write well. 
+            
+            To complete this assignment, you will:
+            
+            - **Part 1**: Write about an experience that shaped your identity as a writer.
+            - **Part 2**: Complete a survey that will help you reflect on your writing priorities.
+            - **Part 3**: Define what you think good writing is, and explain how people can become better writers.
+            - **Part 4**: Complete a self-evaluation form. What are your strengths and weaknesses as a writer?
+       </Markdown>
+    </Vertical>
+    <Vertical id="wpj2_Step_1" title="What Makes a Good Writer?">
+             <Markdown>
+                 ## What Makes a Good Writer
+                 
+                 _Think about a moment, experience, or even a piece of feedback about writing
+                 that made you feel like you were a good or bad writer. Tell us the story about
+                 this experience. How did it shape the way you felt about yourself as a writer?
+                 Do you think that people are naturally good or bad writers? Can everyone learn to write well?_
+             </Markdown>
+            <TextArea id="wpj2_define_good_writer" rows="12" placeholder="Enter your response here." />
+    </Vertical>
+    <Vertical id="wpj2_Step_2" title="Priorities for Successful Writing">
+             <Markdown>
+                 ## Priorities for Successful Writing
+                 
+                 In the screens that follow, you will explore which goals you think are important
+                 for writing success. Each screen will present four goals that writer might adopt
+                 at some point in the writing process. Decide which are more important and which
+                 are less important, and indicate your decisions by dragging and dropping the
+                 statements into priority order, where (1) is the highest priority and (4) is the lowest priority.
+             </Markdown>
+    </Vertical>
+    <Vertical id="wpj2_Step_3" title="Sorting Priorities 1">
+        <SimpleSortable id="wpj2_sortable1" title="What Do You Think Makes a Good Writer?">
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+            ===
+            1. Using sophisticated words and well-developed sentences.            
+            2. Figuring out what one really thinks about a topic before writing.
+            3. Taking the time to understand assignments before starting to write.            
+            4. Expressing ideas accurately.
+          </SimpleSortable>
+    </Vertical>
+</Sequential>

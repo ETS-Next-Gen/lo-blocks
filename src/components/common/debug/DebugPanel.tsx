@@ -12,9 +12,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import SettingsTab from './SettingsTab';
 import './DebugPanel.css';
 
-type DebugTab = 'events' | 'state' | 'content';
+type DebugTab = 'events' | 'state' | 'content' | 'settings';
 
 interface DebugPanelProps {
   onClose: () => void;
@@ -116,7 +117,7 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
     <div className="debug-panel">
       <div className="debug-panel-header">
         <div className="debug-panel-tabs">
-          {(['events', 'state', 'content'] as DebugTab[]).map(tab => (
+          {(['events', 'state', 'content', 'settings'] as DebugTab[]).map(tab => (
             <button
               key={tab}
               className={`debug-panel-tab ${activeTab === tab ? 'active' : ''}`}
@@ -202,6 +203,8 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
             )}
           </div>
         )}
+
+        {activeTab === 'settings' && <SettingsTab />}
       </div>
 
       <div className="debug-panel-footer">

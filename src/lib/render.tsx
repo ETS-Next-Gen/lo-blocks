@@ -26,8 +26,8 @@ import type { OlxKey } from '@/lib/types';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { getGrader } from '@/lib/blocks/olxdom';
 import { assignReactKeys, refToOlxKey } from '@/lib/blocks/idResolver';
-import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import { selectBlock } from '@/lib/state/olxjson';
+import type { Store } from 'redux';
 
 // Root sentinel has minimal loBlock so selectors don't need ?. checks
 // TODO: Give root a real loBlock created via blocks.core() for consistency
@@ -44,12 +44,13 @@ export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {}, loBlock
  *
  * @returns React element(s) or null
  */
-export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources }: {
+export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store }: {
   node: any;
   nodeInfo: any;
   blockRegistry?: any;
   idPrefix?: string;
   olxJsonSources?: string[];
+  store?: Store;
 }): React.ReactNode {
   if (!node) return null;
 
@@ -60,7 +61,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
 
   // Handle list of kids
   if (Array.isArray(node)) {
-    return renderCompiledKids({ kids: node, nodeInfo, blockRegistry, idPrefix, olxJsonSources });
+    return renderCompiledKids({ kids: node, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store });
   }
 
   // Handle { type: 'block', id, overrides }
@@ -73,7 +74,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
     // Synchronous lookup in Redux store
     const olxKey = refToOlxKey(node.id);
     const sources = olxJsonSources ?? ['content'];
-    const entry = selectBlock(reduxLogger.store?.getState(), sources, olxKey);
+    const entry = selectBlock(store?.getState(), sources, olxKey);
     if (!entry) {
       return (
         <DisplayError
@@ -87,7 +88,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
     const entryWithOverrides = node.overrides
       ? { ...entry, attributes: { ...entry.attributes, ...node.overrides } }
       : entry;
-    return render({ node: entryWithOverrides, nodeInfo, blockRegistry, idPrefix, olxJsonSources });
+    return render({ node: entryWithOverrides, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store });
   }
 
   // Handle structured OLX-style node
@@ -187,6 +188,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
           blockRegistry={blockRegistry}
           idPrefix={idPrefix}
           olxJsonSources={olxJsonSources}
+          store={store}
           {...(graderId && { graderId })}
         />
       </div>
@@ -200,7 +202,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
  * @returns Array of React elements
  */
 export function renderCompiledKids(props): React.ReactNode[] {
-  let { kids, children, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources } = props;
+  let { kids, children, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store } = props;
   if (kids === undefined && children !== undefined) {
     console.log(
       "[renderCompiledKids] WARNING: 'children' prop used instead of 'kids'. Please migrate to 'kids'."
@@ -240,7 +242,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
     if (child.type === 'block') {
       return (
         <React.Fragment key={child.key}>
-          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources })}
+          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store })}
         </React.Fragment>
       );
     }
@@ -257,7 +259,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
       return React.createElement(
         child.tag,
         { key: child.key, ...child.attributes },
-        renderCompiledKids({ kids: child.kids ?? [], nodeInfo, blockRegistry, idPrefix, olxJsonSources })
+        renderCompiledKids({ kids: child.kids ?? [], nodeInfo, blockRegistry, idPrefix, olxJsonSources, store })
       );
     }
 
@@ -266,7 +268,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
     if (child.tag && typeof child.tag === 'string') {
       return (
         <React.Fragment key={child.key}>
-          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources })}
+          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store })}
         </React.Fragment>
       );
     }
@@ -311,9 +313,10 @@ export function renderOlxJson(props: {
   nodeInfo: any;
   blockRegistry?: any;
   idPrefix?: string;
+  store?: Store;
 }): React.ReactNode {
-  const { node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '' } = props;
-  return render({ node, nodeInfo, blockRegistry, idPrefix });
+  const { node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', store } = props;
+  return render({ node, nodeInfo, blockRegistry, idPrefix, store });
 }
 
 /**

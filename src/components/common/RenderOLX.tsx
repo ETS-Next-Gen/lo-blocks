@@ -45,6 +45,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useTransition } from 'react';
+import { useStore } from 'react-redux';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
@@ -104,6 +105,7 @@ export default function RenderOLX({
   blockRegistry = BLOCK_REGISTRY,
   source = 'content',
 }: RenderOLXProps) {
+  const store = useStore();
   const [parsed, setParsed] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -279,6 +281,7 @@ export default function RenderOLX({
     nodeInfo: makeRootNode(),
     blockRegistry,
     olxJsonSources: [source],
+    store,
   });
 
   return (

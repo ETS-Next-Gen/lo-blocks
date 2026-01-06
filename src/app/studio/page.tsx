@@ -14,6 +14,7 @@ import { NetworkStorageProvider, VersionConflictError } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
 import type { IdMap } from '@/lib/types';
 import { useNotifications, ToastNotifications } from '@/lib/util/debug';
+import { useStore } from 'react-redux';
 import { useReduxState, selectFromStore, settings } from '@/lib/state';
 import { editorFields } from '@/lib/state/editorFields';
 import './studio.css';
@@ -64,6 +65,8 @@ function useEditComponentState(field, provenance, defaultState) {
 }
 
 function StudioPageContent() {
+  const store = useStore();
+
   // Read initial file from URL query param
   const searchParams = useSearchParams();
   const initialFile = searchParams.get('file') || 'untitled.olx';
@@ -113,13 +116,13 @@ function StudioPageContent() {
   const getDirtyFiles = useCallback((): Set<string> => {
     const dirty = new Set<string>();
     for (const [path, saved] of fileStateRef.current.entries()) {
-      const current = selectFromStore(editorFields.content, { id: path });
+      const current = selectFromStore({ store }, editorFields.content, { id: path });
       if (current !== undefined && current !== saved.content) {
         dirty.add(path);
       }
     }
     return dirty;
-  }, []);
+  }, [store]);
 
   // Toast notifications
   const { notifications, notify, dismiss: dismissNotification } = useNotifications();

@@ -14,6 +14,7 @@
 //
 import { z } from 'zod';
 import { scopeNames } from './state/scopes';
+import type { Store } from 'redux';
 
 export type JSONValue =
   | string
@@ -355,6 +356,7 @@ export interface RuntimeProps {
   blockRegistry: BlockRegistry;
   idPrefix?: IdPrefix;
   olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
+  store: Store;  // Redux store - enables replay mode where a different store provides historical state
 
   // Block machinery - framework injects these
   loBlock: LoBlock;

@@ -5,13 +5,15 @@
 //
 // Features:
 // - Live event stream with idPrefix scoping
-// - Redux state inspection
+// - Redux state inspection (live or time-travel to any event)
 // - OLX content inspection (from Redux olxjson)
+// - Time-travel: click an event to see state at that point
 //
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { replayToEvent, diffStates, AppState, LoggedEvent } from '@/lib/replay';
 import SettingsTab from './SettingsTab';
 import './DebugPanel.css';
 
@@ -45,9 +47,58 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
   const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
   const eventsEndRef = useRef<HTMLDivElement>(null);
 
+  // Time-travel state: when set, show historical state instead of live
+  // -1 means "live" (no time-travel), 0+ means "state after event N"
+  const [selectedEventIndex, setSelectedEventIndex] = useState<number>(-1);
+  const isTimeTraveling = selectedEventIndex >= 0;
+
   // Get Redux state reactively via useSelector
   const reduxState = useSelector((state: any) => state);
   const olxJson = useSelector((state: any) => state?.application_state?.olxjson ?? null);
+
+  // Compute historical state when time-traveling
+  // Uses ALL events (not filtered) because replay needs the full stream
+  const historicalState = useMemo(() => {
+    if (!isTimeTraveling) return null;
+    const allEvents = getEvents();
+    // Find the actual event in the unfiltered list
+    const targetEvent = events[selectedEventIndex];
+    if (!targetEvent) return null;
+    // Find its index in the full event list
+    const fullIndex = allEvents.findIndex(e =>
+      e.metadata?.iso_ts === targetEvent.metadata?.iso_ts &&
+      e.event === targetEvent.event &&
+      e.id === targetEvent.id
+    );
+    if (fullIndex < 0) return null;
+    return replayToEvent(allEvents as LoggedEvent[], fullIndex + 1);
+  }, [isTimeTraveling, selectedEventIndex, events]);
+
+  // Compute diff from previous event (for highlighting changes)
+  const stateDiff = useMemo(() => {
+    if (!isTimeTraveling || !historicalState || selectedEventIndex <= 0) return null;
+    const allEvents = getEvents();
+    const targetEvent = events[selectedEventIndex];
+    const prevEvent = events[selectedEventIndex - 1];
+    if (!targetEvent || !prevEvent) return null;
+    // Find indices in full list
+    const targetIndex = allEvents.findIndex(e =>
+      e.metadata?.iso_ts === targetEvent.metadata?.iso_ts &&
+      e.event === targetEvent.event
+    );
+    const prevIndex = allEvents.findIndex(e =>
+      e.metadata?.iso_ts === prevEvent.metadata?.iso_ts &&
+      e.event === prevEvent.event
+    );
+    if (targetIndex < 0 || prevIndex < 0) return null;
+    const prevState = replayToEvent(allEvents as LoggedEvent[], prevIndex + 1);
+    return diffStates(prevState, historicalState);
+  }, [isTimeTraveling, historicalState, selectedEventIndex, events]);
+
+  // The state to display: historical when time-traveling, live otherwise
+  const displayState = isTimeTraveling && historicalState
+    ? { application_state: historicalState }
+    : reduxState;
 
   // Refresh events periodically when auto-refresh is on
   const prevEventCountRef = useRef(0);
@@ -90,7 +141,9 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
     }
   }, []);
 
-  const toggleEventExpanded = useCallback((index: number) => {
+  const toggleEventExpanded = useCallback((index: number, e: React.MouseEvent) => {
+    // Prevent time-travel when just expanding
+    e.stopPropagation();
     setExpandedEvents(prev => {
       const next = new Set(prev);
       if (next.has(index)) {
@@ -100,6 +153,23 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
       }
       return next;
     });
+  }, []);
+
+  // Select an event for time-travel (clicking the event row, not expand button)
+  const selectEventForTimeTravel = useCallback((index: number) => {
+    // Toggle: clicking same event clears selection
+    if (selectedEventIndex === index) {
+      setSelectedEventIndex(-1);
+    } else {
+      setSelectedEventIndex(index);
+      // Auto-switch to state tab to show the result
+      setActiveTab('state');
+    }
+  }, [selectedEventIndex]);
+
+  // Clear time-travel selection
+  const clearTimeTravel = useCallback(() => {
+    setSelectedEventIndex(-1);
   }, []);
 
   // Handle escape key
@@ -161,15 +231,25 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
                 events.map((event, idx) => (
                   <div
                     key={idx}
-                    className={`debug-event ${expandedEvents.has(idx) ? 'expanded' : ''}`}
-                    onClick={() => toggleEventExpanded(idx)}
+                    className={`debug-event ${expandedEvents.has(idx) ? 'expanded' : ''} ${selectedEventIndex === idx ? 'selected' : ''}`}
+                    onClick={() => selectEventForTimeTravel(idx)}
                   >
                     <div className="debug-event-header">
+                      <button
+                        className="debug-event-expand"
+                        onClick={(e) => toggleEventExpanded(idx, e)}
+                        title={expandedEvents.has(idx) ? 'Collapse' : 'Expand'}
+                      >
+                        {expandedEvents.has(idx) ? '▼' : '▶'}
+                      </button>
                       <span className="debug-event-type">{event.event}</span>
                       {event.id && <span className="debug-event-id">{event.id}</span>}
                       <span className="debug-event-time">
                         {event.metadata?.iso_ts ? new Date(event.metadata.iso_ts).toLocaleTimeString() : ''}
                       </span>
+                      {selectedEventIndex === idx && (
+                        <span className="debug-event-selected-badge">viewing</span>
+                      )}
                     </div>
                     {expandedEvents.has(idx) && (
                       <pre className="debug-event-detail">
@@ -186,8 +266,32 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
 
         {activeTab === 'state' && (
           <div className="debug-state">
-            {reduxState ? (
-              <StateTree data={reduxState} />
+            {isTimeTraveling && (
+              <div className="debug-time-travel-banner">
+                <span className="debug-time-travel-icon">⏪</span>
+                <span>
+                  Viewing state after event #{selectedEventIndex + 1}
+                  {events[selectedEventIndex] && (
+                    <> ({events[selectedEventIndex].event})</>
+                  )}
+                </span>
+                <button className="debug-btn debug-btn-small" onClick={clearTimeTravel}>
+                  Return to Live
+                </button>
+              </div>
+            )}
+            {stateDiff && (stateDiff.component.added.length > 0 || stateDiff.component.changed.length > 0) && (
+              <div className="debug-diff-summary">
+                {stateDiff.component.added.length > 0 && (
+                  <span className="debug-diff-added">+{stateDiff.component.added.join(', ')}</span>
+                )}
+                {stateDiff.component.changed.length > 0 && (
+                  <span className="debug-diff-changed">~{stateDiff.component.changed.join(', ')}</span>
+                )}
+              </div>
+            )}
+            {displayState ? (
+              <StateTree data={displayState} highlightKeys={stateDiff?.component.changed} />
             ) : (
               <div className="debug-empty">Redux state not available</div>
             )}
@@ -209,7 +313,9 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
 
       <div className="debug-panel-footer">
         <kbd>⌘`</kbd> Toggle panel
-        <span className="debug-footer-hint">Click to expand</span>
+        <span className="debug-footer-hint">
+          {isTimeTraveling ? 'Click event to time-travel' : 'Click event to view state at that point'}
+        </span>
       </div>
     </div>
   );
@@ -234,8 +340,10 @@ function summarizeValue(value: any): string {
 }
 
 // State tree component - doesn't recurse when collapsed
-function StateTree({ data }: { data: any }) {
+// highlightKeys: array of keys to highlight (for showing what changed)
+function StateTree({ data, highlightKeys }: { data: any; highlightKeys?: string[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const highlightSet = useMemo(() => new Set(highlightKeys ?? []), [highlightKeys]);
 
   if (data === null) return <span className="debug-value null">null</span>;
   if (data === undefined) return <span className="debug-value undefined">undefined</span>;
@@ -267,9 +375,10 @@ function StateTree({ data }: { data: any }) {
           const value = data[key];
           const isExpandable = value && typeof value === 'object' && Object.keys(value).length > 0;
           const isExpanded = expanded.has(key);
+          const isHighlighted = highlightSet.has(key);
 
           return (
-            <div key={key} className="debug-tree-node">
+            <div key={key} className={`debug-tree-node ${isHighlighted ? 'highlighted' : ''}`}>
               <div
                 className={`debug-tree-key ${isExpandable ? 'expandable' : ''}`}
                 onClick={() => isExpandable && toggle(key)}

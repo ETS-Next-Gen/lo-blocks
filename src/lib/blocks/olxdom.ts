@@ -4,7 +4,6 @@
 // dynamic content DAG.
 
 import * as state from '@/lib/state';
-import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import { refToOlxKey, toOlxReference } from './idResolver';
 import type { OlxDomNode, OlxDomSelector, OlxKey, OlxReference, RuntimeProps } from '@/lib/types';
 //
@@ -307,12 +306,12 @@ export function getInputs(props, { infer }: { infer? } = {}) {
  * Delegates to the state module's valueSelector which handles all ID
  * resolution complexity (prefixes, absolute paths, etc.) transparently.
  *
- * @param {Object} props - Component props with blockRegistry
- * @param {string} id - ID of the component to get value from
- * @returns {any} The component's current value
+ * @param props - Component props with blockRegistry and store
+ * @param id - ID of the component to get value from
+ * @returns The component's current value
  */
-export function getValueById(props, id) {
-  const reduxState = reduxLogger.store.getState();
+export function getValueById(props: RuntimeProps, id: OlxReference | null | undefined) {
+  const reduxState = props.store.getState();
 
   // valueSelector handles all ID resolution (refToOlxKey for lookup, proper
   // prefix handling for state access) - blocks don't need to know about IDs

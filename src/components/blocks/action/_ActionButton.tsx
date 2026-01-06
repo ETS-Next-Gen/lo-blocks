@@ -1,4 +1,4 @@
-// src/components/blocks/_ActionButton.jsx
+// src/components/blocks/_ActionButton.tsx
 'use client';
 
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -6,10 +6,9 @@ import { executeNodeActions } from '@/lib/blocks';
 import { useKids } from '@/lib/render';
 import { checkPrerequisites, parsePrerequisites } from '@/lib/util/prerequisites';
 import { useReduxState } from '@/lib/state';
-import { store } from 'lo_event/lo_event/reduxLogger.js';
 
 function _ActionButton(props) {
-  const { label, dependsOn, fields } = props;
+  const { label, dependsOn, fields, store } = props;
   const prerequisites = useMemo(() => parsePrerequisites(dependsOn), [dependsOn]);
   const [isDisabled, setIsDisabled] = useReduxState(props, fields.isDisabled, prerequisites.length > 0);
 
@@ -49,7 +48,7 @@ function _ActionButton(props) {
       cancelled = true;
       unsubscribe?.();
     };
-  }, [evaluatePrerequisites, prerequisites.length]);
+  }, [evaluatePrerequisites, prerequisites.length, store]);
 
   const { kids } = useKids(props);
 

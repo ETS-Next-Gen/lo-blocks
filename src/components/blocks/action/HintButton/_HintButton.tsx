@@ -5,6 +5,7 @@ import React, { useMemo, useCallback } from 'react';
 import * as state from '@/lib/state';
 import { getAllNodes } from '@/lib/blocks/olxdom';
 import { DisplayError } from '@/lib/util/debug';
+import * as DemandHints from '@/components/blocks/display/DemandHints/DemandHints';
 
 /**
  * Find DemandHints component in the OLX DOM.
@@ -55,12 +56,10 @@ export default function _HintButton(props) {
   }, [hintsId, idMap, blockRegistry]);
 
   // Read/write hintsRevealed field on the DemandHints component
-  const hintsRevealedField = hintsId
-    ? state.componentFieldByName(props, hintsId, 'hintsRevealed')
-    : null;
+  // Use the field definition from DemandHints directly (avoids null field issue)
   const [hintsRevealed, setHintsRevealed] = state.useReduxState(
     props,
-    hintsRevealedField,
+    DemandHints.fields.hintsRevealed,
     0,
     { id: hintsId || id }
   );

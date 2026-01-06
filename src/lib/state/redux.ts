@@ -23,7 +23,6 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
-import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 
 import * as lo_event from 'lo_event';
 
@@ -31,8 +30,9 @@ import * as idResolver from '../blocks/idResolver';
 import { commonFields } from './commonFields';
 
 import { scopes } from '../state/scopes';
-import { FieldInfo, OlxReference, OlxKey } from '../types';
+import { FieldInfo, OlxReference, OlxKey, RuntimeProps } from '../types';
 import { assertValidField } from './fields';
+import type { Store } from 'redux';
 import { selectBlock } from './olxjson';
 
 
@@ -93,10 +93,11 @@ export const fieldSelector = <T>(
 
 // Convenience selector that fetches the current Redux state automatically.
 export const selectFromStore = <T>(
+  props: { store: Store },
   field: FieldInfo,
   options: SelectorOptions<T> = {}
 ): T => {
-  const state = reduxLogger.store.getState();
+  const state = props.store.getState();
   return fieldSelector(state, undefined, field, options);
 };
 
@@ -312,14 +313,14 @@ export function useReduxCheckbox(
  * @returns {FieldInfo} The field info
  * @throws {Error} If component or field not found
  */
-export function componentFieldByName(props, targetId: OlxReference, fieldName: string) {
+export function componentFieldByName(props: RuntimeProps, targetId: OlxReference, fieldName: string) {
   // TODO: More human-friendly errors. This is for programmers, but teachers might see these editing.
   // Possible TODO: Move to OLXDom or similar. I'm not sure this is the best place for this.
 
   // Use refToOlxKey to normalize the ID for Redux lookup
   const normalizedId = idResolver.refToOlxKey(targetId);
   const sources = props.olxJsonSources ?? ['content'];
-  const targetNode = selectBlock(reduxLogger.store?.getState(), sources, normalizedId);
+  const targetNode = selectBlock(props.store.getState(), sources, normalizedId);
   if (!targetNode) {
     throw new Error(`componentFieldByName: Component "${targetId}" not found in content`);
   }
@@ -348,7 +349,7 @@ export function componentFieldByName(props, targetId: OlxReference, fieldName: s
  * @param {Object} options - Options object with fallback and other settings
  * @returns {any} The component's current value
  */
-export function valueSelector(props, state, id: OlxReference | null | undefined, { fallback } = {} as { fallback?: any }) {
+export function valueSelector(props: RuntimeProps, state: any, id: OlxReference | null | undefined, { fallback } = {} as { fallback?: any }) {
   // If no ID provided, return fallback (supports optional targetRef patterns)
   if (id === undefined || id === null) {
     return fallback;
@@ -357,7 +358,7 @@ export function valueSelector(props, state, id: OlxReference | null | undefined,
   // Use refToOlxKey to strip prefixes for Redux lookup
   const mapKey = idResolver.refToOlxKey(id);
   const sources = props?.olxJsonSources ?? ['content'];
-  const targetNode = selectBlock(reduxLogger.store?.getState(), sources, mapKey);
+  const targetNode = selectBlock(props.store.getState(), sources, mapKey);
   const loBlock = targetNode ? props.blockRegistry?.[targetNode.tag] : null;
 
   if (!targetNode || !loBlock) {

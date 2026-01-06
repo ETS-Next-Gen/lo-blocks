@@ -9,45 +9,22 @@
 //
 // This script:
 // 1. Loads an event log (JSON file with { events: [...] })
-// 2. Replays events through the Redux reducer
+// 2. Replays events through the Redux reducer (pure, no side effects)
 // 3. Outputs final state and can query specific values
 //
-
-// Suppress lo_event console noise unless verbose
-const originalConsoleLog = console.log;
-let verbose = false;
-console.log = (...args) => {
-  const msg = args[0]?.toString() || '';
-  // Filter out lo_event noise
-  if (!verbose && (
-    msg.includes('info,') ||
-    msg.includes('setField:') ||
-    msg.includes('Initializing console') ||
-    msg.includes('browser_info') ||
-    msg.includes('Event consumption')
-  )) {
-    return;
-  }
-  originalConsoleLog(...args);
-};
+// Uses the pure replay module from src/lib/replay.ts - no lo_event required.
+//
 
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Use the existing store infrastructure
-import { store } from '../lib/state/store';
-import { fieldSelector } from '../lib/state/redux';
+// Use the pure replay module - no side effects, no lo_event
+import { replayToEvent, replayWithSnapshots, AppState, LoggedEvent } from '../lib/replay';
 import { commonFields } from '../lib/state/commonFields';
-import { scopes } from '../lib/state/scopes';
-import { selectBlock } from '../lib/state/olxjson';
-import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 
 interface EventLog {
   description?: string;
-  events: Array<{
-    event: string;
-    [key: string]: any;
-  }>;
+  events: LoggedEvent[];
 }
 
 function loadEventLog(filePath: string): EventLog {
@@ -56,43 +33,32 @@ function loadEventLog(filePath: string): EventLog {
   return JSON.parse(content);
 }
 
-function replayEvents(events: EventLog['events'], verbose: boolean = false) {
-  // Initialize the store
-  const reduxStore = store.init();
+let verbose = false;
 
+function replayEvents(events: LoggedEvent[]): AppState {
   console.log(`Replaying ${events.length} events...`);
 
-  for (let i = 0; i < events.length; i++) {
-    const event = events[i];
-
-    if (verbose) {
+  if (verbose) {
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
       console.log(`[${i + 1}/${events.length}] ${event.event}`,
         event.id ? `id=${event.id}` : '',
         event.source ? `source=${event.source}` : ''
       );
     }
-
-    // Dispatch through lo_event's redux logger format
-    reduxStore.dispatch({
-      redux_type: 'EMIT_EVENT',
-      type: event.event,
-      payload: JSON.stringify(event)
-    });
   }
 
-  return reduxStore;
+  // Use pure replay - no side effects
+  return replayToEvent(events);
 }
 
-function printState(reduxStore: any) {
-  const state = reduxStore.getState();
-  const appState = state.application_state;
-
+function printState(state: AppState) {
   console.log('\n=== Final State ===\n');
 
   // Print olxjson content summary
-  if (appState.olxjson) {
+  if (state.olxjson && Object.keys(state.olxjson).length > 0) {
     console.log('OLX Content:');
-    for (const [source, blocks] of Object.entries(appState.olxjson)) {
+    for (const [source, blocks] of Object.entries(state.olxjson)) {
       const blockIds = Object.keys(blocks as object);
       console.log(`  ${source}: ${blockIds.length} blocks`);
       for (const id of blockIds) {
@@ -104,24 +70,22 @@ function printState(reduxStore: any) {
   }
 
   // Print component state
-  if (appState.component && Object.keys(appState.component).length > 0) {
+  if (state.component && Object.keys(state.component).length > 0) {
     console.log('Component State:');
-    for (const [id, fields] of Object.entries(appState.component)) {
+    for (const [id, fields] of Object.entries(state.component)) {
       console.log(`  ${id}:`, JSON.stringify(fields));
     }
     console.log();
   }
 
   // Print system state
-  if (appState.system && Object.keys(appState.system).length > 0) {
-    console.log('System State:', JSON.stringify(appState.system));
+  if (state.system && Object.keys(state.system).length > 0) {
+    console.log('System State:', JSON.stringify(state.system));
     console.log();
   }
 }
 
-function queryValues(reduxStore: any, queries: string[]) {
-  const state = reduxStore.getState();
-
+function queryValues(state: AppState, queries: string[]) {
   console.log('=== Queries ===\n');
 
   for (const query of queries) {
@@ -134,8 +98,8 @@ function queryValues(reduxStore: any, queries: string[]) {
       continue;
     }
 
-    const props = { id };
-    const value = fieldSelector(state, props, field, { id, fallback: undefined });
+    // Direct lookup in component state
+    const value = state.component[id]?.[fieldName];
     console.log(`  ${query}: ${JSON.stringify(value)}`);
   }
 }
@@ -159,18 +123,18 @@ try {
     console.log(`\n${eventLog.description}\n`);
   }
 
-  const reduxStore = replayEvents(eventLog.events, verbose);
-  printState(reduxStore);
+  // Pure replay - no side effects, no lo_event
+  const finalState = replayEvents(eventLog.events);
+  printState(finalState);
 
   // Query common grading values
-  queryValues(reduxStore, [
+  queryValues(finalState, [
     'value:NumericalGraderBasic.input',
     'correct:NumericalGraderBasic.grader',
     'submitCount:NumericalGraderBasic.grader'
   ]);
 
-  // Exit explicitly - lo_event's async queue keeps Node alive otherwise
-  process.exit(0);
+  // No explicit exit needed - pure replay has no async operations
 
 } catch (error) {
   console.error('Error:', error);

@@ -137,7 +137,7 @@ export function checkPrerequisiteValue(prerequisite, value) {
 function prerequisiteValueFromGrader(props, id) {
   try {
     const correctField = state.componentFieldByName(props, id, 'correct');
-    return state.selectFromStore(correctField, {
+    return state.selectFromStore(props, correctField, {
       id,
       fallback: 0,
       selector: (s) => s?.score ?? s

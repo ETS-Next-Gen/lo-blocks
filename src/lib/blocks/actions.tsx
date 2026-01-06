@@ -1,4 +1,4 @@
-// src/lib/blocks/actions.jsx
+// src/lib/blocks/actions.tsx
 //
 // Block actions system - enables blocks to perform behaviors beyond rendering.
 //
@@ -17,13 +17,16 @@
 // The system uses inference to automatically find related blocks (inputs for
 // graders, targets for actions) based on DOM hierarchy and explicit targeting.
 //
+// NOTE: Actions receive a Redux store from their caller (typically ActionButton).
+// This enables replay mode where a different store provides historical state.
+//
 import { inferRelatedNodes, getAllNodes } from './olxdom';
-import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import * as lo_event from 'lo_event';
 import { CORRECTNESS } from './correctness';
 import { refToReduxKey } from './idResolver';
 import { getBlockByOLXId } from './getBlockByOLXId';
 import type { RuntimeProps } from '@/lib/types';
+import type { Store } from 'redux';
 
 type GraderFn = (props: RuntimeProps, params: { input?: unknown; inputs?: unknown[]; inputApi?: object; inputApis?: object[] }) => { correct: unknown; message: unknown; score?: number };
 
@@ -115,7 +118,7 @@ export function grader({ grader, infer = true }: { grader: GraderFn; infer?: boo
       }
     );
 
-    const state = reduxLogger.store.getState();
+    const state = props.store.getState();
     const map = props.blockRegistry;
 
     // Gather values and APIs from each input (synchronous - blocks are in idMap)
@@ -211,7 +214,7 @@ export function grader({ grader, infer = true }: { grader: GraderFn; infer?: boo
   };
 }
 
-export async function executeNodeActions(props) {
+export async function executeNodeActions(props: RuntimeProps) {
   const ids = inferRelatedNodes(props, {
     selector: n => isAction(n.loBlock),
     infer: props.infer,
@@ -225,6 +228,10 @@ export async function executeNodeActions(props) {
       continue;
     }
     const targetBlueprint = map[targetInstance.tag];
+    if (!targetBlueprint?.action) {
+      console.warn(`[executeNodeActions] Block "${targetId}" (${targetInstance.tag}) has no action method`);
+      continue;
+    }
 
     // Find the action's nodeInfo in the dynamic OLX DOM tree
     // Actions should already be rendered as part of the tree, so we need to find them
@@ -241,6 +248,7 @@ export async function executeNodeActions(props) {
       olxJsonSources: props.olxJsonSources,
       blockRegistry: props.blockRegistry,
       idPrefix: props.idPrefix,  // Preserve prefix so actions update scoped state
+      store: props.store,        // Redux store for state access
 
       // Target-specific props (like render.jsx does)
       ...targetInstance.attributes,        // OLX attributes from target action

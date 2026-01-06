@@ -140,10 +140,29 @@
 
 .replay-mode-scrubber-track {
   position: relative;
-  height: 6px;
+  height: 12px;
   background: #21262d;
-  border-radius: 3px;
+  border-radius: 6px;
   overflow: visible;
+}
+
+/* Event markers */
+.replay-mode-scrubber-marker {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 8px;
+  background: #6e7681;
+  transform: translate(-50%, -50%);
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.replay-mode-scrubber-marker.active {
+  background: #58a6ff;
+  height: 12px;
+  width: 3px;
 }
 
 .replay-mode-scrubber-fill {
@@ -151,26 +170,33 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #58a6ff 0%, #79c0ff 100%);
-  border-radius: 3px;
-  transition: width 0.1s ease-out;
+  background: linear-gradient(90deg, rgba(88, 166, 255, 0.3) 0%, rgba(121, 192, 255, 0.3) 100%);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .replay-mode-scrubber-thumb {
   position: absolute;
   top: 50%;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background: #58a6ff;
   border: 2px solid #0d1f33;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  transition: left 0.1s ease-out;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .replay-mode-scrubber:hover .replay-mode-scrubber-thumb {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.replay-mode-scrubber:active .replay-mode-scrubber-thumb {
   transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 2px 8px rgba(88, 166, 255, 0.4);
 }
 
 /* Keyboard hint */

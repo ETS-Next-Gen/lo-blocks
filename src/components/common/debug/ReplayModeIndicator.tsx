@@ -94,29 +94,39 @@ export default function ReplayModeIndicator() {
     }
   }, [scrubberMode, selectedEventIndex, eventCount, totalDuration, timeSinceFirst]);
 
-  // Handle scrubber click/drag
-  const handleScrubberClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!scrubberRef.current || eventCount === 0) return;
-
-    const rect = scrubberRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, clickX / rect.width));
+  // Compute event positions on the scrubber (for markers)
+  const eventPositions = useMemo(() => {
+    if (eventCount <= 1) return [0];
 
     if (scrubberMode === 'event') {
-      // Event mode: map percent to event index
-      const newIndex = Math.round(percent * (eventCount - 1));
-      selectEvent(newIndex);
+      // Event mode: evenly spaced
+      return Array.from({ length: eventCount }, (_, i) => (i / (eventCount - 1)) * 100);
     } else {
-      // Time mode: find event closest to this timestamp
+      // Time mode: by timestamp
       if (totalDuration == null || totalDuration === 0 || firstTimestamp == null) {
-        const newIndex = Math.round(percent * (eventCount - 1));
-        selectEvent(newIndex);
-        return;
+        return Array.from({ length: eventCount }, (_, i) => (i / (eventCount - 1)) * 100);
+      }
+      return timestamps.map(ts => {
+        if (ts == null) return 0;
+        return ((ts - firstTimestamp) / totalDuration) * 100;
+      });
+    }
+  }, [scrubberMode, eventCount, totalDuration, firstTimestamp, timestamps]);
+
+  // Find the event index for a given percent position
+  const percentToEventIndex = useCallback((percent: number): number => {
+    if (eventCount === 0) return 0;
+    if (eventCount === 1) return 0;
+
+    if (scrubberMode === 'event') {
+      return Math.round(percent * (eventCount - 1));
+    } else {
+      // Time mode: find closest event
+      if (totalDuration == null || totalDuration === 0 || firstTimestamp == null) {
+        return Math.round(percent * (eventCount - 1));
       }
 
       const targetTime = firstTimestamp + percent * totalDuration;
-
-      // Find closest event
       let closestIndex = 0;
       let closestDiff = Infinity;
       for (let i = 0; i < timestamps.length; i++) {
@@ -128,9 +138,38 @@ export default function ReplayModeIndicator() {
           closestIndex = i;
         }
       }
-      selectEvent(closestIndex);
+      return closestIndex;
     }
-  }, [scrubberMode, eventCount, firstTimestamp, totalDuration, timestamps, selectEvent]);
+  }, [scrubberMode, eventCount, totalDuration, firstTimestamp, timestamps]);
+
+  // Handle scrubber interaction (click or drag)
+  const handleScrubberInteraction = useCallback((clientX: number) => {
+    if (!scrubberRef.current || eventCount === 0) return;
+
+    const rect = scrubberRef.current.getBoundingClientRect();
+    const clickX = clientX - rect.left;
+    const percent = Math.max(0, Math.min(1, clickX / rect.width));
+    const newIndex = percentToEventIndex(percent);
+    selectEvent(newIndex);
+  }, [eventCount, percentToEventIndex, selectEvent]);
+
+  // Mouse down starts drag
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    handleScrubberInteraction(e.clientX);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      handleScrubberInteraction(moveEvent.clientX);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [handleScrubberInteraction]);
 
   // Keyboard navigation (only when replay is active)
   useEffect(() => {
@@ -224,9 +263,18 @@ export default function ReplayModeIndicator() {
       <div
         className="replay-mode-scrubber"
         ref={scrubberRef}
-        onClick={handleScrubberClick}
+        onMouseDown={handleMouseDown}
       >
         <div className="replay-mode-scrubber-track">
+          {/* Event markers */}
+          {eventPositions.map((pos, idx) => (
+            <div
+              key={idx}
+              className={`replay-mode-scrubber-marker ${idx === selectedEventIndex ? 'active' : ''}`}
+              style={{ left: `${pos}%` }}
+              title={`Event ${idx + 1}`}
+            />
+          ))}
           <div
             className="replay-mode-scrubber-fill"
             style={{ width: `${scrubberPosition}%` }}

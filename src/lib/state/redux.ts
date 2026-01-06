@@ -132,7 +132,9 @@ export function updateReduxField(
     : undefined;
   const resolvedTag = tag ?? props?.loBlock?.OLXName;
 
-  lo_event.logEvent(field.event, {
+  // Use props.logEvent if available (respects replay mode), fallback to lo_event.logEvent
+  const logEvent = props.logEvent ?? lo_event.logEvent;
+  logEvent(field.event, {
     scope,
     [fieldName]: newValue,
     ...(scope === scopes.component || scope === scopes.storage ? { id: resolvedId } : {}),
@@ -235,6 +237,8 @@ export function useReduxInput(
 
   const id = idResolver.refToReduxKey(props);
   const tag = props?.loBlock.OLXName;
+  // Use props.logEvent if available (respects replay mode), fallback to lo_event.logEvent
+  const logEvent = props.logEvent ?? lo_event.logEvent;
 
   const onChange = useCallback((event) => {
     const val = event.target.value;
@@ -250,12 +254,12 @@ export function useReduxInput(
     if (scope === scopes.componentSetting) payload.tag = tag;
 
     if (updateValidator && !updateValidator(val)) {
-      lo_event.logEvent(INVALIDATED_INPUT, payload);
+      logEvent(INVALIDATED_INPUT, payload);
       return;
     }
 
-    lo_event.logEvent(UPDATE_INPUT, payload);
-  }, [id, tag, fieldName, updateValidator, scope]);
+    logEvent(UPDATE_INPUT, payload);
+  }, [id, tag, fieldName, updateValidator, scope, logEvent]);
 
   const ref = useRef<HTMLInputElement>(null);
 

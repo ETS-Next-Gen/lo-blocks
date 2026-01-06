@@ -46,6 +46,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useTransition } from 'react';
 import { useStore } from 'react-redux';
+import * as lo_event from 'lo_event';
 import { parseOLX } from '@/lib/content/parseOLX';
 import { render, makeRootNode } from '@/lib/render';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
@@ -54,6 +55,7 @@ import Spinner from '@/components/common/Spinner';
 import { InMemoryStorageProvider, StackedStorageProvider } from '@/lib/storage';
 import { isOLXFile } from '@/lib/util/fileTypes';
 import { dispatchOlxJson } from '@/lib/state/olxjson';
+import { useReplayContextOptional } from '@/lib/state/replayContext';
 
 /**
  * Props for RenderOLX component.
@@ -108,6 +110,11 @@ export default function RenderOLX({
   const store = useStore();
   const [parsed, setParsed] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if we're in replay mode - if so, use no-op to prevent event logging
+  const replayCtx = useReplayContextOptional();
+  const noopLogEvent = () => {};
+  const logEvent = replayCtx?.isActive ? noopLogEvent : lo_event.logEvent;
 
   // useTransition prevents Suspense during edits - React shows stale content
   // while new content is preparing instead of showing spinners
@@ -280,8 +287,10 @@ export default function RenderOLX({
     node: { type: 'block', id: rootId },
     nodeInfo: makeRootNode(),
     blockRegistry,
+    idPrefix: '',
     olxJsonSources: [source],
     store,
+    logEvent,
   });
 
   return (

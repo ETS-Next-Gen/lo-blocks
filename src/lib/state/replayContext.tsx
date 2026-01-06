@@ -76,6 +76,7 @@ export function useReplayContextOptional(): ReplayContextValue | null {
   return useContext(ReplayContext);
 }
 
+
 // =============================================================================
 // Replay Store
 // =============================================================================
@@ -119,12 +120,13 @@ export function ReplayControlProvider({ children, getEvents }: ReplayControlProv
   // Track event count (updates when events change)
   const [eventCount, setEventCount] = useState(0);
 
-  // Update event count periodically when replay is active
+  // Update event count periodically when NOT in replay mode
+  // (during replay, event count should stay fixed)
   React.useEffect(() => {
     const updateCount = () => setEventCount(getEvents().length);
     updateCount();
-    // Poll for new events while replay is active
-    if (isActive) {
+    // Only poll for new events when NOT in replay mode
+    if (!isActive) {
       const interval = setInterval(updateCount, 500);
       return () => clearInterval(interval);
     }
@@ -189,24 +191,28 @@ interface ReplayStoreProviderProps {
  * will see the replay state instead of live state.
  *
  * When replay is inactive, just renders children (they see the outer Provider).
+ *
+ * Note: logEvent is not provided via context. Components check isActive
+ * directly via useReplayContextOptional() to determine whether to log.
  */
 export function ReplayStoreProvider({ children, getEvents }: ReplayStoreProviderProps) {
   const replayCtx = useReplayContextOptional();
+  const isReplayActive = replayCtx?.isActive ?? false;
 
   // Compute replay store when replay is active
   const replayStore = useMemo(() => {
-    if (!replayCtx?.isActive) return null;
+    if (!isReplayActive) return null;
 
     const events = getEvents();
     if (events.length === 0) return null;
 
     // Compute state at the selected event
-    const state = replayToEvent(events, replayCtx.selectedEventIndex + 1);
+    const state = replayToEvent(events, replayCtx!.selectedEventIndex + 1);
     return createReplayStore(state);
-  }, [replayCtx?.isActive, replayCtx?.selectedEventIndex, getEvents]);
+  }, [isReplayActive, replayCtx?.selectedEventIndex, getEvents]);
 
   // When replay is active and we have a store, wrap children in new Provider
-  if (replayCtx?.isActive && replayStore) {
+  if (isReplayActive && replayStore) {
     return (
       <Provider store={replayStore}>
         {children}

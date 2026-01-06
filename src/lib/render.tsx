@@ -44,13 +44,17 @@ export const makeRootNode = () => ({ sentinel: 'root', renderedKids: {}, loBlock
  *
  * @returns React element(s) or null
  */
-export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store }: {
+// Type for logEvent function - matches lo_event.logEvent signature
+export type LogEventFn = (event: string, payload: Record<string, any>) => void;
+
+export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store, logEvent }: {
   node: any;
   nodeInfo: any;
-  blockRegistry?: any;
-  idPrefix?: string;
+  blockRegistry: any;
+  idPrefix: string;
   olxJsonSources?: string[];
-  store?: Store;
+  store: Store;
+  logEvent: LogEventFn;
 }): React.ReactNode {
   if (!node) return null;
 
@@ -61,7 +65,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
 
   // Handle list of kids
   if (Array.isArray(node)) {
-    return renderCompiledKids({ kids: node, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store });
+    return renderCompiledKids({ kids: node, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store, logEvent });
   }
 
   // Handle { type: 'block', id, overrides }
@@ -88,7 +92,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
     const entryWithOverrides = node.overrides
       ? { ...entry, attributes: { ...entry.attributes, ...node.overrides } }
       : entry;
-    return render({ node: entryWithOverrides, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store });
+    return render({ node: entryWithOverrides, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store, logEvent });
   }
 
   // Handle structured OLX-style node
@@ -189,6 +193,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
           idPrefix={idPrefix}
           olxJsonSources={olxJsonSources}
           store={store}
+          logEvent={logEvent}
           {...(graderId && { graderId })}
         />
       </div>
@@ -202,7 +207,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
  * @returns Array of React elements
  */
 export function renderCompiledKids(props): React.ReactNode[] {
-  let { kids, children, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store } = props;
+  let { kids, children, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store, logEvent } = props;
   if (kids === undefined && children !== undefined) {
     console.log(
       "[renderCompiledKids] WARNING: 'children' prop used instead of 'kids'. Please migrate to 'kids'."
@@ -242,7 +247,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
     if (child.type === 'block') {
       return (
         <React.Fragment key={child.key}>
-          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store })}
+          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store, logEvent })}
         </React.Fragment>
       );
     }
@@ -259,7 +264,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
       return React.createElement(
         child.tag,
         { key: child.key, ...child.attributes },
-        renderCompiledKids({ kids: child.kids ?? [], nodeInfo, blockRegistry, idPrefix, olxJsonSources, store })
+        renderCompiledKids({ kids: child.kids ?? [], nodeInfo, blockRegistry, idPrefix, olxJsonSources, store, logEvent })
       );
     }
 
@@ -268,7 +273,7 @@ export function renderCompiledKids(props): React.ReactNode[] {
     if (child.tag && typeof child.tag === 'string') {
       return (
         <React.Fragment key={child.key}>
-          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store })}
+          {render({ node: child, nodeInfo, blockRegistry, idPrefix, olxJsonSources, store, logEvent })}
         </React.Fragment>
       );
     }
@@ -313,10 +318,11 @@ export function renderOlxJson(props: {
   nodeInfo: any;
   blockRegistry?: any;
   idPrefix?: string;
-  store?: Store;
+  store: Store;
+  logEvent: LogEventFn;
 }): React.ReactNode {
-  const { node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', store } = props;
-  return render({ node, nodeInfo, blockRegistry, idPrefix, store });
+  const { node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', store, logEvent } = props;
+  return render({ node, nodeInfo, blockRegistry, idPrefix, store, logEvent });
 }
 
 /**

@@ -357,6 +357,7 @@ export interface RuntimeProps {
   idPrefix?: IdPrefix;
   olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
   store: Store;  // Redux store - enables replay mode where a different store provides historical state
+  logEvent: (event: string, payload: any) => void;  // Event logging - no-op during replay
 
   // Block machinery - framework injects these
   loBlock: LoBlock;

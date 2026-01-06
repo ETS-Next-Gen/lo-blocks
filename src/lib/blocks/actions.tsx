@@ -195,7 +195,9 @@ export function grader({ grader, infer = true }: { grader: GraderFn; infer?: boo
     const currentState = state.application_state?.component?.[scopedTargetId] || {};
     const submitCount = (currentState.submitCount || 0) + 1;
 
-    lo_event.logEvent('UPDATE_CORRECT', {
+    // Use props.logEvent if available (respects replay mode), fallback to lo_event.logEvent
+    const logEvent = props.logEvent ?? lo_event.logEvent;
+    logEvent('UPDATE_CORRECT', {
       id: scopedTargetId,
       correct: correctness,
       message,
@@ -249,6 +251,7 @@ export async function executeNodeActions(props: RuntimeProps) {
       blockRegistry: props.blockRegistry,
       idPrefix: props.idPrefix,  // Preserve prefix so actions update scoped state
       store: props.store,        // Redux store for state access
+      logEvent: props.logEvent,  // Event logging (no-op during replay)
 
       // Target-specific props (like render.jsx does)
       ...targetInstance.attributes,        // OLX attributes from target action

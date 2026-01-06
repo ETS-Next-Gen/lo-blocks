@@ -185,13 +185,11 @@ export default function DebugPanel({ onClose, idPrefix = '' }: DebugPanelProps) 
 
         {activeTab === 'state' && (
           <div className="debug-state">
-            <div className="debug-state-content">
-              {reduxState ? (
-                <StateTree data={reduxState} />
-              ) : (
-                <div className="debug-empty">Redux state not available</div>
-              )}
-            </div>
+            {reduxState ? (
+              <StateTree data={reduxState} />
+            ) : (
+              <div className="debug-empty">Redux state not available</div>
+            )}
           </div>
         )}
 

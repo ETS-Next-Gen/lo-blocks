@@ -71,8 +71,10 @@
 
 /* Body */
 .debug-panel-body {
+  display: flex;
+  flex-direction: column;
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -105,7 +107,9 @@
 .debug-events {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .debug-events-controls {
@@ -113,9 +117,11 @@
   gap: 8px;
   padding: 8px;
   background: #0d1117;
-  border-bottom: 1px solid #30363d;
+  border-top: 1px solid #30363d;
   flex-wrap: wrap;
   align-items: center;
+  flex-shrink: 0;
+  order: 2; /* Move to bottom */
 }
 
 .debug-filter-input {
@@ -167,6 +173,8 @@
   flex: 1;
   overflow-y: auto;
   padding: 4px;
+  order: 1; /* Above controls */
+  min-height: 0; /* Allow shrinking for scroll */
 }
 
 .debug-event {
@@ -228,13 +236,8 @@
 
 /* State tab */
 .debug-state {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.debug-state-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 8px;
 }
@@ -342,6 +345,9 @@
 
 /* Content tab */
 .debug-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 8px;
 }
 

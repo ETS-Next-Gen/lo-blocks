@@ -48,13 +48,13 @@ import React, { useState, useEffect, useMemo, useRef, useTransition } from 'reac
 import { useStore } from 'react-redux';
 import * as lo_event from 'lo_event';
 import { parseOLX } from '@/lib/content/parseOLX';
-import { render, makeRootNode } from '@/lib/render';
+import { makeRootNode } from '@/lib/render';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
-import Spinner from '@/components/common/Spinner';
 import { InMemoryStorageProvider, StackedStorageProvider } from '@/lib/storage';
 import { isOLXFile } from '@/lib/util/fileTypes';
 import { dispatchOlxJson } from '@/lib/state/olxjson';
+import { useBlock } from '@/lib/blocks/useRenderedBlock';
 import { useReplayContextOptional } from '@/lib/state/replayContext';
 
 /**
@@ -249,7 +249,21 @@ export default function RenderOLX({
     }
   }, [mergedIdMap, parsed?.root]);
 
-  // Error state
+  // Build props for useBlock - must be before the hook call
+  const blockProps = useMemo(() => ({
+    nodeInfo: makeRootNode(),
+    blockRegistry,
+    idPrefix: '',
+    olxJsonSources: [source],
+    store,
+    logEvent,
+  }), [blockRegistry, source, store, logEvent]);
+
+  // useBlock handles loading/error states and renders from Redux
+  // Shows spinner while loading, error if failed, rendered content when ready
+  const { block, ready } = useBlock(blockProps, id, source);
+
+  // Parse error (from inline/files parsing)
   if (error) {
     return (
       <div className="text-red-600 p-2 border border-red-300 rounded bg-red-50">
@@ -259,40 +273,16 @@ export default function RenderOLX({
     );
   }
 
-  // No content
-  if (!mergedIdMap) {
-    if (!inline && !files && !baseIdMap) {
-      return (
-        <div className="text-red-600">
-          RenderOLX: No content source provided
-        </div>
-      );
-    }
-    return <Spinner>Loading...</Spinner>;
-  }
-
-  // Use requested id, fall back to parsed root
-  const rootId = mergedIdMap[id] ? id : (parsed?.root || id);
-
-  if (!mergedIdMap[rootId]) {
+  // No content source provided
+  if (!inline && !files && !baseIdMap && !ready) {
     return (
       <div className="text-red-600">
-        RenderOLX: ID &quot;{rootId}&quot; not found in content
+        RenderOLX: No content source provided
       </div>
     );
   }
 
-  // Render synchronously - content is in Redux via dispatchOlxJson above
-  const rendered = render({
-    node: { type: 'block', id: rootId },
-    nodeInfo: makeRootNode(),
-    blockRegistry,
-    idPrefix: '',
-    olxJsonSources: [source],
-    store,
-    logEvent,
-  });
-
+  // useBlock handles spinner/error display - just wrap in ErrorBoundary
   return (
     <ErrorBoundary
       resetKey={parsed}
@@ -301,7 +291,7 @@ export default function RenderOLX({
         onError?.(err);
       }}
     >
-      {rendered}
+      {block}
     </ErrorBoundary>
   );
 }

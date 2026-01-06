@@ -1,7 +1,7 @@
 // src/components/blocks/_ActionButton.tsx
 'use client';
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { executeNodeActions } from '@/lib/blocks';
 import { useKids } from '@/lib/render';
 import { checkPrerequisites, parsePrerequisites } from '@/lib/util/prerequisites';
@@ -12,9 +12,15 @@ function _ActionButton(props) {
   const prerequisites = useMemo(() => parsePrerequisites(dependsOn), [dependsOn]);
   const [isDisabled, setIsDisabled] = useReduxState(props, fields.isDisabled, prerequisites.length > 0);
 
+  // Use ref for comparison to avoid infinite loops (isDisabled in deps would cause callback recreation)
+  const isDisabledRef = useRef(isDisabled);
+  isDisabledRef.current = isDisabled;
+
   const evaluatePrerequisites = useCallback(async () => {
     if (!prerequisites.length) {
-      setIsDisabled(false);
+      if (isDisabledRef.current !== false) {
+        setIsDisabled(false);
+      }
       return;
     }
 
@@ -22,10 +28,10 @@ function _ActionButton(props) {
     const newDisabledState = !satisfied;
 
     // Only update if the value actually changed
-    if (newDisabledState !== isDisabled) {
+    if (newDisabledState !== isDisabledRef.current) {
       setIsDisabled(newDisabledState);
     }
-  }, [props, prerequisites, setIsDisabled, isDisabled]);
+  }, [props, prerequisites, setIsDisabled]);
 
   useEffect(() => {
     let cancelled = false;

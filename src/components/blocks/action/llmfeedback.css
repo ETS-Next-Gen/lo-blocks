@@ -30,8 +30,27 @@
 .lo-tag-llmfeedback .llm-feedback-content {
   color: var(--lo-text-primary);
   line-height: var(--lo-line-height-normal);
-  white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+/* Text render mode */
+.lo-tag-llmfeedback .llm-feedback-text {
+  white-space: pre-wrap;
+}
+
+/* Markdown render mode */
+.lo-tag-llmfeedback .llm-feedback-markdown {
+}
+
+/* Code render mode */
+.lo-tag-llmfeedback .llm-feedback-code {
+  background-color: var(--lo-surface-muted, #f5f5f5);
+  padding: var(--lo-space-md);
+  border-radius: var(--lo-radius-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  font-family: var(--lo-font-mono);
+  font-size: var(--lo-font-size-sm);
 }
 
 .lo-tag-llmfeedback .llm-feedback-placeholder {

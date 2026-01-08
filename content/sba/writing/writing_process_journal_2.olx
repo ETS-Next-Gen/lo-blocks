@@ -36,6 +36,8 @@ category: writing
     <Vertical id="wpj2_Step_1" title="What Makes a Good Writer?">
              <Markdown>
                  ## What Makes a Good Writer
+        
+                 ### Question 1
                  
                  _Think about a moment, experience, or even a piece of feedback about writing
                  that made you feel like you were a good or bad writer. Tell us the story about
@@ -56,14 +58,133 @@ category: writing
              </Markdown>
     </Vertical>
     <Vertical id="wpj2_Step_3" title="Sorting Priorities 1">
-        <SimpleSortable id="wpj2_sortable1" title="What Do You Think Makes a Good Writer?">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 2
+        
             What do you think makes a good writer? Sort these writing skills from most important (top)
             to least important (bottom):
-            ===
-            1. Using sophisticated words and well-developed sentences.            
-            2. Figuring out what one really thinks about a topic before writing.
-            3. Taking the time to understand assignments before starting to write.            
-            4. Expressing ideas accurately.
-          </SimpleSortable>
+        </Markdown>
+        <SortableInput id="wpj2_sortable1" dragMode="whole">
+            <TextBlock>Using sophisticated words and well-developed sentences.</TextBlock>
+            <TextBlock>Figuring out what one really thinks about a topic before writing.</TextBlock>
+            <TextBlock>Taking the time to understand assignments before starting to write.</TextBlock>            
+            <TextBlock>Expressing ideas accurately.</TextBlock>
+        </SortableInput>
+    </Vertical>
+    <Vertical id="wpj2_Step_4" title="Sorting Priorities 2">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 3
+        
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+        </Markdown>
+        <SortableInput id="wpj2_sortable2" dragMode="whole">
+            <TextBlock>Making sure to write something that is long enough for the task.</TextBlock>
+            <TextBlock>Planning one's writing using an outline or graphic organizer.</TextBlock>
+            <TextBlock>Taking the time to research a topic before writing about it.</TextBlock>            
+            <TextBlock>Using correct spelling and punctuation.</TextBlock>
+        </SortableInput>
+    </Vertical>
+    <Vertical id="wpj2_Step_5" title="Sorting Priorities 3">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 4
+        
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+        </Markdown>
+        <SortableInput id="wpj2_sortable3" dragMode="whole">
+            <TextBlock>Producing good writing on the first try.</TextBlock>
+            <TextBlock>Free-writing to brainstorm ideas.</TextBlock>
+            <TextBlock>Experimenting with different ways to express key points.</TextBlock>            
+            <TextBlock>Finishing writing tasks quickly.</TextBlock>
+        </SortableInput>
+    </Vertical>
+    <Vertical id="wpj2_Step_6" title="Sorting Priorities 4">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 5
+        
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+        </Markdown>
+        <SortableInput id="wpj2_sortable4" dragMode="whole">
+            <TextBlock>Giving good feedback to one's peers about their writing.</TextBlock>
+            <TextBlock>Completing a draft of what one is writing in a single session.</TextBlock>
+            <TextBlock>Proofreading one's own writing carefully.</TextBlock>            
+            <TextBlock>Reorganizing what one has written to make it clearer and easier to understand.</TextBlock>
+        </SortableInput>
+    </Vertical>
+    <Vertical id="wpj2_Step_7" title="Sorting Priorities 5">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 6
+        
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+        </Markdown>
+        <SortableInput id="wpj2_sortable5" dragMode="whole">
+            <TextBlock>Avoiding grammar and usage errors.</TextBlock>
+            <TextBlock>Taking time to complete more than one draft.</TextBlock>
+            <TextBlock>Using a wide variety of word and sentence patterns.</TextBlock>            
+            <TextBlock>Recognizing and fixing unclear language.</TextBlock>
+        </SortableInput>
+    </Vertical>    
+    <Vertical id="wpj2_Step_8" title="Sorting Priorities 6">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 7
+        
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+        </Markdown>
+        <SortableInput id="wpj2_sortable6" dragMode="whole">
+            <TextBlock>Providing details about the most important ideas.</TextBlock>
+            <TextBlock>Focusing on the main idea and not going off topic.</TextBlock>
+            <TextBlock>Considering different ways to think about a topic.</TextBlock>            
+            <TextBlock>Taking time to come up with good ideas.</TextBlock>
+        </SortableInput>
+    </Vertical>    
+    <Vertical id="wpj2_Step_9" title="Sorting Priorities 7">
+        <Markdown>
+            ## Priorities for Successful Writing
+        
+            ### Question 8
+        
+            What do you think makes a good writer? Sort these writing skills from most important (top)
+            to least important (bottom):
+        </Markdown>
+        <SortableInput id="wpj2_sortable7" dragMode="whole">
+            <TextBlock>Writing in Standard English, avoiding slang and informal language.</TextBlock>
+            <TextBlock>Being open to explore the subject and learn new things.</TextBlock>
+            <TextBlock>Coming up with a clear understanding of the ideas one wants to express.</TextBlock>            
+            <TextBlock>Using well-chosen words and expressions that make writing interesting.</TextBlock>
+        </SortableInput>
+    </Vertical>    
+    <Vertical id="wpj2_Step_10" title="How do People Learn to Write Well?">
+             <Markdown>
+                 ## How do People Learn to Write Well?
+        
+                 ### Question 9
+                 
+                 Chapter one of Writing about Writing introduces a number of threshold concepts.
+                 One is, "Writing is a process and all writers have more to learn." 
+                 
+                 _In this task, write about your reaction to this concept and your beliefs about
+                 learning how to write. As you write, answer the following questions:_
+                 
+                 - What do you think people need to learn to become better writers?
+                 - What do you think people can to do to become better writers?
+             </Markdown>
+            <TextArea id="wpj2_how_to_learn_writing" rows="12" placeholder="People need to learn how to ..." />
     </Vertical>
 </Sequential>
+

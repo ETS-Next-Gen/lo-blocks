@@ -374,7 +374,7 @@ category: writing
              cols: Weakest, Weaker, Stronger, Strongest
              rows: Understanding the writing assignments the teacher gives me,Planning my time to get the work done by the deadline,Focusing on my work and avoiding distractions,Continuing to write even when I am having difficulties,Coming up with good ideas to include in my writing
            </TabularMCQ>
-           <Markdown id="wpj2_savenotice">
+           <Markdown id="wpj2_savenotice1">
              Select one option for each row. Your selections are automatically saved.
            </Markdown>
     </Vertical>
@@ -393,7 +393,9 @@ category: writing
              cols: Weakest, Weaker, Stronger, Strongest
              rows: Choosing the best plan for organizing my content,Finding the right words to express my ideas,Stating my thesis or main idea clearly,Writing paragraphs with clear topic sentences,Using transition words to connect related ideas
            </TabularMCQ>
-           <Markdown id="wpj2_savenotice" />
+           <Markdown id="wpj2_savenotice2">
+             Select one option for each row. Your selections are automatically saved.
+           </Markdown>
     </Vertical>
     <Vertical id="wpj2_Step_15" title="My Self-Evaluation">
            <Markdown>
@@ -410,7 +412,9 @@ category: writing
              cols: Weakest, Weaker, Stronger, Strongest
              rows: Determining when ideas are missing or when details/examples should be added,Determining when something I write is wrong or does not make sense,Reorganizing a document to make it clearer and easier to understand,Changing how sentences are worded to make the meaning clearer,Changing my writing style to fit the task and the audience
            </TabularMCQ>
-           <Markdown id="wpj2_savenotice" />
+           <Markdown id="wpj2_savenotice3">
+             Select one option for each row. Your selections are automatically saved.
+           </Markdown>
     </Vertical>
     <Vertical id="wpj2_Step_16" title="My Self-Evaluation">
            <Markdown>
@@ -427,7 +431,9 @@ category: writing
              cols: Weakest, Weaker, Stronger, Strongest
              rows: Avoiding errors in grammar/spelling/mechanics/usage/style,Proofreading what I write to fix errors in grammar/spelling/mechanics/usage/style,Typing quickly without looking at the keys when writing on the computer,Providing good feedback to help other writers improve their work,Making good use of feedback I get from others
            </TabularMCQ>
-           <Markdown id="wpj2_savenotice" />
+           <Markdown id="wpj2_savenotice4">
+             Select one option for each row. Your selections are automatically saved.
+           </Markdown>
     </Vertical>
     <SplitPanel id="wpj1_Step_17" title="Summary of Writing Strengths and Weaknesses" sizes="50,50">
         <LeftPane>

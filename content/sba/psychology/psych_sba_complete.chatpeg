@@ -61,7 +61,7 @@ JJ: We really do have different approaches! Why don't we rank these from best to
 
 psych_sba_sidebar -> brainstorm_sorting
 
---- wait @bedtime_strategy_grader.value ---
+--- wait @bedtime_strategy_grader.submitCount > 0 ---
 
 Lin: Interesting rankings! It looks like the choices are between using behavioral techniques, like we're learning about in class,
 or doing nothing. My suggestion was to do nothing, but now I'm not sure. I'm going to ask the AI
@@ -163,8 +163,6 @@ psych_sba_sidebar -> reinforce_punish_4
 psych_sba_sidebar -> quiz1_score
 Lin: Here is how we did on the quiz.
 
---- wait @quiz_percent.value >= 80 ---
-
 JJ: Looks like we did pretty well!
 
 Lin: Do you guys want to review the answers? Sometimes it helps to review, even if you got most of the answers right.
@@ -233,7 +231,7 @@ Annie: To make sure that our email is really good, let's get some feedback from 
 If we need to improve our email, we can go back and change the text, then get more feedback.
 
 
---- wait @email_to_babysitter.value ---
+--- wait @email_draft.value ---
 
 psych_sba_sidebar -> email_feedback
 
@@ -271,11 +269,11 @@ which of these is the **best** thing for her to try and explain that!
 
 psych_sba_sidebar -> age_appropriacy
 
---- wait @age_appropriacy.value ---
+--- wait @age_appropriate_selection.submitCount > 0 ---
 
 psych_sba_sidebar -> age_appropriacy_explanation
 
---- wait @age_appropriacy_explanation.value ---
+--- wait @strategy_explanation.value ---
 
 psych_sba_sidebar -> age_appropriacy_feedback
 

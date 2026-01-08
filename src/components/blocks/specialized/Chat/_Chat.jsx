@@ -132,7 +132,7 @@ export function _Chat(props) {
   /* ----------------------------------------------------------------
    * Wait conditions - check if we can advance past any wait commands
    * -------------------------------------------------------------- */
-  const { canAdvance } = useWaitConditions(props, allEntries, windowedIndex, windowRange.end);
+  const { canAdvance, isWaitSatisfied } = useWaitConditions(props, allEntries, windowedIndex, windowRange.end);
 
   /* ----------------------------------------------------------------
    * Advance handler
@@ -154,7 +154,11 @@ export function _Chat(props) {
         continue;
       }
       if (block.type === 'WaitCommand') {
-        // Wait conditions already checked at top of handleAdvance
+        if (!isWaitSatisfied(block)) {
+          // Unsatisfied wait - stop here, user must wait for condition
+          break;
+        }
+        // Satisfied - skip past it
         nextIndex += 1;
         continue;
       }
@@ -172,7 +176,7 @@ export function _Chat(props) {
       console.log(block.type);
     }
     setIndex(Math.min(nextIndex, windowRange.end));
-  }, [canAdvance, props, fields.value, windowedIndex, windowRange, allEntries, setIndex, setSectionHeader]);
+  }, [canAdvance, isWaitSatisfied, props, fields.value, windowedIndex, windowRange, allEntries, setIndex, setSectionHeader]);
 
   // Register advance handler for external calls
   useChatAdvanceRegistration(id, handleAdvance);

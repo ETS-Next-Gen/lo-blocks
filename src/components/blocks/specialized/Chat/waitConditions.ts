@@ -41,6 +41,10 @@ export function extractWaitRefs(entries: ChatEntry[]): References {
 /**
  * Check if we can advance past wait commands to the next content.
  *
+ * Returns true if there's something useful to do (arrows to execute,
+ * lines to show, satisfied waits to skip). Returns false only if
+ * the first thing we'd encounter is an unsatisfied wait.
+ *
  * Multiple consecutive waits act as AND - all must pass.
  */
 export function canAdvanceToContent(
@@ -49,6 +53,8 @@ export function canAdvanceToContent(
   toIndex: number,
   context: ContextData
 ): boolean {
+  let foundActionableEntry = false;
+
   for (let i = fromIndex + 1; i <= toIndex; i++) {
     const entry = entries[i];
     if (!entry) break;
@@ -57,22 +63,52 @@ export function canAdvanceToContent(
       if (!entry.expression) continue;
       try {
         if (!evaluate(parse(entry.expression), context)) {
-          return false;
+          // Unsatisfied wait - can we do something before hitting it?
+          return foundActionableEntry;
         }
       } catch (e) {
         console.warn('[Chat] Failed to evaluate wait:', entry.expression, e);
-        return false;
+        return foundActionableEntry;
       }
+      // Satisfied wait - counts as actionable (we skip past it)
+      foundActionableEntry = true;
+      continue;
     }
 
-    if (entry.type === 'Line' || entry.type === 'PauseCommand') break;
+    // Arrows, section headers are actionable (we execute them)
+    if (entry.type === 'ArrowCommand' || entry.type === 'SectionHeader') {
+      foundActionableEntry = true;
+      continue;
+    }
+
+    // Line or Pause - we can definitely advance to show this
+    if (entry.type === 'Line' || entry.type === 'PauseCommand') {
+      return true;
+    }
   }
 
-  return true;
+  return foundActionableEntry;
+}
+
+/**
+ * Evaluate a single wait entry.
+ */
+export function evaluateWaitEntry(entry: ChatEntry, context: ContextData): boolean {
+  if (!entry.expression) return true;
+  try {
+    return Boolean(evaluate(parse(entry.expression), context));
+  } catch (e) {
+    console.warn('[Chat] Failed to evaluate wait:', entry.expression, e);
+    return false;
+  }
 }
 
 /**
  * Hook for wait condition checking in a chat component.
+ *
+ * Returns:
+ * - canAdvance: whether the immediate next wait (if any) is satisfied
+ * - isWaitSatisfied: function to check a specific wait entry
  */
 export function useWaitConditions(
   props: any,
@@ -83,7 +119,12 @@ export function useWaitConditions(
   const allRefs = useMemo(() => extractWaitRefs(entries), [entries]);
   const resolved = useReferences(props, allRefs);
   const context = createContext(resolved);
+
+  // Check if we can advance (first wait before next content is satisfied)
   const canAdvance = canAdvanceToContent(entries, currentIndex, endIndex, context);
 
-  return { canAdvance };
+  // Function to evaluate a specific wait entry
+  const isWaitSatisfied = (entry: ChatEntry) => evaluateWaitEntry(entry, context);
+
+  return { canAdvance, isWaitSatisfied, context };
 }

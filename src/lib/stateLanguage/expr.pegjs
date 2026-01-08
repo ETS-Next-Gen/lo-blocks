@@ -130,7 +130,6 @@ Primary
   / String
   / TemplateLiteral
   / MathObject
-  / ChildrenRef
   / Identifier
   / "(" _ expr:Expression _ ")" { return expr; }
 
@@ -138,8 +137,12 @@ Primary
 // Sigil References
 // ============================================
 
+// Supports both simple identifiers and quoted paths:
+//   @essay.value           - simple identifier
+//   @"/mit.edu/hw1/q3".value  - quoted path for full namespace
+
 SigilRef
-  = sigil:[@#$] id:Identifier fields:("." Identifier)* {
+  = sigil:[@#$] id:SigilId fields:("." Identifier)* {
       return {
         type: 'SigilRef',
         sigil,
@@ -148,6 +151,18 @@ SigilRef
       };
     }
 
+SigilId
+  = QuotedPath
+  / Identifier
+
+QuotedPath
+  = '"' chars:QuotedPathChar* '"' { return chars.join(''); }
+
+QuotedPathChar
+  = '\\"' { return '"'; }
+  / '\\\\' { return '\\'; }
+  / [^"\\]
+
 // ============================================
 // Special Identifiers
 // ============================================
@@ -155,10 +170,6 @@ SigilRef
 // Math.xxx - we whitelist specific math functions
 MathObject
   = "Math" { return { type: 'Identifier', name: 'Math' }; }
-
-// children - for aggregation
-ChildrenRef
-  = "children" { return { type: 'Identifier', name: 'children' }; }
 
 // ============================================
 // Literals

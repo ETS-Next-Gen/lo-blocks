@@ -6,11 +6,33 @@
 import { parse, tryParse } from './parser';
 import type { ASTNode, SigilRef } from './parser';
 
+/**
+ * A single reference extracted from an expression.
+ */
 export interface Reference {
   sigil: '@' | '#' | '$';
   id: string;
   fields: string[];
 }
+
+/**
+ * Structured references grouped by type.
+ * This shape mirrors ContextData for easy mapping.
+ */
+export interface References {
+  componentState: { key: string; fields: string[] }[];
+  olxContent: { id: string }[];
+  globalVar: { name: string }[];
+}
+
+/**
+ * Empty references object.
+ */
+export const EMPTY_REFS: References = {
+  componentState: [],
+  olxContent: [],
+  globalVar: []
+};
 
 /**
  * Walk an AST node and collect all SigilRef nodes.
@@ -128,4 +150,90 @@ export function extractGlobalVars(expression: string): string[] {
   return extractReferences(expression)
     .filter(ref => ref.sigil === '$')
     .map(ref => ref.id);
+}
+
+/**
+ * Convert flat Reference[] to structured References.
+ */
+export function toStructuredRefs(refs: Reference[]): References {
+  const result: References = {
+    componentState: [],
+    olxContent: [],
+    globalVar: []
+  };
+
+  for (const ref of refs) {
+    switch (ref.sigil) {
+      case '@':
+        result.componentState.push({ key: ref.id, fields: ref.fields });
+        break;
+      case '#':
+        result.olxContent.push({ id: ref.id });
+        break;
+      case '$':
+        result.globalVar.push({ name: ref.id });
+        break;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Extract structured references from an expression.
+ */
+export function extractStructuredRefs(expression: string): References {
+  return toStructuredRefs(extractReferences(expression));
+}
+
+/**
+ * Merge multiple References objects, deduplicating entries.
+ */
+export function mergeReferences(...refsList: References[]): References {
+  const componentStateMap = new Map<string, Set<string>>();
+  const olxContentSet = new Set<string>();
+  const globalVarSet = new Set<string>();
+
+  for (const refs of refsList) {
+    for (const { key, fields } of refs.componentState) {
+      if (!componentStateMap.has(key)) {
+        componentStateMap.set(key, new Set());
+      }
+      const fieldSet = componentStateMap.get(key)!;
+      for (const field of fields) {
+        fieldSet.add(field);
+      }
+      // Also track "no fields" case
+      if (fields.length === 0) {
+        fieldSet.add('');
+      }
+    }
+    for (const { id } of refs.olxContent) {
+      olxContentSet.add(id);
+    }
+    for (const { name } of refs.globalVar) {
+      globalVarSet.add(name);
+    }
+  }
+
+  // Convert back to structured format
+  const componentState: References['componentState'] = [];
+  for (const [key, fieldSet] of componentStateMap) {
+    // Remove empty string marker
+    fieldSet.delete('');
+    componentState.push({ key, fields: Array.from(fieldSet) });
+  }
+
+  return {
+    componentState,
+    olxContent: Array.from(olxContentSet).map(id => ({ id })),
+    globalVar: Array.from(globalVarSet).map(name => ({ name }))
+  };
+}
+
+/**
+ * Extract and merge references from multiple expressions.
+ */
+export function extractAndMergeRefs(...expressions: string[]): References {
+  return mergeReferences(...expressions.map(extractStructuredRefs));
 }

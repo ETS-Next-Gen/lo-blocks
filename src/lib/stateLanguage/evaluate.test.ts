@@ -1,0 +1,258 @@
+// src/lib/stateLanguage/evaluate.test.ts
+
+import { describe, it, expect } from 'vitest';
+import { parse } from './parser';
+import { evaluate, createContext, wordcount } from './evaluate';
+
+describe('evaluate', () => {
+  describe('literals', () => {
+    it('evaluates numbers', () => {
+      expect(evaluate(parse('42'), createContext())).toBe(42);
+      expect(evaluate(parse('3.14'), createContext())).toBe(3.14);
+    });
+
+    it('evaluates strings', () => {
+      expect(evaluate(parse('"hello"'), createContext())).toBe('hello');
+      expect(evaluate(parse("'world'"), createContext())).toBe('world');
+    });
+  });
+
+  describe('sigil references', () => {
+    it('evaluates @ references (componentState)', () => {
+      const ctx = createContext({
+        componentState: {
+          essay: { value: 'my essay text', done: 'DONE' }
+        }
+      });
+      expect(evaluate(parse('@essay'), ctx)).toEqual({ value: 'my essay text', done: 'DONE' });
+      expect(evaluate(parse('@essay.value'), ctx)).toBe('my essay text');
+      expect(evaluate(parse('@essay.done'), ctx)).toBe('DONE');
+    });
+
+    it('evaluates # references (olxContent)', () => {
+      const ctx = createContext({
+        olxContent: {
+          assignment: 'Write about Moby Dick'
+        }
+      });
+      expect(evaluate(parse('#assignment'), ctx)).toBe('Write about Moby Dick');
+    });
+
+    it('evaluates $ references (globalVar)', () => {
+      const ctx = createContext({
+        globalVar: {
+          condition: 'treatment'
+        }
+      });
+      expect(evaluate(parse('$condition'), ctx)).toBe('treatment');
+    });
+
+    it('returns undefined for missing references', () => {
+      const ctx = createContext();
+      expect(evaluate(parse('@missing'), ctx)).toBeUndefined();
+      expect(evaluate(parse('@missing.field'), ctx)).toBeUndefined();
+    });
+  });
+
+  describe('built-in constants', () => {
+    it('provides completion enum', () => {
+      const ctx = createContext();
+      expect(evaluate(parse('completion.done'), ctx)).toBe('DONE');
+      expect(evaluate(parse('completion.notStarted'), ctx)).toBe('NOT_STARTED');
+      expect(evaluate(parse('completion.inProgress'), ctx)).toBe('IN_PROGRESS');
+      expect(evaluate(parse('completion.closed'), ctx)).toBe('CLOSED');
+    });
+
+    it('provides correctness enum', () => {
+      const ctx = createContext();
+      expect(evaluate(parse('correctness.correct'), ctx)).toBe('correct');
+      expect(evaluate(parse('correctness.incorrect'), ctx)).toBe('incorrect');
+    });
+  });
+
+  describe('comparison operators', () => {
+    it('evaluates === and !==', () => {
+      const ctx = createContext({
+        componentState: { quiz: { correct: 'correct', done: 'DONE' } }
+      });
+      expect(evaluate(parse('@quiz.correct === correctness.correct'), ctx)).toBe(true);
+      expect(evaluate(parse('@quiz.correct === correctness.incorrect'), ctx)).toBe(false);
+      expect(evaluate(parse('@quiz.done !== completion.notStarted'), ctx)).toBe(true);
+    });
+
+    it('evaluates numeric comparisons', () => {
+      const ctx = createContext({
+        componentState: { score: { value: 85 } }
+      });
+      expect(evaluate(parse('@score.value > 80'), ctx)).toBe(true);
+      expect(evaluate(parse('@score.value >= 85'), ctx)).toBe(true);
+      expect(evaluate(parse('@score.value < 90'), ctx)).toBe(true);
+      expect(evaluate(parse('@score.value <= 85'), ctx)).toBe(true);
+    });
+  });
+
+  describe('logical operators', () => {
+    it('evaluates && and ||', () => {
+      const ctx = createContext({
+        componentState: {
+          a: { done: 'DONE' },
+          b: { done: 'NOT_STARTED' }
+        }
+      });
+      expect(evaluate(parse('@a.done === completion.done && @b.done === completion.done'), ctx)).toBe(false);
+      expect(evaluate(parse('@a.done === completion.done || @b.done === completion.done'), ctx)).toBe(true);
+    });
+
+    it('evaluates !', () => {
+      const ctx = createContext({
+        componentState: { quiz: { correct: 'incorrect' } }
+      });
+      expect(evaluate(parse('!(@quiz.correct === correctness.correct)'), ctx)).toBe(true);
+    });
+  });
+
+  describe('arithmetic', () => {
+    it('evaluates +, -, *, /', () => {
+      const ctx = createContext({
+        componentState: { x: { value: 10 }, y: { value: 3 } }
+      });
+      expect(evaluate(parse('@x.value + @y.value'), ctx)).toBe(13);
+      expect(evaluate(parse('@x.value - @y.value'), ctx)).toBe(7);
+      expect(evaluate(parse('@x.value * @y.value'), ctx)).toBe(30);
+      expect(evaluate(parse('@x.value / 2'), ctx)).toBe(5);
+    });
+  });
+
+  describe('ternary', () => {
+    it('evaluates conditional expressions', () => {
+      const ctx = createContext({
+        componentState: {
+          quiz: { correct: 'correct' }
+        }
+      });
+      expect(evaluate(parse('@quiz.correct === correctness.correct ? "pass" : "fail"'), ctx)).toBe('pass');
+
+      ctx.componentState.quiz.correct = 'incorrect';
+      expect(evaluate(parse('@quiz.correct === correctness.correct ? "pass" : "fail"'), ctx)).toBe('fail');
+    });
+  });
+
+  describe('function calls', () => {
+    it('evaluates wordcount', () => {
+      const ctx = createContext({
+        componentState: {
+          essay: { value: 'The quick brown fox jumps over the lazy dog' }
+        }
+      });
+      expect(evaluate(parse('wordcount(@essay.value)'), ctx)).toBe(9);
+    });
+
+    it('evaluates Math functions', () => {
+      const ctx = createContext({
+        componentState: { score: { value: 0.756 } }
+      });
+      expect(evaluate(parse('Math.round(@score.value * 100)'), ctx)).toBe(76);
+      expect(evaluate(parse('Math.floor(@score.value * 10)'), ctx)).toBe(7);
+    });
+  });
+
+  describe('array methods with arrow functions', () => {
+    it('evaluates items.every', () => {
+      const ctx = createContext({
+        items: [
+          { done: 'DONE' },
+          { done: 'DONE' },
+          { done: 'DONE' }
+        ]
+      });
+      expect(evaluate(parse('items.every(c => c.done === completion.done)'), ctx)).toBe(true);
+
+      ctx.items[1].done = 'IN_PROGRESS';
+      expect(evaluate(parse('items.every(c => c.done === completion.done)'), ctx)).toBe(false);
+    });
+
+    it('evaluates items.some', () => {
+      const ctx = createContext({
+        items: [
+          { correct: 'incorrect' },
+          { correct: 'correct' },
+          { correct: 'incorrect' }
+        ]
+      });
+      expect(evaluate(parse('items.some(c => c.correct === correctness.correct)'), ctx)).toBe(true);
+    });
+
+    it('evaluates items.filter().length', () => {
+      const ctx = createContext({
+        items: [
+          { correct: 'correct' },
+          { correct: 'incorrect' },
+          { correct: 'correct' }
+        ]
+      });
+      expect(evaluate(parse('items.filter(c => c.correct === correctness.correct).length'), ctx)).toBe(2);
+    });
+
+    it('evaluates items.length', () => {
+      const ctx = createContext({
+        items: [1, 2, 3, 4, 5]
+      });
+      expect(evaluate(parse('items.length'), ctx)).toBe(5);
+    });
+  });
+
+  describe('template literals', () => {
+    it('evaluates template with expressions', () => {
+      const ctx = createContext({
+        componentState: {
+          correct: { value: 3 },
+          total: { value: 5 }
+        }
+      });
+      expect(evaluate(parse('`Score: ${@correct.value}/${@total.value}`'), ctx)).toBe('Score: 3/5');
+    });
+  });
+
+  describe('real-world expressions', () => {
+    it('evaluates chat wait condition', () => {
+      const ctx = createContext({
+        componentState: {
+          grader: { correct: 'correct' }
+        }
+      });
+      expect(evaluate(parse('@grader.correct === correctness.correct'), ctx)).toBe(true);
+    });
+
+    it('evaluates complex gating condition', () => {
+      const ctx = createContext({
+        componentState: {
+          quiz1: { correct: 'incorrect', done: 'CLOSED' },
+          essay: { done: 'DONE' }
+        }
+      });
+      // (@quiz1.correct === correctness.correct || @quiz1.done === completion.closed) && @essay.done === completion.done
+      const expr = '(@quiz1.correct === correctness.correct || @quiz1.done === completion.closed) && @essay.done === completion.done';
+      expect(evaluate(parse(expr), ctx)).toBe(true);
+    });
+
+    it('evaluates word count threshold', () => {
+      const ctx = createContext({
+        componentState: {
+          essay: { value: 'This is a short essay with exactly ten words here.' }
+        }
+      });
+      expect(evaluate(parse('wordcount(@essay.value) >= 10'), ctx)).toBe(true);
+      expect(evaluate(parse('wordcount(@essay.value) >= 100'), ctx)).toBe(false);
+    });
+  });
+});
+
+describe('wordcount helper', () => {
+  it('counts words correctly', () => {
+    expect(wordcount('hello world')).toBe(2);
+    expect(wordcount('  multiple   spaces  ')).toBe(2);
+    expect(wordcount('')).toBe(0);
+    expect(wordcount(null)).toBe(0);
+    expect(wordcount(undefined)).toBe(0);
+  });
+});

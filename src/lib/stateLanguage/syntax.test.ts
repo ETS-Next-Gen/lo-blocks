@@ -126,3 +126,45 @@ describe('extractReferences', () => {
     ]);
   });
 });
+
+describe('extractStructuredRefs', () => {
+  it('returns structured refs by type', async () => {
+    const { extractStructuredRefs } = await import('./references');
+    const refs = extractStructuredRefs('@essay.value + #assignment + $condition');
+    expect(refs.componentState).toEqual([{ key: 'essay', fields: ['value'] }]);
+    expect(refs.olxContent).toEqual([{ id: 'assignment' }]);
+    expect(refs.globalVar).toEqual([{ name: 'condition' }]);
+  });
+});
+
+describe('mergeReferences', () => {
+  it('merges multiple refs objects', async () => {
+    const { extractStructuredRefs, mergeReferences } = await import('./references');
+    const refs1 = extractStructuredRefs('@essay.value');
+    const refs2 = extractStructuredRefs('@quiz.correct');
+    const merged = mergeReferences(refs1, refs2);
+
+    expect(merged.componentState).toHaveLength(2);
+    expect(merged.componentState).toContainEqual({ key: 'essay', fields: ['value'] });
+    expect(merged.componentState).toContainEqual({ key: 'quiz', fields: ['correct'] });
+  });
+
+  it('deduplicates same component with different fields', async () => {
+    const { extractStructuredRefs, mergeReferences } = await import('./references');
+    const refs1 = extractStructuredRefs('@quiz.correct');
+    const refs2 = extractStructuredRefs('@quiz.done');
+    const merged = mergeReferences(refs1, refs2);
+
+    expect(merged.componentState).toHaveLength(1);
+    expect(merged.componentState[0].key).toBe('quiz');
+    expect(merged.componentState[0].fields).toContain('correct');
+    expect(merged.componentState[0].fields).toContain('done');
+  });
+
+  it('handles empty refs', async () => {
+    const { extractStructuredRefs, mergeReferences, EMPTY_REFS } = await import('./references');
+    const refs1 = extractStructuredRefs('@essay.value');
+    const merged = mergeReferences(refs1, EMPTY_REFS);
+    expect(merged).toEqual(refs1);
+  });
+});

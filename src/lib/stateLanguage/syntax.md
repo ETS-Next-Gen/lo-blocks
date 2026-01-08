@@ -17,10 +17,24 @@ We use the `@` sigil as shorthand for component state (Redux runtime values):
 >>> @quiz.answer.text
 { "type": "SigilRef", "sigil": "@", "id": "quiz", "fields": ["answer", "text"] }
 
+For full paths (cross-course references, etc.), use quoted syntax:
+
+>>> @"/mit.edu/pmitros/electronics/hw1/problem3"
+{ "type": "SigilRef", "sigil": "@", "id": "/mit.edu/pmitros/electronics/hw1/problem3", "fields": [] }
+
+>>> @"/mit.edu/pmitros/electronics/hw1/problem3".value
+{ "type": "SigilRef", "sigil": "@", "id": "/mit.edu/pmitros/electronics/hw1/problem3", "fields": ["value"] }
+
+>>> @"/shared/components/intro-quiz".done
+{ "type": "SigilRef", "sigil": "@", "id": "/shared/components/intro-quiz", "fields": ["done"] }
+
 The `#` sigil references static OLX content:
 
 >>> #assignment
 { "type": "SigilRef", "sigil": "#", "id": "assignment", "fields": [] }
+
+>>> #"/mit.edu/shared/rubrics/essay-rubric"
+{ "type": "SigilRef", "sigil": "#", "id": "/mit.edu/shared/rubrics/essay-rubric", "fields": [] }
 
 The `$` sigil references global/RCT variables:
 
@@ -34,12 +48,12 @@ Standard comparison operators return BinaryOp nodes:
 >>> @x > 5
 { "type": "BinaryOp", "op": ">", "left": { "type": "SigilRef", "sigil": "@", "id": "x", "fields": [] }, "right": { "type": "Number", "value": 5 } }
 
->>> @x === "DONE"
-{ "type": "BinaryOp", "op": "===", "left": { "type": "SigilRef", "sigil": "@", "id": "x", "fields": [] }, "right": { "type": "String", "value": "DONE" } }
+>>> @x.done === completion.done
+{ "type": "BinaryOp", "op": "===", "left": { "type": "SigilRef", "sigil": "@", "id": "x", "fields": ["done"] }, "right": { "type": "MemberAccess", "object": "completion", "property": "done" } }
 
 Other comparison operators (these just need to parse, AST structure is similar):
 
->>> @x !== "value"
+>>> @x !== completion.notStarted
 >>> @x < 5
 >>> @x >= 5
 >>> @x <= 5
@@ -115,38 +129,38 @@ More function calls (parse only):
 >>> Math.min(@a, @b)
 >>> Math.max(@a, @b)
 
-## Array/Children Aggregation
+## Array Aggregation
 
-Member access on children:
+Member access on arrays (e.g., caller-provided target lists):
 
->>> children.length
-{ "type": "MemberAccess", "object": { "type": "Identifier", "name": "children" }, "property": "length" }
+>>> items.length
+{ "type": "MemberAccess", "object": "items", "property": "length" }
 
 Array methods with arrow functions:
 
->>> children.every(c => c.done === "DONE")
-{ "type": "Call", "callee": { "type": "MemberAccess", "object": { "type": "Identifier", "name": "children" }, "property": "every" }, "arguments": [{ "type": "ArrowFunction", "param": "c", "body": { "type": "BinaryOp", "op": "===", "left": { "type": "MemberAccess", "object": "c", "property": "done" }, "right": { "type": "String", "value": "DONE" } } }] }
+>>> items.every(c => c.done === completion.done)
+{ "type": "Call", "callee": { "type": "MemberAccess", "object": "items", "property": "every" }, "arguments": [{ "type": "ArrowFunction", "param": "c", "body": { "type": "BinaryOp", "op": "===", "left": { "type": "MemberAccess", "object": "c", "property": "done" }, "right": { "type": "MemberAccess", "object": "completion", "property": "done" } } }] }
 
 More aggregation patterns (parse only):
 
->>> children.some(c => c.correct === "correct")
->>> children.filter(c => c.correct === "correct").length
->>> children.filter(c => c.correct === "correct").length >= 3
->>> children.map(c => c.value)
->>> children.map(c => c.value).join(", ")
->>> !children.some(c => c.correct === "incorrect")
->>> children.filter(c => c.id === @selected)
->>> children.find(c => c.id === @current).value
+>>> items.some(c => c.correct === correctness.correct)
+>>> items.filter(c => c.correct === correctness.correct).length
+>>> items.filter(c => c.correct === correctness.correct).length >= 3
+>>> items.map(c => c.value)
+>>> items.map(c => c.value).join(", ")
+>>> !items.some(c => c.correct === correctness.incorrect)
+>>> items.filter(c => c.id === @selected)
+>>> items.find(c => c.id === @current).value
 
 ## String Literals
 
 Strings produce String nodes:
 
->>> "DONE"
-{ "type": "String", "value": "DONE" }
+>>> "hello"
+{ "type": "String", "value": "hello" }
 
->>> 'correct'
-{ "type": "String", "value": "correct" }
+>>> 'world'
+{ "type": "String", "value": "world" }
 
 Sigils inside strings are NOT expanded:
 
@@ -166,14 +180,14 @@ Template literals with expressions:
 
 These are realistic expressions that should all parse:
 
->>> @quiz.correct === "correct" || @quiz.attemptsRemaining === 0
->>> @intro.done === "DONE" && @quiz.done === "DONE"
->>> (@quiz1.correct === "correct" || @quiz1.done === "CLOSED") && @essay.done === "DONE"
+>>> @quiz.correct === correctness.correct || @quiz.attemptsRemaining === 0
+>>> @intro.done === completion.done && @quiz.done === completion.done
+>>> (@quiz1.correct === correctness.correct || @quiz1.done === completion.closed) && @essay.done === completion.done
 >>> wordcount(@essay.value) > 25
 >>> $condition === "treatment" ? @treatment.value : @control.value
 >>> Math.round(@correct / @total * 100)
->>> children.filter(c => c.correct === "correct").length
->>> children.every(c => c.done === "DONE")
+>>> items.filter(c => c.correct === correctness.correct).length
+>>> items.every(c => c.done === completion.done)
 
 ## Edge Cases
 

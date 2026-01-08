@@ -7,20 +7,30 @@ import peggy from 'peggy';
 
 const blocksDir = 'src/components/blocks';
 const templateDir = 'src/lib/template';
+const stateLanguageDir = 'src/lib/stateLanguage';
 
 async function compileAllPEG() {
   const files = [
     ...(await glob(`${blocksDir}/**/*.pegjs`)),
-    ...(await glob(`${templateDir}/**/*.pegjs`))
+    ...(await glob(`${templateDir}/**/*.pegjs`)),
+    ...(await glob(`${stateLanguageDir}/**/*.pegjs`))
   ];
 
   const extensions: string[] = [];
 
   for (const file of files) {
     const grammar = await fs.readFile(file, 'utf-8');
-    const parser = peggy.generate(grammar, { output: 'source', format: 'es' });
 
     const parsedName = path.basename(file).replace('.pegjs', '');
+
+    // Special handling for grammars with multiple entry points
+    const options: peggy.ParserBuildOptions = { output: 'source', format: 'es' };
+    if (parsedName === 'expand') {
+      options.allowedStartRules = ['Condition', 'Template', 'FormatTemplate'];
+    }
+
+    const parser = peggy.generate(grammar, options);
+
     const outFile = path.join(
       path.dirname(file),
       `_${parsedName}Parser.js`

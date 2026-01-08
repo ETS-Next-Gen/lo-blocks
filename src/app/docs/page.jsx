@@ -16,9 +16,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { markdownComponents } from '@/components/blocks/display/Markdown/_Markdown';
+import RenderMarkdown from '@/components/common/RenderMarkdown';
 import PreviewPane from '@/components/common/PreviewPane';
 import CodeEditor from '@/components/common/CodeEditor';
 import Spinner from '@/components/common/Spinner';
@@ -31,7 +29,7 @@ function useDocsExampleState(blockName, exampleFilename, originalContent) {
   const provenance = `docs://${blockName}/${exampleFilename}`;
   return useReduxState(
     {}, // No component context needed
-    editorFields.fieldInfoByField.editedContent,
+    editorFields.editedContent,
     originalContent,
     { id: provenance }
   );
@@ -714,9 +712,7 @@ function ReadmeTab({ content, path }) {
         <code className="text-xs text-gray-500">{path}</code>
       </div>
       <div className="p-6 prose max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-          {content}
-        </ReactMarkdown>
+        <RenderMarkdown>{content}</RenderMarkdown>
       </div>
     </div>
   );

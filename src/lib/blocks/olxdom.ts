@@ -4,7 +4,6 @@
 // dynamic content DAG.
 
 import * as state from '@/lib/state';
-import * as reduxLogger from 'lo_event/lo_event/reduxLogger.js';
 import { refToOlxKey, toOlxReference } from './idResolver';
 import type { OlxDomNode, OlxDomSelector, OlxKey, OlxReference, RuntimeProps } from '@/lib/types';
 //
@@ -22,6 +21,28 @@ import type { OlxDomNode, OlxDomSelector, OlxKey, OlxReference, RuntimeProps } f
 // to automatically find inputs for graders, targets for LLM calls, etc.
 //
 // This should not be confused with the static OLX DAG.
+
+/**
+ * Build event context path by walking up the nodeInfo tree.
+ * Returns dot-separated IDs from root to current node.
+ *
+ * Used to scope events to their location in the OLX DOM hierarchy.
+ * Example: "preview.quiz.problem_5"
+ *
+ * @param nodeInfo - The current nodeInfo
+ * @returns Dot-separated context path
+ */
+export function getEventContext(nodeInfo: OlxDomNode | null | undefined): string {
+  const ids: string[] = [];
+  let current = nodeInfo;
+  while (current) {
+    // Get ID from nodeInfo or its node
+    const id = (current as any).id ?? current.node?.id;
+    if (id) ids.unshift(id);
+    current = current.parent;
+  }
+  return ids.join('.');
+}
 
 /**
  * Traverses up the parent chain, returning all parent nodeInfos
@@ -307,12 +328,12 @@ export function getInputs(props, { infer }: { infer? } = {}) {
  * Delegates to the state module's valueSelector which handles all ID
  * resolution complexity (prefixes, absolute paths, etc.) transparently.
  *
- * @param {Object} props - Component props with idMap and componentMap
- * @param {string} id - ID of the component to get value from
- * @returns {any} The component's current value
+ * @param props - Component props with blockRegistry and store
+ * @param id - ID of the component to get value from
+ * @returns The component's current value
  */
-export function getValueById(props, id) {
-  const reduxState = reduxLogger.store.getState();
+export function getValueById(props: RuntimeProps, id: OlxReference | null | undefined) {
+  const reduxState = props.store.getState();
 
   // valueSelector handles all ID resolution (refToOlxKey for lookup, proper
   // prefix handling for state access) - blocks don't need to know about IDs
@@ -327,7 +348,7 @@ export function getValueById(props, id) {
  *
  * Originally designed to extract prompt text from LLMAction content.
  *
- * @param {Object} props - Component props with idMap and componentMap
+ * @param {Object} props - Component props with blockRegistry
  * @param {Object} actionNode - Node with kids array to process
  * @returns {string} The extracted and resolved text content
  */

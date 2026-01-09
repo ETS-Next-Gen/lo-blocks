@@ -237,3 +237,53 @@ export function mergeReferences(...refsList: References[]): References {
 export function extractAndMergeRefs(...expressions: string[]): References {
   return mergeReferences(...expressions.map(extractStructuredRefs));
 }
+
+// ============================================
+// Text Interpolation Utilities
+// ============================================
+
+/**
+ * An interpolation found in text.
+ */
+export interface Interpolation {
+  expression: string;  // The expression inside {{...}}
+  start: number;       // Start position in original text
+  end: number;         // End position in original text
+}
+
+/**
+ * Extract all {{...}} interpolations from text.
+ *
+ * @param text - The text to search for interpolations
+ * @returns Array of interpolations found
+ */
+export function extractInterpolations(text: string): Interpolation[] {
+  const interpolations: Interpolation[] = [];
+  const regex = /\{\{([^}]+)\}\}/g;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    interpolations.push({
+      expression: match[1].trim(),
+      start: match.index,
+      end: match.index + match[0].length
+    });
+  }
+
+  return interpolations;
+}
+
+/**
+ * Extract all references from interpolations in text.
+ *
+ * @param text - The text containing {{...}} interpolations
+ * @returns Merged references from all interpolations
+ */
+export function extractInterpolationRefs(text: string): References {
+  const interpolations = extractInterpolations(text);
+  if (interpolations.length === 0) return EMPTY_REFS;
+
+  return mergeReferences(
+    ...interpolations.map(i => extractStructuredRefs(i.expression))
+  );
+}

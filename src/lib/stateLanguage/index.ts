@@ -24,9 +24,11 @@ export {
   extractContentIds,
   extractGlobalVars,
   toStructuredRefs,
+  extractInterpolations,
+  extractInterpolationRefs,
   EMPTY_REFS
 } from './references';
-export type { Reference, References } from './references';
+export type { Reference, References, Interpolation } from './references';
 
 // Evaluation
 export { evaluate, createContext, wordcount } from './evaluate';

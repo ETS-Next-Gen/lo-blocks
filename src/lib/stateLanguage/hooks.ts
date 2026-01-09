@@ -11,6 +11,13 @@ import * as idResolver from '../blocks/idResolver';
 import type { References } from './references';
 import type { ContextData } from './evaluate';
 
+// Stable empty context for when there are no references
+const EMPTY_CONTEXT: ContextData = {
+  componentState: {},
+  olxContent: {},
+  globalVar: {}
+};
+
 /**
  * Hook that subscribes to all referenced values from Redux.
  *
@@ -43,6 +50,15 @@ export function selectReferences(
   props: any,
   refs: References
 ): ContextData {
+  // Fast path: return stable empty context when no refs
+  if (
+    refs.componentState.length === 0 &&
+    refs.olxContent.length === 0 &&
+    refs.globalVar.length === 0
+  ) {
+    return EMPTY_CONTEXT;
+  }
+
   const componentState: Record<string, any> = {};
   const olxContent: Record<string, string> = {};
   const globalVar: Record<string, any> = {};

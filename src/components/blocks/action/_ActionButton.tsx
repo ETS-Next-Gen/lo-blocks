@@ -31,18 +31,18 @@ function _ActionButton(props) {
 
   // Subscribe to all referenced values (stable hook call)
   const resolved = useReferences(props, refs);
-  const context = createContext(resolved);
 
   // Evaluate condition
   const isSatisfied = useMemo(() => {
     if (!ast) return true;
     try {
+      const context = createContext(resolved);
       return Boolean(evaluate(ast, context));
     } catch (e) {
       console.warn('[ActionButton] Failed to evaluate dependsOn:', dependsOn, e);
       return false;
     }
-  }, [ast, context, dependsOn]);
+  }, [ast, resolved, dependsOn]);
 
   const isDisabled = !isSatisfied;
 

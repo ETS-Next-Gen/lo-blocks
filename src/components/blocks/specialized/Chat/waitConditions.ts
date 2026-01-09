@@ -118,7 +118,7 @@ export function useWaitConditions(
 ) {
   const allRefs = useMemo(() => extractWaitRefs(entries), [entries]);
   const resolved = useReferences(props, allRefs);
-  const context = createContext(resolved);
+  const context = useMemo(() => createContext(resolved), [resolved]);
 
   // Check if we can advance (first wait before next content is satisfied)
   const canAdvance = canAdvanceToContent(entries, currentIndex, endIndex, context);

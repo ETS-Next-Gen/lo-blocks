@@ -4,6 +4,20 @@ import { describe, it, expect } from 'vitest';
 import { parse } from './parser';
 import { evaluate, createContext, wordcount } from './evaluate';
 
+// Import match functions from their pure modules (avoid circular imports)
+import { stringMatch } from '@/components/blocks/grading/stringMatch';
+import { numericalMatch } from '@/lib/util/numeric';
+import { registerDSLFunction } from './functions';
+
+// Register DSL wrappers that return boolean (like createGrader does)
+// In production, these are registered by createGrader when grader modules load
+registerDSLFunction('stringMatch', (input, pattern, options) =>
+  stringMatch(input, pattern, options).state === 'match'
+);
+registerDSLFunction('numericalMatch', (input, answer, options) =>
+  numericalMatch(input, answer, options).state === 'match'
+);
+
 describe('evaluate', () => {
   describe('literals', () => {
     it('evaluates numbers', () => {
@@ -254,5 +268,122 @@ describe('wordcount helper', () => {
     expect(wordcount('')).toBe(0);
     expect(wordcount(null)).toBe(0);
     expect(wordcount(undefined)).toBe(0);
+  });
+});
+
+describe('object literals', () => {
+  it('evaluates empty object', () => {
+    expect(evaluate(parse('{}'), createContext())).toEqual({});
+  });
+
+  it('evaluates object with literals', () => {
+    expect(evaluate(parse('{ ignoreCase: true }'), createContext())).toEqual({ ignoreCase: true });
+    expect(evaluate(parse('{ a: 1, b: 2 }'), createContext())).toEqual({ a: 1, b: 2 });
+  });
+
+  it('evaluates object with expressions', () => {
+    const ctx = createContext({
+      componentState: { x: { value: 42 } }
+    });
+    expect(evaluate(parse('{ answer: @x.value }'), ctx)).toEqual({ answer: 42 });
+  });
+
+  it('evaluates nested objects', () => {
+    expect(evaluate(parse('{ outer: { inner: 1 } }'), createContext())).toEqual({ outer: { inner: 1 } });
+  });
+});
+
+describe('DSL match functions', () => {
+  // Note: stringMatch and numericalMatch are registered by their grader modules.
+  // These tests verify the function registry lookup works.
+
+  describe('stringMatch', () => {
+    it('evaluates exact match', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: 'Paris' } }
+      });
+      expect(evaluate(parse('stringMatch(@answer.value, "Paris")'), ctx)).toBe(true);
+      expect(evaluate(parse('stringMatch(@answer.value, "London")'), ctx)).toBe(false);
+    });
+
+    it('evaluates case-insensitive match with options', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: 'PARIS' } }
+      });
+      expect(evaluate(parse('stringMatch(@answer.value, "paris", { ignoreCase: true })'), ctx)).toBe(true);
+      expect(evaluate(parse('stringMatch(@answer.value, "paris", { ignoreCase: false })'), ctx)).toBe(false);
+    });
+
+    it('evaluates regexp match', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: 'color' } }
+      });
+      expect(evaluate(parse('stringMatch(@answer.value, "colou?r", { regexp: true })'), ctx)).toBe(true);
+      expect(evaluate(parse('stringMatch("colour", "colou?r", { regexp: true })'), ctx)).toBe(true);
+    });
+
+    it('returns false for empty input', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: '' } }
+      });
+      expect(evaluate(parse('stringMatch(@answer.value, "anything")'), ctx)).toBe(false);
+    });
+  });
+
+  describe('numericalMatch', () => {
+    it('evaluates exact match', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: '42' } }
+      });
+      expect(evaluate(parse('numericalMatch(@answer.value, 42)'), ctx)).toBe(true);
+      expect(evaluate(parse('numericalMatch(@answer.value, 43)'), ctx)).toBe(false);
+    });
+
+    it('evaluates match with tolerance', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: '9.85' } }
+      });
+      expect(evaluate(parse('numericalMatch(@answer.value, 9.8, { tolerance: 0.1 })'), ctx)).toBe(true);
+      expect(evaluate(parse('numericalMatch(@answer.value, 9.8, { tolerance: 0.01 })'), ctx)).toBe(false);
+    });
+
+    it('returns false for empty input', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: '' } }
+      });
+      expect(evaluate(parse('numericalMatch(@answer.value, 42)'), ctx)).toBe(false);
+    });
+
+    it('returns false for non-numeric input', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: 'abc' } }
+      });
+      expect(evaluate(parse('numericalMatch(@answer.value, 42)'), ctx)).toBe(false);
+    });
+  });
+
+  describe('match functions in conditions', () => {
+    it('works with ternary operator', () => {
+      const ctx = createContext({
+        componentState: { answer: { value: 'Paris' } }
+      });
+      expect(evaluate(
+        parse('stringMatch(@answer.value, "Paris") ? "Correct!" : "Try again"'),
+        ctx
+      )).toBe('Correct!');
+    });
+
+    it('works with logical operators', () => {
+      const ctx = createContext({
+        componentState: {
+          city: { value: 'Paris' },
+          country: { value: 'France' }
+        }
+      });
+      expect(evaluate(
+        parse('stringMatch(@city.value, "Paris") && stringMatch(@country.value, "France")'),
+        ctx
+      )).toBe(true);
+    });
   });
 });

@@ -34,5 +34,14 @@ export type { Reference, References, Interpolation } from './references';
 export { evaluate, createContext, wordcount } from './evaluate';
 export type { ContextData } from './evaluate';
 
+// Function registry
+export {
+  dslFunctions,
+  registerDSLFunction,
+  getDSLFunction,
+  hasDSLFunction,
+  getDSLFunctionNames
+} from './functions';
+
 // React hooks (require Redux)
 export { useReferences, selectReferences, getReferences } from './hooks';

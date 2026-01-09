@@ -1,4 +1,4 @@
-// src/lib/util/numeric.js
+// src/lib/util/numeric.ts
 //
 // Numerical utilities - mathematical operations for Learning Observer assessment.
 //
@@ -14,6 +14,8 @@
 //
 import Complex from 'complex.js';
 import { CORRECTNESS } from '../blocks/correctness';
+import { MATCH, NO_MATCH, UNSUBMITTED, invalid } from '../blocks/matchResult';
+import type { MatchResult } from '../blocks/matchResult';
 
 // TODO: We probably want to treat int as int, float as float,
 // etc. instead of making everything complex
@@ -81,33 +83,66 @@ export function compareWithTolerance(student, instructor, tol=0) {
   return diff <= tol;
 }
 
-export function gradeNumerical(props, { input }: { input: any }) {
-  const answer = props.answer;
+/**
+ * Options for numerical matching.
+ */
+export interface NumericalMatchOptions {
+  /** Tolerance for comparison. Can be absolute (e.g., 0.1) or percentage (e.g., "5%"). */
+  tolerance?: number | string;
+}
 
+/**
+ * Pure numerical matching function.
+ *
+ * This is the core predicate used by NumericalGrader, extracted for use in:
+ * - DSL expressions: numericalMatch(@answer.value, 42, { tolerance: 0.1 })
+ * - RulesGrader: <NumericalMatch answer="42" tolerance="0.1" />
+ *
+ * Supports:
+ * - Real and complex numbers
+ * - Range notation: "[0, 10]" for inclusive, "(0, 10)" for exclusive
+ * - Absolute tolerance: { tolerance: 0.1 }
+ * - Percentage tolerance: { tolerance: "5%" }
+ *
+ * @param input - The student's answer (string or number)
+ * @param answer - The expected answer or range
+ * @param options - Match options (tolerance)
+ * @returns MatchResult indicating match state
+ */
+export function numericalMatch(
+  input: string | number | null | undefined,
+  answer: string | number,
+  options?: NumericalMatchOptions
+): MatchResult {
+  // Handle empty/null input
   if (input === undefined || input === null || String(input).trim() === '') {
-    return { correct: CORRECTNESS.INVALID, message: 'No answer provided' };
+    return UNSUBMITTED;
   }
 
   const student = parseComplex(input);
   if (isNaN(student.re) || isNaN(student.im)) {
-    return { correct: CORRECTNESS.INVALID, message: 'Invalid number' };
+    return invalid('Invalid number');
   }
 
-  if (typeof answer === 'string' && /^\s*[\[(].*[\])]\s*$/.test(answer)) {
-    const range = parseRange(answer);
+  const answerStr = String(answer);
+
+  // Handle range notation
+  if (/^\s*[\[(].*[\])]\s*$/.test(answerStr)) {
+    const range = parseRange(answerStr);
     if (!range) {
-      return { correct: CORRECTNESS.INVALID, message: 'Invalid range specification' };
+      // Invalid range - author error, should be caught at parse time
+      return invalid('Invalid range specification');
     }
+
     const base = Math.abs(range.upper.re - range.lower.re);
-    const tolerance = parseTolerance(props.tolerance, base);
-    const ok = inRange(student, range, tolerance);
-    return { correct: ok ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT, message: '' };
+    const tolerance = parseTolerance(options?.tolerance, base);
+    return inRange(student, range, tolerance) ? MATCH : NO_MATCH;
   }
 
+  // Handle single value with tolerance
   const base = parseComplex(answer).abs();
-  const tolerance = parseTolerance(props.tolerance, base);
-  const ok = compareWithTolerance(student, answer, tolerance);
-  return { correct: ok ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT, message: '' };
+  const tolerance = parseTolerance(options?.tolerance, base);
+  return compareWithTolerance(student, answer, tolerance) ? MATCH : NO_MATCH;
 }
 
 export function gradeRatio(props, { inputs }: { inputs: any[] }) {

@@ -1,6 +1,6 @@
 // @vitest-environment node
-// src/lib/util/numeric.test.js
-import { parseComplex, parseTolerance, parseRange, inRange, compareWithTolerance, gradeNumerical, gradeRatio } from './numeric';
+// src/lib/util/numeric.test.ts
+import { parseComplex, parseTolerance, parseRange, inRange, compareWithTolerance, numericalMatch, gradeRatio } from './numeric';
 import { CORRECTNESS } from '../blocks/correctness';
 
 it('parses complex numbers and compares', () => {
@@ -18,12 +18,31 @@ it('handles ranges', () => {
   expect(inRange('2', r, 0)).toBe(false);
 });
 
-it('grades numerical answers with tolerance', () => {
-  expect(gradeNumerical({answer:'5'}, {input:'5'}).correct).toBe(CORRECTNESS.CORRECT);
-  expect(gradeNumerical({answer:'5', tolerance:'1'}, {input:'5.5'}).correct).toBe(CORRECTNESS.CORRECT);
-  expect(gradeNumerical({answer:'[5,7)'} , {input:'6'}).correct).toBe(CORRECTNESS.CORRECT);
-  expect(gradeNumerical({answer:'[5,7)'}, {input:'7'}).correct).toBe(CORRECTNESS.INCORRECT);
-  expect(gradeNumerical({answer:'5'}, {input:'Hello'}).correct).toBe(CORRECTNESS.INVALID);
+describe('numericalMatch', () => {
+  it('matches exact values', () => {
+    expect(numericalMatch('5', '5')).toEqual({ state: 'match' });
+    expect(numericalMatch('5', '6')).toEqual({ state: 'no_match' });
+  });
+
+  it('matches with tolerance', () => {
+    expect(numericalMatch('5.5', '5', { tolerance: '1' })).toEqual({ state: 'match' });
+    expect(numericalMatch('5.5', '5', { tolerance: '0.1' })).toEqual({ state: 'no_match' });
+  });
+
+  it('matches ranges', () => {
+    expect(numericalMatch('6', '[5,7)')).toEqual({ state: 'match' });
+    expect(numericalMatch('7', '[5,7)')).toEqual({ state: 'no_match' });
+  });
+
+  it('returns unsubmitted for empty input', () => {
+    expect(numericalMatch('', '5')).toEqual({ state: 'unsubmitted' });
+    expect(numericalMatch(null, '5')).toEqual({ state: 'unsubmitted' });
+    expect(numericalMatch(undefined, '5')).toEqual({ state: 'unsubmitted' });
+  });
+
+  it('returns invalid for non-numeric input', () => {
+    expect(numericalMatch('Hello', '5')).toEqual({ state: 'invalid', message: 'Invalid number' });
+  });
 });
 
 it('grades ratios of two numbers', () => {

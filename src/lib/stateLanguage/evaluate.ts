@@ -4,6 +4,7 @@
 // No React, no Redux - just takes an AST and a context object.
 
 import type { ASTNode } from './parser';
+import { dslFunctions } from './functions';
 
 /**
  * Context data for evaluation.
@@ -37,6 +38,9 @@ export function evaluate(ast: ASTNode, context: ContextData): any {
     case 'String':
       return ast.value;
 
+    case 'Boolean':
+      return ast.value;
+
     case 'BinaryOp':
       return evaluateBinaryOp(ast, context);
 
@@ -67,6 +71,14 @@ export function evaluate(ast: ASTNode, context: ContextData): any {
         if (part.type === 'TemplateExpr') return String(evaluate(part.expression, context));
         return '';
       }).join('');
+
+    case 'Object':
+      // Evaluate each property value and build a plain object
+      const result: Record<string, any> = {};
+      for (const [key, valueAst] of Object.entries(ast.properties)) {
+        result[key] = evaluate(valueAst as ASTNode, context);
+      }
+      return result;
 
     default:
       throw new Error(`Unknown AST node type: ${(ast as any).type}`);
@@ -130,6 +142,11 @@ function evaluateIdentifier(name: string, context: ContextData): any {
   // Math object
   if (name === 'Math') {
     return Math;
+  }
+
+  // DSL functions from registry (stringMatch, numericalMatch, etc.)
+  if (name in dslFunctions) {
+    return dslFunctions[name];
   }
 
   // Look up in context (caller-provided bindings)

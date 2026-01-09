@@ -86,6 +86,16 @@ export interface Identifier {
   name: string;
 }
 
+export interface BooleanLiteral {
+  type: 'Boolean';
+  value: boolean;
+}
+
+export interface ObjectLiteral {
+  type: 'Object';
+  properties: Record<string, ASTNode>;
+}
+
 export type ASTNode =
   | SigilRef
   | BinaryOp
@@ -97,7 +107,9 @@ export type ASTNode =
   | NumberLiteral
   | StringLiteral
   | TemplateLiteral
-  | Identifier;
+  | Identifier
+  | BooleanLiteral
+  | ObjectLiteral;
 
 // ============================================
 // Parser Functions

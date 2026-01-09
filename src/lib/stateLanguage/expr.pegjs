@@ -126,12 +126,48 @@ ArrowFunction
 
 Primary
   = SigilRef
+  / BooleanLiteral
   / Number
   / String
   / TemplateLiteral
+  / ObjectLiteral
   / MathObject
   / Identifier
   / "(" _ expr:Expression _ ")" { return expr; }
+
+// ============================================
+// Boolean Literals
+// ============================================
+
+BooleanLiteral
+  = "true" !IdentifierChar { return { type: 'Boolean', value: true }; }
+  / "false" !IdentifierChar { return { type: 'Boolean', value: false }; }
+
+IdentifierChar
+  = [a-zA-Z0-9_]
+
+// ============================================
+// Object Literals
+// ============================================
+
+ObjectLiteral
+  = "{" _ pairs:ObjectPairs? _ "}" {
+      const properties = {};
+      for (const { key, value } of (pairs || [])) {
+        properties[key] = value;
+      }
+      return { type: 'Object', properties };
+    }
+
+ObjectPairs
+  = head:ObjectPair tail:(_ "," _ ObjectPair)* {
+      return [head, ...tail.map(t => t[3])];
+    }
+
+ObjectPair
+  = key:Identifier _ ":" _ value:Expression {
+      return { key, value };
+    }
 
 // ============================================
 // Sigil References

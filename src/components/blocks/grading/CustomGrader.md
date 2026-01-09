@@ -17,14 +17,21 @@ For simple cases, prefer declarative graders:
 
 ## Basic Usage
 
-```xml
-<CapaProblem id="quiz1" title="The Ultimate Question">
+```olx:playground
+<CapaProblem id="ultimate-question" title="The Ultimate Question">
+  <Markdown>What is the answer to life, the universe, and everything?</Markdown>
   <LineInput id="answer" />
-  <CustomGrader target="answer">
-    if (input === 42) return { correct: 'correct', message: 'Perfect!' };
-    if (Math.abs(input - 42) &lt; 5) return { correct: 'partially-correct', score: 0.5 };
-    return { correct: 'incorrect', message: 'Try again' };
-  </CustomGrader>
+  <CustomGrader target="answer"><![CDATA[
+    const value = parseFloat(input);
+    if (isNaN(value)) return { correct: 'invalid', message: 'Please enter a number' };
+    if (value === 42) return { correct: 'correct', message: 'You found the answer!' };
+    if (Math.abs(value - 42) < 5) {
+      const hint = value < 42 ? 'a bit low' : 'a bit high';
+      return { correct: 'partially-correct', score: 0.5, message: `Close! That's ${hint}.` };
+    }
+    const hint = value < 42 ? 'Too low' : 'Too high';
+    return { correct: 'incorrect', message: `${hint}. Try again.` };
+  ]]></CustomGrader>
 </CapaProblem>
 ```
 
@@ -73,8 +80,9 @@ Your code must return an object with:
 
 Accept multiple representations of the same value:
 
-```xml
+```olx:playground
 <CapaProblem id="half-value" title="Expressing One-Half">
+  <Markdown>Enter one-half in any format (0.5, 1/2, 50%, half):</Markdown>
   <LineInput id="half" />
   <CustomGrader target="half"><![CDATA[
     const s = (input || '').toLowerCase().trim();
@@ -99,9 +107,12 @@ Accept multiple representations of the same value:
 
 Grade two inputs that must satisfy a relationship:
 
-```xml
+```olx:playground
 <CapaProblem id="voltage-divider" title="Voltage Divider Design">
+  <Markdown>Design a voltage divider to produce 0.2V from 1V. Enter R1 and R2:</Markdown>
+  <Markdown>R1 (top resistor):</Markdown>
   <LineInput id="r1" />
+  <Markdown>R2 (bottom resistor):</Markdown>
   <LineInput id="r2" />
   <CustomGrader target="r1, r2"><![CDATA[
     const [r1, r2] = inputs.map(parseFloat);
@@ -122,14 +133,15 @@ Grade two inputs that must satisfy a relationship:
 
 Award partial credit based on answer quality:
 
-```xml
+```olx:playground
 <CapaProblem id="pi-estimate" title="Estimate Pi">
+  <Markdown>What is the value of pi (to at least 2 decimal places)?</Markdown>
   <LineInput id="estimate" />
   <CustomGrader target="estimate"><![CDATA[
     const answer = parseFloat(input);
     const correct = 3.14159;
 
-    if (isNaN(answer)) return { correct: 'invalid' };
+    if (isNaN(answer)) return { correct: 'invalid', message: 'Please enter a number' };
 
     const error = Math.abs(answer - correct) / correct;
 
@@ -145,8 +157,9 @@ Award partial credit based on answer quality:
 
 Validate against domain constraints (e.g., standard resistor values):
 
-```xml
+```olx:playground
 <CapaProblem id="e24-check" title="Standard Resistor Value">
+  <Markdown>Enter any standard E24 resistor value (e.g., 1k, 2.2k, 4.7k):</Markdown>
   <LineInput id="resistor" />
   <CustomGrader target="resistor"><![CDATA[
     const E24 = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0,
@@ -160,9 +173,9 @@ Validate against domain constraints (e.g., standard resistor values):
     }
 
     const value = parseFloat(input);
-    if (isNaN(value)) return { correct: 'invalid' };
+    if (isNaN(value)) return { correct: 'invalid', message: 'Please enter a number' };
     if (!isStandard(value)) return { correct: 'incorrect', message: 'Not a standard E24 value' };
-    return { correct: 'correct' };
+    return { correct: 'correct', message: `${value} is a valid E24 value` };
   ]]></CustomGrader>
 </CapaProblem>
 ```
@@ -189,13 +202,19 @@ JavaScript code frequently uses `<`, `>`, and `&` which are special in XML. Thre
 
 CDATA sections let you write code without escaping:
 
-```xml
-<CustomGrader target="answer"><![CDATA[
-  if (x < 5 && y > 0) {
-    return { correct: 'correct', message: 'In range!' };
-  }
-  return { correct: 'incorrect' };
-]]></CustomGrader>
+```olx:playground
+<CapaProblem id="range-check" title="Range Check">
+  <Markdown>Enter a number between 0 and 5:</Markdown>
+  <LineInput id="answer" />
+  <CustomGrader target="answer"><![CDATA[
+    const x = parseFloat(input);
+    if (isNaN(x)) return { correct: 'invalid', message: 'Enter a number' };
+    if (x > 0 && x < 5) {
+      return { correct: 'correct', message: 'In range!' };
+    }
+    return { correct: 'incorrect', message: 'Out of range' };
+  ]]></CustomGrader>
+</CapaProblem>
 ```
 
 ### Option 3: External File with src=
@@ -208,7 +227,7 @@ For complex graders, keep code in a separate `.js` file:
 
 The file path is resolved relative to the OLX file location. This keeps your OLX clean and allows reusing grading code across problems.
 
-## Security
+## Security and Portability
 
 CustomGrader executes JavaScript code using `new Function()`. This has security implications:
 
@@ -217,6 +236,26 @@ CustomGrader executes JavaScript code using `new Function()`. This has security 
 - **Not sandboxed**: Future versions may add sandboxing via Web Workers or SES
 
 For maximum security in multi-tenant deployments, consider using declarative graders where possible.
+
+### Write Portable Code
+
+**Important:** The execution environment may change. Future versions may run grading code in:
+- A Web Worker (no DOM access)
+- A sandboxed JavaScript environment (SES/Lockdown)
+- Server-side in an isolated VM
+
+**Do not rely on browser-specific APIs.** For example, this will break:
+
+```javascript
+// BAD: Uses DOM APIs - will fail in sandbox/server
+function isValidCSSColor(color) {
+  const s = new Option().style;
+  s.color = color;
+  return s.color !== "";
+}
+```
+
+**Stick to vanilla JavaScript:** Use only standard JS features like `Math`, `String`, `Array`, `parseFloat`, `RegExp`, etc. If you need browser APIs, your grader may stop working in future versions.
 
 ## Tips
 

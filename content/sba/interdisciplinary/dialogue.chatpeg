@@ -188,6 +188,7 @@ Lacy: Which ones would you select to research?
 
 interdisciplinary_sba_sidebar -> reasons_checklist
 
+// TODO: Figure out how to handle doneness for a list (empty array [] is truthy)
 --- wait @reasons.value ---
 
 Lianne: I agree with you on some of your choices. Why did you select that set?

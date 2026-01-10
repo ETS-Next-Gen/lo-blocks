@@ -161,15 +161,12 @@ The causes of high school dropout involve individual psychology, family sociolog
 **Map Each Cause to Relevant Disciplines**
 
 For each cause, select all disciplines that might study it:
-
-| Cause | Psychology | Sociology | Economics | Political Science | Health Sciences |
-|-------|------------|-----------|-----------|-------------------|-----------------|
-| Students need money to help family | ☐ | ☐ | ☐ | ☐ | ☐ |
-| Depression/anxiety/ADHD interferes | ☐ | ☐ | ☐ | ☐ | ☐ |
-| Gang activity / neighborhood instability | ☐ | ☐ | ☐ | ☐ | ☐ |
-| Lack of school funding | ☐ | ☐ | ☐ | ☐ | ☐ |
       </Markdown>
-      <TextArea id="reasons_classification" placeholder="Enter your discipline mappings here. For example: 'Money - Economics, Sociology; ADHD - Psychology, Health Sciences; ...'" />
+      <TabularMCQ id="discipline_mapping">
+        mode: checkbox
+        cols: Psychology, Sociology, Economics, Political Science, Health Sciences
+        rows: Students need money to help family, Depression/anxiety/ADHD interferes, Gang activity / neighborhood instability, Lack of school funding
+      </TabularMCQ>
     </Vertical>
 
     <!-- Display discipline mapping results -->

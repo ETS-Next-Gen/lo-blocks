@@ -31,12 +31,12 @@ describe('evaluate', () => {
     it('evaluates @ references (componentState)', () => {
       const ctx = createContext({
         componentState: {
-          essay: { value: 'my essay text', done: 'DONE' }
+          essay: { value: 'my essay text', done: 'done' }
         }
       });
-      expect(evaluate(parse('@essay'), ctx)).toEqual({ value: 'my essay text', done: 'DONE' });
+      expect(evaluate(parse('@essay'), ctx)).toEqual({ value: 'my essay text', done: 'done' });
       expect(evaluate(parse('@essay.value'), ctx)).toBe('my essay text');
-      expect(evaluate(parse('@essay.done'), ctx)).toBe('DONE');
+      expect(evaluate(parse('@essay.done'), ctx)).toBe('done');
     });
 
     it('evaluates # references (olxContent)', () => {
@@ -65,18 +65,26 @@ describe('evaluate', () => {
   });
 
   describe('built-in constants', () => {
-    it('provides completion enum', () => {
+    it('provides completion enum with consistent camelCase values', () => {
       const ctx = createContext();
-      expect(evaluate(parse('completion.done'), ctx)).toBe('DONE');
-      expect(evaluate(parse('completion.notStarted'), ctx)).toBe('NOT_STARTED');
-      expect(evaluate(parse('completion.inProgress'), ctx)).toBe('IN_PROGRESS');
-      expect(evaluate(parse('completion.closed'), ctx)).toBe('CLOSED');
+      // Keys and values use consistent camelCase - no translation layer
+      expect(evaluate(parse('completion.done'), ctx)).toBe('done');
+      expect(evaluate(parse('completion.notStarted'), ctx)).toBe('notStarted');
+      expect(evaluate(parse('completion.inProgress'), ctx)).toBe('inProgress');
+      expect(evaluate(parse('completion.skipped'), ctx)).toBe('skipped');
+      expect(evaluate(parse('completion.closed'), ctx)).toBe('closed');
     });
 
-    it('provides correctness enum', () => {
+    it('provides correctness enum with consistent camelCase values', () => {
       const ctx = createContext();
+      // Keys and values use consistent camelCase - no translation layer
       expect(evaluate(parse('correctness.correct'), ctx)).toBe('correct');
       expect(evaluate(parse('correctness.incorrect'), ctx)).toBe('incorrect');
+      expect(evaluate(parse('correctness.partiallyCorrect'), ctx)).toBe('partiallyCorrect');
+      expect(evaluate(parse('correctness.unsubmitted'), ctx)).toBe('unsubmitted');
+      expect(evaluate(parse('correctness.submitted'), ctx)).toBe('submitted');
+      expect(evaluate(parse('correctness.incomplete'), ctx)).toBe('incomplete');
+      expect(evaluate(parse('correctness.invalid'), ctx)).toBe('invalid');
     });
   });
 
@@ -105,12 +113,12 @@ describe('evaluate', () => {
     it('evaluates && and ||', () => {
       const ctx = createContext({
         componentState: {
-          a: { done: 'DONE' },
-          b: { done: 'NOT_STARTED' }
+          a: { completion: 'done' },
+          b: { completion: 'notStarted' }
         }
       });
-      expect(evaluate(parse('@a.done === completion.done && @b.done === completion.done'), ctx)).toBe(false);
-      expect(evaluate(parse('@a.done === completion.done || @b.done === completion.done'), ctx)).toBe(true);
+      expect(evaluate(parse('@a.completion === completion.done && @b.completion === completion.done'), ctx)).toBe(false);
+      expect(evaluate(parse('@a.completion === completion.done || @b.completion === completion.done'), ctx)).toBe(true);
     });
 
     it('evaluates !', () => {
@@ -170,15 +178,15 @@ describe('evaluate', () => {
     it('evaluates items.every', () => {
       const ctx = createContext({
         items: [
-          { done: 'DONE' },
-          { done: 'DONE' },
-          { done: 'DONE' }
+          { completion: 'done' },
+          { completion: 'done' },
+          { completion: 'done' }
         ]
       });
-      expect(evaluate(parse('items.every(c => c.done === completion.done)'), ctx)).toBe(true);
+      expect(evaluate(parse('items.every(c => c.completion === completion.done)'), ctx)).toBe(true);
 
-      ctx.items[1].done = 'IN_PROGRESS';
-      expect(evaluate(parse('items.every(c => c.done === completion.done)'), ctx)).toBe(false);
+      ctx.items[1].completion = 'inProgress';
+      expect(evaluate(parse('items.every(c => c.completion === completion.done)'), ctx)).toBe(false);
     });
 
     it('evaluates items.some', () => {
@@ -236,12 +244,12 @@ describe('evaluate', () => {
     it('evaluates complex gating condition', () => {
       const ctx = createContext({
         componentState: {
-          quiz1: { correct: 'incorrect', done: 'CLOSED' },
-          essay: { done: 'DONE' }
+          quiz1: { correct: 'incorrect', completion: 'closed' },
+          essay: { completion: 'done' }
         }
       });
-      // (@quiz1.correct === correctness.correct || @quiz1.done === completion.closed) && @essay.done === completion.done
-      const expr = '(@quiz1.correct === correctness.correct || @quiz1.done === completion.closed) && @essay.done === completion.done';
+      // (@quiz1.correct === correctness.correct || @quiz1.completion === completion.closed) && @essay.completion === completion.done
+      const expr = '(@quiz1.correct === correctness.correct || @quiz1.completion === completion.closed) && @essay.completion === completion.done';
       expect(evaluate(parse(expr), ctx)).toBe(true);
     });
 

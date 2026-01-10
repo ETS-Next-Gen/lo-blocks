@@ -18,10 +18,10 @@
 // The code has access to:
 //   - input: The student's answer (single input case)
 //   - inputs: Array of all inputs (multiple input case)
-//   - CORRECTNESS: The correctness enum for return values
+//   - correctness: The correctness enum for return values
 //
 // The code must return an object with:
-//   - correct: CORRECTNESS value or string ('correct', 'incorrect', 'partially-correct', 'invalid')
+//   - correct: correctness value or string ('correct', 'incorrect', 'partially-correct', 'invalid')
 //   - message: Feedback string (optional)
 //   - score: Numeric score 0-1 (optional, defaults based on correct value)
 //
@@ -99,7 +99,7 @@
 //
 import { z } from 'zod';
 import { createGrader } from '@/lib/blocks';
-import { CORRECTNESS } from '@/lib/blocks/correctness';
+import { correctness } from '@/lib/blocks/correctness';
 import * as parsers from '@/lib/content/parsers';
 import _Hidden from '@/components/blocks/layout/_Hidden';
 
@@ -157,25 +157,25 @@ function isSafeExecutionEnvironment(): boolean {
 }
 
 /**
- * Normalize correctness value to CORRECTNESS enum.
+ * Normalize correctness value to correctness enum.
  * Accepts both string shortcuts and enum values.
  */
 function normalizeCorrectness(value: unknown): string {
   if (typeof value === 'string') {
     const lower = value.toLowerCase();
-    if (lower === 'correct' || lower === CORRECTNESS.CORRECT) return CORRECTNESS.CORRECT;
-    if (lower === 'incorrect' || lower === CORRECTNESS.INCORRECT) return CORRECTNESS.INCORRECT;
-    if (lower === 'partially-correct' || lower === 'partial' || lower === CORRECTNESS.PARTIALLY_CORRECT) {
-      return CORRECTNESS.PARTIALLY_CORRECT;
+    if (lower === 'correct' || lower === correctness.correct) return correctness.correct;
+    if (lower === 'incorrect' || lower === correctness.incorrect) return correctness.incorrect;
+    if (lower === 'partially-correct' || lower === 'partial' || lower === correctness.partiallyCorrect) {
+      return correctness.partiallyCorrect;
     }
-    if (lower === 'invalid' || lower === CORRECTNESS.INVALID) return CORRECTNESS.INVALID;
-    if (lower === 'unsubmitted' || lower === CORRECTNESS.UNSUBMITTED) return CORRECTNESS.UNSUBMITTED;
+    if (lower === 'invalid' || lower === correctness.invalid) return correctness.invalid;
+    if (lower === 'unsubmitted' || lower === correctness.unsubmitted) return correctness.unsubmitted;
   }
   // Boolean shortcuts
-  if (value === true) return CORRECTNESS.CORRECT;
-  if (value === false) return CORRECTNESS.INCORRECT;
+  if (value === true) return correctness.correct;
+  if (value === false) return correctness.incorrect;
 
-  // Already a CORRECTNESS value or unknown
+  // Already a correctness value or unknown
   return String(value);
 }
 
@@ -185,7 +185,7 @@ function normalizeCorrectness(value: unknown): string {
  * The code runs with access to:
  * - input: single input value
  * - inputs: array of all input values
- * - CORRECTNESS: enum for return values
+ * - correctness: enum for return values
  * - Math: standard Math object
  *
  * Security note: This executes author-trusted code, not student input.
@@ -212,15 +212,15 @@ function executeGradingCode(
 
     // Create function with controlled scope
     // eslint-disable-next-line no-new-func
-    const fn = new Function('input', 'inputs', 'CORRECTNESS', 'Math', wrappedCode);
+    const fn = new Function('input', 'inputs', 'correctness', 'Math', wrappedCode);
 
     // Execute with context
-    const result = fn(context.input, context.inputs, CORRECTNESS, Math);
+    const result = fn(context.input, context.inputs, correctness, Math);
 
     // Validate result structure
     if (result === null || result === undefined) {
       return {
-        correct: CORRECTNESS.INVALID,
+        correct: correctness.invalid,
         message: 'Grading code returned null/undefined',
       };
     }
@@ -229,12 +229,12 @@ function executeGradingCode(
       // Allow simple boolean return
       if (typeof result === 'boolean') {
         return {
-          correct: result ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT,
+          correct: result ? correctness.correct : correctness.incorrect,
           message: '',
         };
       }
       return {
-        correct: CORRECTNESS.INVALID,
+        correct: correctness.invalid,
         message: `Grading code returned ${typeof result}, expected object`,
       };
     }
@@ -247,7 +247,7 @@ function executeGradingCode(
   } catch (error) {
     console.error('[CustomGrader] Execution error:', error);
     return {
-      correct: CORRECTNESS.INVALID,
+      correct: correctness.invalid,
       message: `Grading error: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
@@ -269,7 +269,7 @@ function gradeCode(props, { input, inputs }) {
 
   if (!code) {
     return {
-      correct: CORRECTNESS.INVALID,
+      correct: correctness.invalid,
       message: 'No grading code provided',
     };
   }
@@ -279,7 +279,7 @@ function gradeCode(props, { input, inputs }) {
   const firstInput = input ?? inputs?.[0];
   if (firstInput === undefined || firstInput === null || firstInput === '') {
     return {
-      correct: CORRECTNESS.UNSUBMITTED,
+      correct: correctness.unsubmitted,
       message: '',
     };
   }

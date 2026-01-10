@@ -5,6 +5,7 @@
 
 import type { ASTNode } from './parser';
 import { dslFunctions } from './functions';
+import { correctness, completion } from '@/lib/blocks/correctness';
 
 /**
  * Context data for evaluation.
@@ -120,24 +121,9 @@ function evaluateSigilRef(
  * This handles caller-provided bindings and built-in identifiers.
  */
 function evaluateIdentifier(name: string, context: ContextData): any {
-  // Built-in constants
-  if (name === 'completion') {
-    return {
-      notStarted: 'NOT_STARTED',
-      inProgress: 'IN_PROGRESS',
-      done: 'DONE',
-      skipped: 'SKIPPED',
-      closed: 'CLOSED'
-    };
-  }
-
-  if (name === 'correctness') {
-    return {
-      correct: 'correct',
-      incorrect: 'incorrect',
-      unknown: 'unknown'
-    };
-  }
+  // Built-in constants - exported directly from correctness.ts
+  if (name === 'completion') return completion;
+  if (name === 'correctness') return correctness;
 
   // Math object
   if (name === 'Math') {

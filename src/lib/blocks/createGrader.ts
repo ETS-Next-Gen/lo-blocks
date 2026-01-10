@@ -37,7 +37,7 @@ import { grader } from './actions';
 import { graderAttributes, baseAttributes } from './attributeSchemas';
 import _Noop from '@/components/blocks/layout/_Noop';
 import { registerDSLFunction } from '@/lib/stateLanguage/functions';
-import { CORRECTNESS } from './correctness';
+import { correctness } from './correctness';
 import type { RuntimeProps, LocalsAPI } from '@/lib/types';
 
 // Registry of Match blocks created by createGrader
@@ -108,11 +108,11 @@ function graderFromMatch(
     // Step 1: Check for empty input → UNSUBMITTED
     if (isMultiInput) {
       if (!Array.isArray(input) || input.length === 0 || hasEmptyInputs(input)) {
-        return { correct: CORRECTNESS.UNSUBMITTED, message: '' };
+        return { correct: correctness.unsubmitted, message: '' };
       }
     } else {
       if (isEmptyInput(input)) {
-        return { correct: CORRECTNESS.UNSUBMITTED, message: '' };
+        return { correct: correctness.unsubmitted, message: '' };
       }
     }
 
@@ -120,7 +120,7 @@ function graderFromMatch(
     if (config.validateInputs) {
       const errors = config.validateInputs(input, props);
       if (errors && errors.length > 0) {
-        return { correct: CORRECTNESS.INVALID, message: errors[0] };
+        return { correct: correctness.invalid, message: errors[0] };
       }
     }
 
@@ -128,13 +128,13 @@ function graderFromMatch(
     try {
       const matched = matchFn(input, answer, options);
       return {
-        correct: matched ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT,
+        correct: matched ? correctness.correct : correctness.incorrect,
         message: '',
       };
     } catch (e) {
       // Match function threw - treat as invalid
       return {
-        correct: CORRECTNESS.INVALID,
+        correct: correctness.invalid,
         message: e instanceof Error ? e.message : String(e),
       };
     }

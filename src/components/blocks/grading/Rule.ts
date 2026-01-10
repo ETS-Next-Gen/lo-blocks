@@ -21,7 +21,7 @@ import * as parsers from '@/lib/content/parsers';
 import _Noop from '@/components/blocks/layout/_Noop';
 import { parse, tryParse } from '@/lib/stateLanguage/parser';
 import { evaluate, createContext } from '@/lib/stateLanguage/evaluate';
-import { CORRECTNESS } from '@/lib/blocks/correctness';
+import { correctness } from '@/lib/blocks/correctness';
 import type { RuntimeProps } from '@/lib/types';
 
 /**
@@ -35,7 +35,7 @@ function matchRule(props: RuntimeProps, context: { input?: any; inputs?: any[] }
 
   if (!whenExpr) {
     // No condition means always match (like DefaultMatch)
-    return { correct: CORRECTNESS.CORRECT, message: '' };
+    return { correct: correctness.correct, message: '' };
   }
 
   try {
@@ -55,14 +55,14 @@ function matchRule(props: RuntimeProps, context: { input?: any; inputs?: any[] }
     const matched = Boolean(result);
 
     return {
-      correct: matched ? CORRECTNESS.CORRECT : CORRECTNESS.INCORRECT,
+      correct: matched ? correctness.correct : correctness.incorrect,
       message: '',
     };
   } catch (e) {
     // Expression evaluation failed
     console.error(`[Rule] Failed to evaluate when="${whenExpr}":`, e);
     return {
-      correct: CORRECTNESS.INCORRECT,
+      correct: correctness.incorrect,
       message: `Expression error: ${e instanceof Error ? e.message : String(e)}`,
     };
   }

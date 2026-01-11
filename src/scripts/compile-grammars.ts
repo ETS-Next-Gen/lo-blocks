@@ -4,17 +4,12 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import peggy from 'peggy';
-
-const blocksDir = 'src/components/blocks';
-const templateDir = 'src/lib/template';
-const stateLanguageDir = 'src/lib/stateLanguage';
+import { GRAMMAR_DIRS } from '../lib/grammarDirs';
 
 async function compileAllPEG() {
-  const files = [
-    ...(await glob(`${blocksDir}/**/*.pegjs`)),
-    ...(await glob(`${templateDir}/**/*.pegjs`)),
-    ...(await glob(`${stateLanguageDir}/**/*.pegjs`))
-  ];
+  const files = (await Promise.all(
+    GRAMMAR_DIRS.map(dir => glob(`${dir}/**/*.pegjs`))
+  )).flat();
 
   const extensions: string[] = [];
 

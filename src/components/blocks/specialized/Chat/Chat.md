@@ -79,13 +79,15 @@ Alex: Let's dive in.
 --- pause ---
 ```
 
-**Wait** - Blocks until a component has a value:
+**Wait** - Blocks until a state language expression is truthy:
 
 ```
---- wait component_id ---
---- wait quiz1, essay1 ---
---- wait quiz1 correct ---
+--- wait @component_id.value ---
+--- wait @quiz.correct === correctness.correct ---
+--- wait wordcount(@essay.value) >= 50 ---
 ```
+
+See [State Language Expressions](../../../lib/stateLanguage/expr.pegjs.md) for full syntax.
 
 **Arrow** - Repoints a dynamic component to show different content:
 

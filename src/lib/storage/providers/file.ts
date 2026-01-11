@@ -77,11 +77,15 @@ const PROJECT_ROOT = process.cwd();
 /**
  * Get allowed directories for read operations.
  * Includes OLX_CONTENT_DIR if set (used by tests and custom content locations).
+ *
+ * NOTE: Grammar directories here should match GRAMMAR_DIRS in src/lib/grammarDirs.ts
+ * for the docs API to discover all grammars.
  */
 function getAllowedReadDirs(): string[] {
   const dirs = [
     path.join(PROJECT_ROOT, 'src/components/blocks'),
     path.join(PROJECT_ROOT, 'src/lib/template'),  // For template grammar
+    path.join(PROJECT_ROOT, 'src/lib/stateLanguage'),  // For expression grammar
     path.join(PROJECT_ROOT, 'content'),
   ];
   // Support custom content directory via environment variable

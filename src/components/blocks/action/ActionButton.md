@@ -18,7 +18,7 @@ A clickable button that triggers actions on child components. When clicked, it f
 
 ## Properties
 - `label` (required): Button text to display
-- `dependsOn` (optional): Prerequisite conditions before button is enabled
+- `dependsOn` (optional): State language expression that must be truthy for the button to be enabled. See [State Language Expressions](../../../lib/stateLanguage/expr.pegjs.md) for syntax.
 
 ## State
 - `isDisabled`: Whether the button is currently disabled
@@ -78,18 +78,30 @@ Note the wiring: `NumericalGrader` targets the input (`answer`) to get its value
 
 ### Conditional Enable
 
+Use state language expressions to enable/disable the button based on component state:
+
 ```olx:playground
 <Vertical id="conditional_demo">
   <Markdown>Describe Piaget's stages of cognitive development:</Markdown>
   <TextArea id="essay" rows="3" placeholder="Start typing..." />
   <LLMFeedback id="fb" />
-  <ActionButton label="Submit for Feedback" dependsOn="essay:filled">
+  <ActionButton label="Submit for Feedback" dependsOn="@essay.value">
     <LLMAction target="fb">
       Evaluate this description of Piaget's stages. Check for accuracy and completeness:
       <Ref target="essay" />
     </LLMAction>
   </ActionButton>
 </Vertical>
+```
+
+More complex conditions are also supported:
+
+```olx:code
+<!-- Enable when essay has at least 50 words -->
+<ActionButton label="Submit" dependsOn="wordcount(@essay.value) >= 50">
+
+<!-- Enable when quiz is answered correctly -->
+<ActionButton label="Continue" dependsOn="@quiz.correct === correctness.correct">
 ```
 
 ## Related Blocks

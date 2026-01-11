@@ -3,16 +3,14 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
+import { GRAMMAR_DIRS } from '../lib/grammarDirs';
 
-const blocksDir = 'src/components/blocks';
-const templateDir = 'src/lib/template';
 const outputFile = 'src/generated/parserRegistry.ts';
 
 async function generateParserRegistry() {
-  const parserFiles = [
-    ...(await glob(`${blocksDir}/**/_*Parser.js`)),
-    ...(await glob(`${templateDir}/**/_*Parser.js`))
-  ];
+  const parserFiles = (await Promise.all(
+    GRAMMAR_DIRS.map(dir => glob(`${dir}/**/_*Parser.js`))
+  )).flat();
 
   // Use a Map to dedupe by extension (first found wins)
   const entriesMap = new Map();

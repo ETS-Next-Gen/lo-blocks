@@ -272,7 +272,6 @@ export interface LoBlock {
     id: string,
     attributes: Record<string, any>,
     tag: string,
-    rawParsed: any,
     idMap: IdMap,
     provenance: Provenance,
     entry: any,
@@ -331,8 +330,7 @@ export type BlueprintKidEntry =
   | { type: 'text'; text: string }
   | { type: 'xml'; xml: string }
   | { type: 'cdata'; value: string }
-  | { type: 'html'; tag: string; attributes: any; kids: BlueprintKidEntry[] }
-  | { type: 'node'; rawParsed: any };
+  | { type: 'html'; tag: string; attributes: any; kids: BlueprintKidEntry[] };
 
 /**
  * OlxDomNode - a node in the dynamic OLX DOM tree.
@@ -392,7 +390,6 @@ export interface OlxJson {
   tag: string;
   attributes: Record<string, JSONValue>;  // Always present, defaults to {} in parsing
   provenance: Provenance;
-  rawParsed: JSONValue;
   [key: string]: JSONValue | undefined;
 }
 

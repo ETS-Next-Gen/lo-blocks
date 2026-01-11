@@ -69,8 +69,7 @@ const llmActionParser = async function({ id, rawParsed, tag, attributes, provena
     tag,
     attributes,
     kids,
-    provenance,
-    rawParsed: { [tag]: rawParsed[tag], ':@': rawParsed[':@'] }
+    provenance
   });
 };
 

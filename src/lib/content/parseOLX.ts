@@ -94,7 +94,6 @@ function shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, prove
       id: storeId,
       attributes: entry.attributes,
       tag: entry.tag,
-      rawParsed: entry.rawParsed,
       idMap,
       provenance,
       entry,
@@ -477,8 +476,6 @@ export async function parseOLX(
 
           // Get detailed information about both the existing and duplicate entries
           const existingEntry = idMap[storeId];
-          const existingXml = existingEntry.rawParsed ? JSON.stringify(existingEntry.rawParsed, null, 2) : 'N/A';
-          const duplicateXml = entry.rawParsed ? JSON.stringify(entry.rawParsed, null, 2) : 'N/A';
 
           errors.push({
             type: 'duplicate_id',
@@ -489,22 +486,18 @@ export async function parseOLX(
    Tag: <${existingEntry.tag || 'unknown'}>
    Attributes: ${JSON.stringify(existingEntry.attributes || {}, null, 2)}
    Content: ${existingEntry.text || existingEntry.kids || 'N/A'}
-   Full XML: ${existingXml.slice(0, 500)}${existingXml.length > 500 ? '...' : ''}
 
 🔍 DUPLICATE ENTRY (Line ${entry.line || '?'}, Column ${entry.column || '?'}):
    Tag: <${entry.tag || tag || 'unknown'}>
    Attributes: ${JSON.stringify(entry.attributes || attributes || {}, null, 2)}
    Content: ${entry.text || entry.kids || node.text || 'N/A'}
-   Full XML: ${duplicateXml.slice(0, 500)}${duplicateXml.length > 500 ? '...' : ''}
 
 💡 TIP: If these appear to be different elements, they likely have the same text content and are generating the same hash ID. Add explicit id="unique_name" attributes to distinguish them.`,
             location: { line: entry.line, column: entry.column },
             technical: {
               duplicateId: storeId,
               existingEntry: existingEntry,
-              duplicateEntry: entry,
-              existingXml: existingXml,
-              duplicateXml: duplicateXml
+              duplicateEntry: entry
             }
           });
           // Skip the duplicate, keep the first one

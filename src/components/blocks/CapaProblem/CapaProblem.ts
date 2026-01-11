@@ -158,7 +158,7 @@ async function capaParser({ id, tag, attributes, provenance, rawParsed, storeEnt
     }
   }
 
-  const entry = { id, tag, attributes, provenance, rawParsed, kids: kidsParsed };
+  const entry = { id, tag, attributes, provenance, kids: kidsParsed };
   storeEntry(id, entry);
   return id;
 }

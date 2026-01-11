@@ -384,13 +384,6 @@ creates an instance of that block. The OLX is the archival format-of-record for 
   "provenance": [
     "inline"
   ],
-  "rawParsed": {
-    "Markdown": [
-      {
-        "#text": "# Hello World!\n- One\n- Two\n- Three",
-      }
-    ]
-  },
   "tag": "Markdown"
 }
 ```

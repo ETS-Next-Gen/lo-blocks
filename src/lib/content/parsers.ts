@@ -5,15 +5,18 @@
 // Provides a parser combinator library for transforming OLX (Open Learning XML) into
 // the internal block representation. Key parsers include:
 //
-// - `childParser()`: Decorator that allows for simple parser functions handling the 95% use-case of just transforming children
-// - `blocks`: A childParser that processes lists of block elements (filters out text/comments)
-// - `text`: Extracts plain text content with whitespace handling
+// - `childParser()`: Decorator for simple parser functions (handles the 95% case of just transforming children)
+// - `blocks`: Processes lists of block elements (filters out text/comments)
+// - `blocks.allowHTML()`: Same as blocks but includes HTML tags and text as mixed content
+// - `text`: Extracts plain text content with whitespace handling options
 // - `peggyParser()`: Integrates PEG grammars for domain-specific formats
-// - `xml`/`xmljson`: Raw XML passthrough for complex content
+// - `xml`: Reconstructs XML as a string (lossy - use sparingly)
+// - `ignore`: Returns empty kids array (for blocks that don't need child parsing)
 //
 // Preserves provenance (file/line info) for debugging and authoring.
 //
-// This enables Learning Observer to support a range of teacher-friendly ways of structuring content.
+// Future: An `xmljson` parser could pass through raw fast-xml-parser JSON for blocks
+// that need to do their own XML processing. Not currently implemented.
 //
 import { XMLBuilder } from 'fast-xml-parser';
 import path from 'path';
@@ -217,7 +220,6 @@ export function childParser(fn: ChildParserFn, nameOverride?: string) {
         tag,
         attributes,
         provenance,
-        rawParsed,
         kids: await fn({ ...ctx, rawKids: kids, rawParsed: tagParsed, ...options }),
         ...(metadata || {})  // Spread metadata fields flat into entry
       };
@@ -262,7 +264,7 @@ export const xml = {
     return [
       {
         type: 'xml', xml: builder.build(rawParsed),
-        id, tag, attributes, provenance, rawParsed
+        id, tag, attributes, provenance
       }
     ];
   },
@@ -344,13 +346,6 @@ export const blocks = Object.assign(blocksFactory, {
   // blocks.allowHTML() returns parser that includes HTML/text as mixed content
   allowHTML: () => createBlocksParser({ allowHTML: true })()
 });
-
-// Pass through the parsed XML, in the fast-xml-parser format
-const xmljsonFactory = childParser(({ rawParsed }) => [
-  { type: 'node', rawParsed }
-]);
-xmljsonFactory.staticKids = () => [];
-export const xmljson = xmljsonFactory;
 
 function extractString(extracted: ReturnType<typeof extractTextFromXmlNodes>): string {
   if (typeof extracted === 'string') {

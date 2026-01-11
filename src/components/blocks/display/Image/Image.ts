@@ -29,7 +29,6 @@ function imageParser({ id, tag, attributes, provenance, rawParsed, storeEntry, p
     tag,
     attributes: { ...otherAttributes, src: resolvedSrc },
     provenance,
-    rawParsed,
     kids: []
   };
 

@@ -353,9 +353,6 @@ function createDuplicateIdError(
   duplicateBlock: any,
   sourceFile: ProvenanceURI
 ): OLXLoadingError {
-  const existingXml = existingBlock.rawParsed ? JSON.stringify(existingBlock.rawParsed, null, 2) : 'N/A';
-  const duplicateXml = duplicateBlock.rawParsed ? JSON.stringify(duplicateBlock.rawParsed, null, 2) : 'N/A';
-
   return {
     type: 'duplicate_id',
     file: sourceFile,
@@ -367,22 +364,18 @@ function createDuplicateIdError(
    Tag: <${existingBlock.tag || 'unknown'}>
    Attributes: ${JSON.stringify(existingBlock.attributes || {}, null, 2)}
    Content: ${existingBlock.text || existingBlock.kids || 'N/A'}
-   Full XML: ${existingXml.slice(0, 500)}${existingXml.length > 500 ? '...' : ''}
 
 🔍 DUPLICATE ENTRY (in current file ${sourceFile}):
    Line: ${duplicateBlock.line || '?'}, Column: ${duplicateBlock.column || '?'}
    Tag: <${duplicateBlock.tag || 'unknown'}>
    Attributes: ${JSON.stringify(duplicateBlock.attributes || {}, null, 2)}
    Content: ${duplicateBlock.text || duplicateBlock.kids || 'N/A'}
-   Full XML: ${duplicateXml.slice(0, 500)}${duplicateXml.length > 500 ? '...' : ''}
 
 💡 TIP: IDs must be unique across ALL files in the project. Use different id attributes or prefixes for each file.`,
     technical: {
       duplicateId: blockId,
       existingEntry: existingBlock,
-      duplicateEntry: duplicateBlock,
-      existingXml: existingXml,
-      duplicateXml: duplicateXml
+      duplicateEntry: duplicateBlock
     }
   };
 }

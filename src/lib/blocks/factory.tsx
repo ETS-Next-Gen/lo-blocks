@@ -144,6 +144,9 @@ function createBlock(config: BlueprintInput): LoBlock {
     validateAttributes: effectiveConfig.validateAttributes,
     requiresGrader: effectiveConfig.requiresGrader,
     getDisplayAnswer: effectiveConfig.getDisplayAnswer,
+    slots: effectiveConfig.slots,
+    answerDisplayMode: effectiveConfig.answerDisplayMode,
+    getDisplayAnswers: effectiveConfig.getDisplayAnswers,
   }
   assertUnimplemented(parsed.reducers, 'reducers');
 

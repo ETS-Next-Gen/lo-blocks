@@ -36,6 +36,11 @@ const RatioGrader = createGrader({
   },
   validateAttributes: validateNumericalAttributes,
   validateInputs: validateRatioInputs,
+  answerDisplayMode: 'per-input',
+  // Show answer next to numerator only (not both inputs)
+  getDisplayAnswers: (props) => ({
+    numerator: props.displayAnswer ?? props.answer,
+  }),
 });
 
 export default RatioGrader;

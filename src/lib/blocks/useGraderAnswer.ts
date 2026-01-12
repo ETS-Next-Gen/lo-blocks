@@ -186,12 +186,12 @@ export function useGraderAnswer(props: RuntimeProps) {
         slot = resolveInputSlot(props, graderId, graderBlueprint, graderInstance);
         if (slot) {
           const answers = graderBlueprint.getDisplayAnswers(graderProps);
+          // Only show if this slot has an answer; undefined means "no answer for this slot"
           displayAnswer = answers?.[slot];
         }
-      }
-
-      // Fall back to single display answer
-      if (displayAnswer === undefined && graderBlueprint.getDisplayAnswer) {
+        // Don't fall back to getDisplayAnswer when using slot-based answers
+      } else if (graderBlueprint.getDisplayAnswer) {
+        // Single display answer (no slots)
         displayAnswer = graderBlueprint.getDisplayAnswer(graderProps);
       }
     }

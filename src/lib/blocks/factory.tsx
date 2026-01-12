@@ -22,7 +22,7 @@ import { BlockBlueprintSchema, LoBlock, Fields, OLXTag } from '../types';
 // Factory-local type aliases derived from the schema
 type BlueprintInput = z.input<typeof BlockBlueprintSchema>;
 type BlueprintReg = Omit<BlueprintInput, "namespace">;
-import { baseAttributes, slot } from './attributeSchemas';
+import { baseAttributes, inputMixin, graderMixin } from './attributeSchemas';
 import * as state from '@/lib/state';
 
 function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
@@ -37,13 +37,9 @@ function assertUnimplemented<T>(field: T | undefined, fieldName: string) {
 // Standard fields for graders
 const GRADER_FIELDS = ['correct', 'message', 'showAnswer', 'submitCount'];
 
-// Standard attributes for graders - passthrough preserves additional attrs (like src for PEG parsers)
-// Individual graders can use .strict() on their schema to catch attribute typos
-const GRADER_ATTRIBUTES = baseAttributes.extend({
-  answer: z.string().optional(),
-  displayAnswer: z.string().optional(),
-  target: z.string().optional(),
-}).passthrough();
+// Standard attributes for graders - uses graderMixin from attributeSchemas
+// passthrough preserves additional attrs (like src for PEG parsers)
+const GRADER_ATTRIBUTES = baseAttributes.extend(graderMixin.shape).passthrough();
 
 /**
  * Extend config for grader blocks.
@@ -88,18 +84,22 @@ function applyGraderExtensions(config: BlueprintInput): BlueprintInput {
 
 /**
  * Extend config for input blocks.
- * Adds slot attribute for multi-input grader support.
+ * Adds input mixin attributes (slot) for multi-input grader support.
  */
 function applyInputExtensions(config: BlueprintInput): BlueprintInput {
   if (!config.isInput) return config;
 
-  // Extend attributes with slot - merge by combining shapes
-  let extendedSchema = config.attributes ?? baseAttributes.extend(slot);
+  // Extend attributes with inputMixin - merge by combining shapes
+  const inputShape = inputMixin.shape;
+  let extendedSchema = config.attributes ?? baseAttributes.extend(inputShape);
   if (config.attributes && config.attributes._def?.typeName === 'ZodObject') {
     const existingShape = (config.attributes as z.ZodObject<any>).shape;
-    // Only add slot if not already defined
-    if (!existingShape.slot) {
-      const mergedShape = { ...existingShape, ...slot };
+    // Only add input attrs if not already defined
+    const attrsToAdd = Object.fromEntries(
+      Object.entries(inputShape).filter(([k]) => !existingShape[k])
+    );
+    if (Object.keys(attrsToAdd).length > 0) {
+      const mergedShape = { ...existingShape, ...attrsToAdd };
       // Preserve strictness - check if original was strict
       const isStrict = config.attributes._def?.unknownKeys === 'strict';
       extendedSchema = isStrict

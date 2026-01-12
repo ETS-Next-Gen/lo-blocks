@@ -74,6 +74,47 @@ export const graderMixin = z.object({
 });
 
 // =============================================================================
+// Problem Mode Attributes (shared by CapaProblem, MarkupProblem, etc.)
+// =============================================================================
+
+/**
+ * Valid showanswer modes - when the Show Answer button becomes available.
+ */
+export const showAnswerModes = [
+  'always',     // Always visible
+  'never',      // Never visible
+  'attempted',  // After first attempt (submitCount > 0)
+  'answered',   // After correct answer
+  'closed',     // After attempts exhausted (submitCount >= maxAttempts)
+  'finished',   // answered OR closed (default)
+] as const;
+
+export type ShowAnswerMode = typeof showAnswerModes[number];
+
+/**
+ * Schema for showanswer attribute - validates against allowed modes.
+ */
+export const showAnswerAttr = z.enum(showAnswerModes).optional()
+  .describe('When to show answer: always, never, attempted, answered, closed, finished');
+
+/**
+ * Schema for maxAttempts attribute - positive integer string or empty for unlimited.
+ */
+export const maxAttemptsAttr = z.string()
+  .regex(/^(\d+)?$/, 'Must be a positive integer or empty for unlimited')
+  .optional()
+  .describe('Maximum submission attempts (empty = unlimited)');
+
+/**
+ * Problem mixin - added to problem container blocks.
+ * Contains attributes for attempts and answer visibility.
+ */
+export const problemMixin = z.object({
+  maxAttempts: maxAttemptsAttr,
+  showanswer: showAnswerAttr,
+});
+
+// =============================================================================
 // Optional Spreads (blocks include manually if needed)
 // =============================================================================
 

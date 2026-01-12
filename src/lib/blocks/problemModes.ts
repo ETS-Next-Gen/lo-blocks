@@ -11,19 +11,10 @@
 //
 
 import { correctness as correctnessEnum } from './correctness';
+import { showAnswerModes, type ShowAnswerMode } from './attributeSchemas';
 
-/**
- * Show answer modes - when the Show Answer button becomes available.
- *
- * Modes requiring due dates (past_due, correct_or_past_due) are not yet implemented.
- */
-export type ShowAnswerMode =
-  | 'always'     // Always visible
-  | 'never'      // Never visible
-  | 'attempted'  // After first attempt (submitCount > 0)
-  | 'answered'   // After correct answer
-  | 'closed'     // After attempts exhausted (submitCount >= maxAttempts)
-  | 'finished';  // answered OR closed
+// Re-export for consumers
+export type { ShowAnswerMode };
 
 // Future modes (require due date infrastructure):
 // | 'past_due'           // After due date passes
@@ -185,19 +176,13 @@ export function parseMaxAttempts(value: string | number | undefined | null): num
 
 /**
  * All valid showanswer mode values (for validation/documentation).
+ * Re-exported from attributeSchemas for convenience.
  */
-export const SHOWANSWER_MODES: ShowAnswerMode[] = [
-  'always',
-  'never',
-  'attempted',
-  'answered',
-  'closed',
-  'finished',
-];
+export const SHOWANSWER_MODES = showAnswerModes;
 
 /**
  * Check if a string is a valid showanswer mode.
  */
 export function isValidShowAnswerMode(mode: string): mode is ShowAnswerMode {
-  return SHOWANSWER_MODES.includes(mode as ShowAnswerMode);
+  return (showAnswerModes as readonly string[]).includes(mode);
 }

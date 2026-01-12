@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import * as blocks from '@/lib/blocks';
 import { ignore } from '@/lib/content/parsers';
-import { baseAttributes } from '@/lib/blocks/attributeSchemas';
+import { baseAttributes, problemMixin } from '@/lib/blocks/attributeSchemas';
 import _CapaFooter from './_CapaFooter';
 
 const CapaFooter = blocks.dev({
@@ -12,13 +12,11 @@ const CapaFooter = blocks.dev({
   component: _CapaFooter,
   internal: true,
   // Note: Receives runtime attributes from _CapaProblem
-  attributes: baseAttributes.extend({
+  attributes: baseAttributes.extend(problemMixin.shape).extend({
     target: z.string().optional().describe('Comma-separated grader IDs to trigger'),
     hintsTarget: z.string().nullish().describe('DemandHints ID for hint button'),
     label: z.string().optional().describe('Override check button label'),
-    // Problem mode settings (passed from CapaProblem)
-    maxAttempts: z.string().optional().describe('Maximum submission attempts'),
-    showanswer: z.string().optional().describe('When to show answer: always, never, attempted, answered, closed, finished'),
+    // Runtime state (passed from CapaProblem)
     submitCount: z.number().optional().describe('Current submission count'),
     correct: z.string().optional().describe('Current correctness state'),
   }),

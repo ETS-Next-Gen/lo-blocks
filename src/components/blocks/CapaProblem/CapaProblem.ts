@@ -25,6 +25,7 @@
  * thoughtful or robust itself. It is not.
  */
 
+import { z } from 'zod';
 import { dev, refToReduxKey } from '@/lib/blocks';
 import { isBlockTag } from '@/lib/util';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
@@ -182,7 +183,11 @@ const CapaProblem = dev({
   component: _CapaProblem,
   fields,
   isGrader: true,  // Metagrader: aggregates child grader states
-  attributes: baseAttributes.strict(),
+  attributes: baseAttributes.extend({
+    maxAttempts: z.string().optional().describe('Maximum submission attempts (empty = unlimited)'),
+    showanswer: z.string().optional().describe('When to show answer: always, never, attempted, answered, closed, finished'),
+    displayName: z.string().optional().describe('Display name for the problem'),
+  }),
 });
 
 export default CapaProblem;

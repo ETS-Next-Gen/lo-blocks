@@ -1,136 +1,280 @@
-// src/lib/editor/tools.js
+// src/lib/editor/tools.ts
 //
-// Tools for the editor LLM assistant.
+// LLM tools for the editor assistant.
+//
+// Tool names and parameters match Claude Code SDK conventions for familiarity.
+// Uses the storage provider abstraction for file operations.
+//
+// TOOL SUMMARY
+// ------------
+// Edit         - Modify current file using search-and-replace
+// Read         - Read files from storage
+// Glob         - Find files by pattern
+// Grep         - Search file contents
+// GetBlockInfo - Get documentation for OLX blocks (custom, not SDK)
 //
 
 import { parseOLX } from '@/lib/content/parseOLX';
 import { isPEGContentExtension, getParserForExtension } from '@/generated/parserRegistry';
+import { NetworkStorageProvider } from '@/lib/storage/providers/network';
+import type { StorageProvider } from '@/lib/storage/types';
+
+// Default storage provider for client-side use
+const defaultStorage = new NetworkStorageProvider();
+
+interface EditorToolsParams {
+  /** Called with new content string when LLM applies an edit */
+  onApplyEdit?: (content: string) => void;
+  /** Returns current file content */
+  getCurrentContent?: () => string;
+  /** Returns current file type (e.g., 'olx', 'chatpeg') */
+  getFileType?: () => string;
+  /** Storage provider for file operations (defaults to NetworkStorageProvider) */
+  storage?: StorageProvider;
+}
 
 /**
  * Create the tools array for useChat().
- *
- * @param {object} params
- * @param {function} params.onApplyEdit - Called with new content string when LLM applies an edit
- * @param {function} params.getCurrentContent - Returns current file content
- * @param {function} params.getFileType - Returns current file type
  */
-export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType }) {
+export function createEditorTools({
+  onApplyEdit,
+  getCurrentContent,
+  getFileType,
+  storage = defaultStorage,
+}: EditorToolsParams) {
   return [
+    // =========================================================================
+    // Edit - Modify current file using search-and-replace
+    // =========================================================================
     {
       type: "function",
       function: {
-        name: "applyEdit",
-        description: "Apply an edit to the current file. The edit is applied immediately. Only use this when the user explicitly asks you to modify, change, add, or fix something in the file. Do NOT use this for summarizing, explaining, or answering questions about the content.",
+        name: "Edit",
+        description: "Edit the current file using search-and-replace. The old_string must be unique in the file (include surrounding context if needed). Use replace_all: true for global renames. Only use when asked to modify content.",
         parameters: {
           type: "object",
           properties: {
-            oldText: {
+            old_string: {
               type: "string",
-              description: "The exact text to find and replace. Must be non-empty and unique in the file (include surrounding context if needed)."
+              description: "Exact text to find and replace. Must be unique unless replace_all is true."
             },
-            newText: {
+            new_string: {
               type: "string",
-              description: "The replacement text"
+              description: "Replacement text."
             },
-            replaceAll: {
+            replace_all: {
               type: "boolean",
-              description: "If true, replace ALL occurrences (use for global renames). Default: false (requires unique match)."
-            },
-            explanation: {
-              type: "string",
-              description: "Brief explanation of why this change is being made (like a commit message)"
+              description: "If true, replace ALL occurrences. Default: false."
             }
           },
-          required: ["oldText", "newText"]
+          required: ["old_string", "new_string"]
         }
       },
-      callback: async ({ oldText, newText, replaceAll = false, explanation }) => {
-        // Validate oldText is not empty
-        if (!oldText || oldText.trim() === '') {
-          return 'Error: oldText cannot be empty. You must specify exact text to replace.';
+      callback: async ({ old_string, new_string, replace_all = false }: {
+        old_string: string;
+        new_string: string;
+        replace_all?: boolean;
+      }) => {
+        // Validate old_string is not empty
+        if (!old_string || old_string.trim() === '') {
+          return 'Error: old_string cannot be empty.';
         }
 
         const currentContent = getCurrentContent?.() || '';
         const fileType = getFileType?.() || 'olx';
 
         // Count occurrences
-        const occurrences = currentContent.split(oldText).length - 1;
+        const occurrences = currentContent.split(old_string).length - 1;
 
         if (occurrences === 0) {
-          return `Error: Could not find the text to replace. Make sure oldText exactly matches text in the file.`;
+          return 'Error: Could not find text to replace. Ensure old_string exactly matches.';
         }
 
-        if (occurrences > 1 && !replaceAll) {
-          return `Error: Found ${occurrences} occurrences of that text. Either include more surrounding context to make it unique, or set replaceAll: true for a global rename.`;
+        if (occurrences > 1 && !replace_all) {
+          return `Error: Found ${occurrences} occurrences. Include more context to make unique, or set replace_all: true.`;
         }
 
         // Apply the edit
-        const newContent = replaceAll
-          ? currentContent.replaceAll(oldText, newText)
-          : currentContent.replace(oldText, newText);
+        const newContent = replace_all
+          ? currentContent.replaceAll(old_string, new_string)
+          : currentContent.replace(old_string, new_string);
 
         // Validate content by parsing it
         if (fileType === 'olx' || fileType === 'xml') {
-          // OLX files - full parse with nice error messages
           try {
             const { errors } = await parseOLX(newContent, ['editor']);
             if (errors.length > 0) {
-              const errorMessages = errors.map(e => e.message).join('\n\n---\n\n');
-              return `Error (${errors.length} issue${errors.length > 1 ? 's' : ''}):\n\n${errorMessages}`;
+              const messages = errors.map(e => e.message).join('\n\n---\n\n');
+              return `Error (${errors.length} issue${errors.length > 1 ? 's' : ''}):\n\n${messages}`;
             }
-          } catch (err) {
-            // parseOLX throws on XML syntax errors
+          } catch (err: any) {
             return `Error: ${err.message}`;
           }
         } else if (isPEGContentExtension(fileType)) {
-          // PEG content files (.chatpeg, .sortpeg, etc.)
           const parser = getParserForExtension(fileType);
           if (parser) {
             try {
               parser.parse(newContent);
-            } catch (err) {
+            } catch (err: any) {
               const loc = err.location?.start;
-              const locStr = loc ? ` (line ${loc.line}, column ${loc.column})` : '';
+              const locStr = loc ? ` (line ${loc.line}, col ${loc.column})` : '';
               return `Error${locStr}: ${err.message}`;
             }
           }
         }
 
-        // All good - apply the edit
+        // Apply the edit
         if (onApplyEdit) {
           onApplyEdit(newContent);
         }
-        const msg = replaceAll
+        return replace_all
           ? `Replaced ${occurrences} occurrences`
-          : `Edit applied`;
-        return explanation ? `${msg}: ${explanation}` : msg;
+          : 'Edit applied';
       }
     },
+
+    // =========================================================================
+    // Read - Read file contents
+    // =========================================================================
     {
       type: "function",
       function: {
-        name: "getBlockInfo",
-        description: "Get detailed documentation for a specific OLX block, including examples.",
+        name: "Read",
+        description: "Read a file from the content library. Use to see how other files are structured.",
         parameters: {
           type: "object",
           properties: {
-            blockName: {
+            file_path: {
               type: "string",
-              description: "The block name, e.g. 'Markdown', 'ChoiceInput', 'MasteryBank'"
+              description: "Path to the file, e.g. 'sba/psychology/psychology_sba.olx'"
             }
           },
-          required: ["blockName"]
+          required: ["file_path"]
         }
       },
-      callback: async ({ blockName }) => {
+      callback: async ({ file_path }: { file_path: string }) => {
         try {
-          const res = await fetch(`/api/docs/${blockName}`);
+          const result = await storage.read(file_path);
+          return `# ${file_path}\n\n\`\`\`\n${result.content}\n\`\`\``;
+        } catch (err: any) {
+          return `Error: ${err.message}`;
+        }
+      }
+    },
+
+    // =========================================================================
+    // Glob - Find files by pattern
+    // =========================================================================
+    {
+      type: "function",
+      function: {
+        name: "Glob",
+        description: "Find files matching a glob pattern. Use to discover content structure.",
+        parameters: {
+          type: "object",
+          properties: {
+            pattern: {
+              type: "string",
+              description: "Glob pattern, e.g. '**/*.olx', 'sba/**/*psychology*'"
+            },
+            path: {
+              type: "string",
+              description: "Base path to search from. Default: content root."
+            }
+          },
+          required: ["pattern"]
+        }
+      },
+      callback: async ({ pattern, path }: { pattern: string; path?: string }) => {
+        try {
+          const files = await storage.glob(pattern, path);
+          if (files.length === 0) {
+            return 'No files found matching pattern.';
+          }
+          return `Found ${files.length} files:\n${files.join('\n')}`;
+        } catch (err: any) {
+          return `Error: ${err.message}`;
+        }
+      }
+    },
+
+    // =========================================================================
+    // Grep - Search file contents
+    // =========================================================================
+    {
+      type: "function",
+      function: {
+        name: "Grep",
+        description: "Search file contents for a pattern. Returns matching lines with file and line number.",
+        parameters: {
+          type: "object",
+          properties: {
+            pattern: {
+              type: "string",
+              description: "Search pattern (regex supported)."
+            },
+            path: {
+              type: "string",
+              description: "Base path to search. Default: content root."
+            },
+            include: {
+              type: "string",
+              description: "Glob pattern for files to include, e.g. '*.olx'"
+            }
+          },
+          required: ["pattern"]
+        }
+      },
+      callback: async ({ pattern, path, include }: {
+        pattern: string;
+        path?: string;
+        include?: string;
+      }) => {
+        try {
+          const matches = await storage.grep(pattern, { basePath: path, include });
+          if (matches.length === 0) {
+            return 'No matches found.';
+          }
+          const formatted = matches
+            .slice(0, 50)
+            .map(m => `${m.path}:${m.line}: ${m.content}`)
+            .join('\n');
+          const suffix = matches.length > 50 ? `\n\n... and ${matches.length - 50} more` : '';
+          return `Found ${matches.length} matches:\n\n${formatted}${suffix}`;
+        } catch (err: any) {
+          return `Error: ${err.message}`;
+        }
+      }
+    },
+
+    // =========================================================================
+    // GetBlockInfo - Get OLX block documentation (custom tool)
+    // =========================================================================
+    {
+      type: "function",
+      function: {
+        name: "GetBlockInfo",
+        description: "Get detailed documentation for an OLX block, including examples.",
+        parameters: {
+          type: "object",
+          properties: {
+            block_name: {
+              type: "string",
+              description: "Block name, e.g. 'Markdown', 'CapaProblem', 'Chat', 'LLMFeedback'"
+            }
+          },
+          required: ["block_name"]
+        }
+      },
+      callback: async ({ block_name }: { block_name: string }) => {
+        try {
+          const res = await fetch(`/api/docs/${block_name}`);
           if (!res.ok) {
-            return `Block '${blockName}' not found.`;
+            return `Block '${block_name}' not found.`;
           }
           const data = await res.json();
           if (!data.ok) {
-            return `Block '${blockName}' not found.`;
+            return `Block '${block_name}' not found.`;
           }
 
           const block = data.block;
@@ -152,38 +296,8 @@ export function createEditorTools({ onApplyEdit, getCurrentContent, getFileType 
           }
 
           return result;
-        } catch (err) {
-          return `Error fetching block info: ${err.message}`;
-        }
-      }
-    },
-    {
-      type: "function",
-      function: {
-        name: "readFile",
-        description: "Read another file from the content library. Use this to see how other files are structured or to reference their content.",
-        parameters: {
-          type: "object",
-          properties: {
-            path: {
-              type: "string",
-              description: "Path to the file, e.g. 'sba/psychology/operant-mastery.olx' or 'demos/text-changer-demo.olx'"
-            }
-          },
-          required: ["path"]
-        }
-      },
-      callback: async ({ path }) => {
-        try {
-          const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
-          if (!res.ok) {
-            const err = await res.json();
-            return `Error reading file: ${err.error || res.statusText}`;
-          }
-          const content = await res.text();
-          return `# ${path}\n\n\`\`\`\n${content}\n\`\`\``;
-        } catch (err) {
-          return `Error reading file: ${err.message}`;
+        } catch (err: any) {
+          return `Error: ${err.message}`;
         }
       }
     },

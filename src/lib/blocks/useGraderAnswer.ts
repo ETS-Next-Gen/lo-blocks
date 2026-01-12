@@ -103,8 +103,16 @@ function resolveInputSlot(
   // Get input IDs (same inference logic as grader action)
   let inputIds: OlxKey[] = [];
   try {
-    // Create a temporary props-like object for inference
-    const graderProps = { ...props, id: graderId };
+    // Find the grader's actual nodeInfo by traversing from root
+    // We can't just swap id - inferRelatedNodes uses nodeInfo for traversal
+    const graderNodeInfo = getAllNodes(props.nodeInfo, {
+      selector: n => n.node?.id === graderId
+    })[0];
+
+    if (!graderNodeInfo) return undefined;
+
+    // Create props with grader's nodeInfo for proper traversal
+    const graderProps = { ...props, id: graderId, nodeInfo: graderNodeInfo };
     inputIds = inferRelatedNodes(graderProps, {
       selector: n => n.loBlock && isInput(n.loBlock),
       infer: true,

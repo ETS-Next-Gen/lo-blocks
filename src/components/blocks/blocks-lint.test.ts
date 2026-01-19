@@ -171,3 +171,44 @@ describe('Blueprint files should not contain JSX', () => {
     });
   });
 });
+
+describe('Block components should not access idMap directly', () => {
+  const files = findComponentFiles();
+
+  it('finds component files to check', () => {
+    expect(files.length).toBeGreaterThan(0);
+  });
+
+  files.forEach(filePath => {
+    const name = relative(BLOCKS_DIR, filePath);
+
+    it(name, () => {
+      const content = readFileSync(filePath, 'utf-8');
+      const lines = content.split('\n');
+      const violations = [];
+
+      lines.forEach((line, index) => {
+        // Skip comments and imports
+        if (line.trim().startsWith('//') || line.trim().startsWith('import ')) return;
+
+        // Check for direct idMap access patterns (excluding function parameters)
+        // Match: idMap[, idMap., idMap.get(
+        if (line.match(/idMap\s*[\[\.]/) || line.match(/idMap\.get\(/)) {
+          // Skip if in a function signature/parameter list
+          if (!line.match(/\(.*idMap.*\)/)) {
+            violations.push({ line: index + 1, content: line.trim() });
+          }
+        }
+      });
+
+      if (violations.length === 0) return;
+
+      const details = violations.map(v => `  Line ${v.line}: ${v.content}`).join('\n');
+      expect.fail(
+        `Found direct idMap access (use useBlock/useOlxJson instead):\n${details}\n\n` +
+        `Block components should use useBlock, useKids, useOlxJson instead of accessing idMap directly.\n` +
+        `This ensures content loading is handled properly.`
+      );
+    });
+  });
+});

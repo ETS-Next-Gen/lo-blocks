@@ -78,22 +78,15 @@ function shuffleArray<T>(array: T[]): T[] {
 
 /**
  * Extract initialPosition from right-side items
- * Needs idMap to resolve block references
+ * Uses the rightKid data directly from pairs (no idMap lookup)
  */
-function extractDisplayPositions(pairs: any[], idMap: any) {
+function extractDisplayPositions(pairs: any[]) {
   const positioned: { pairIndex: number; position: number }[] = [];
   const unpositioned: number[] = [];
 
   pairs.forEach((pair, pairIndex) => {
-    // Resolve the block reference using idMap and refToOlxKey
-    const rightBlock = idMap[refToOlxKey(pair.rightId)];
-    if (!rightBlock) {
-      // If no initialPosition, item is unpositioned (normal case)
-      unpositioned.push(pairIndex);
-      return;
-    }
-
-    const position = rightBlock.attributes?.initialPosition;
+    // rightKid already contains the block data from parsing
+    const position = pair.rightKid?.attributes?.initialPosition;
 
     if (position !== undefined) {
       const pos = parseInt(position, 10) - 1; // Convert to 0-based
@@ -109,8 +102,8 @@ function extractDisplayPositions(pairs: any[], idMap: any) {
 /**
  * Build initial right-side order (respects initialPosition, then shuffles remaining)
  */
-function buildInitialRightOrder(pairs: any[], shuffle: boolean, idMap: any) {
-  const { positioned, unpositioned } = extractDisplayPositions(pairs, idMap);
+function buildInitialRightOrder(pairs: any[], shuffle: boolean) {
+  const { positioned, unpositioned } = extractDisplayPositions(pairs);
   const result = new Array(pairs.length);
 
   // Place items with initialPosition at specified positions
@@ -337,7 +330,7 @@ export default function _MatchingInput(props) {
 
   // Initialize rightOrder on first render if not already set
   if (!rightOrder || rightOrder.length === 0) {
-    rightOrder = buildInitialRightOrder(pairs, shuffle, idMap);
+    rightOrder = buildInitialRightOrder(pairs, shuffle);
     setRightOrder(rightOrder);
   }
 

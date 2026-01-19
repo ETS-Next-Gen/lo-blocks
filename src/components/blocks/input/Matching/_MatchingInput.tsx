@@ -86,8 +86,14 @@ function extractDisplayPositions(pairs: any[], idMap: any) {
 
   pairs.forEach((pair, pairIndex) => {
     // Resolve the block reference using idMap and refToOlxKey
-    const rightBlock = idMap?.[refToOlxKey(pair.rightId)];
-    const position = rightBlock?.attributes?.initialPosition;
+    const rightBlock = idMap[refToOlxKey(pair.rightId)];
+    if (!rightBlock) {
+      // If no initialPosition, item is unpositioned (normal case)
+      unpositioned.push(pairIndex);
+      return;
+    }
+
+    const position = rightBlock.attributes?.initialPosition;
 
     if (position !== undefined) {
       const pos = parseInt(position, 10) - 1; // Convert to 0-based

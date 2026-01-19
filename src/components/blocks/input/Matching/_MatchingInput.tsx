@@ -6,6 +6,7 @@ import { useKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 import { isInputReadOnly, useGraderAnswer } from '@/lib/blocks';
 import { extendIdPrefix } from '@/lib/blocks/idResolver';
+import { HandleCommon } from '@/components/common/DragHandle';
 import { fields } from './MatchingInput';
 import type { MatchingArrangement, ItemPosition } from './types';
 import './MatchingInput.css';
@@ -155,6 +156,8 @@ function ConnectionLines({
 
   // Update positions on resize/scroll using ResizeObserver
   useEffect(() => {
+    if (!containerRef.current) return;
+
     const updatePositions = () => {
       if (!containerRef.current) return;
 
@@ -181,9 +184,10 @@ function ConnectionLines({
     // Initial update
     updatePositions();
 
-    // Use ResizeObserver for robust reflow handling
-    const resizeObserver = new ResizeObserver(() => updatePositions());
-    if (containerRef.current) {
+    // Use ResizeObserver for robust reflow handling (browser only)
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => updatePositions());
       resizeObserver.observe(containerRef.current);
     }
 
@@ -192,7 +196,9 @@ function ConnectionLines({
     window.addEventListener('scroll', updatePositions, true);
 
     return () => {
-      resizeObserver.disconnect();
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       window.removeEventListener('resize', updatePositions);
       window.removeEventListener('scroll', updatePositions, true);
     };
@@ -424,31 +430,19 @@ export default function _MatchingInput(props) {
                   </div>
                 </div>
 
-                {/* Connection point - RIGHT SIDE */}
-                <div
-                  data-matching-point
-                  data-item-id={pair.leftId}
-                  draggable={!readOnly}
-                  onDragStart={() => handleDragStart(pair.leftId, 'left')}
-                  onDragEnd={() => {
-                    setDraggedId(null);
-                    setDraggedSide(null);
-                  }}
+                {/* Connection handle - RIGHT SIDE */}
+                <HandleCommon
+                  pattern="connect-the-dots"
+                  title="Click to select and match"
+                  dataMatchingPointId={pair.leftId}
+                  className={`
+                    absolute right-0 top-0 bottom-0 w-8
+                    border-r-2 transition-all
+                    ${isSelected ? 'bg-blue-200 border-blue-400' : isMatched ? 'bg-green-100 border-green-300' : 'border-gray-200'}
+                  `}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleConnectionPointClick(pair.leftId, 'left');
-                  }}
-                  className={`matching-point absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 rounded-full transition-all
-                    ${isSelected ? 'bg-blue-500 scale-125' : isDragged ? 'bg-blue-300 scale-125' : isMatched ? 'bg-green-500' : 'bg-gray-400'}
-                    ${!readOnly ? 'cursor-grab hover:scale-110' : 'cursor-default'}
-                  `}
-                  onDragEnter={(e) => {
-                    if (draggedSide === 'right') {
-                      e.currentTarget.classList.add('opacity-75');
-                    }
-                  }}
-                  onDragLeave={(e) => {
-                    e.currentTarget.classList.remove('opacity-75');
                   }}
                 />
 
@@ -503,31 +497,19 @@ export default function _MatchingInput(props) {
                   </div>
                 </div>
 
-                {/* Connection point - LEFT SIDE */}
-                <div
-                  data-matching-point
-                  data-item-id={rightId}
-                  draggable={!readOnly}
-                  onDragStart={() => handleDragStart(rightId, 'right')}
-                  onDragEnd={() => {
-                    setDraggedId(null);
-                    setDraggedSide(null);
-                  }}
+                {/* Connection handle - LEFT SIDE */}
+                <HandleCommon
+                  pattern="connect-the-dots"
+                  title="Click to select and match"
+                  dataMatchingPointId={rightId}
+                  className={`
+                    absolute left-0 top-0 bottom-0 w-8
+                    border-l-2 transition-all
+                    ${isSelected ? 'bg-blue-200 border-blue-400' : isMatchedByStudent ? 'bg-green-100 border-green-300' : 'border-gray-200'}
+                  `}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleConnectionPointClick(rightId, 'right');
-                  }}
-                  className={`matching-point absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 rounded-full transition-all
-                    ${isSelected ? 'bg-blue-500 scale-125' : isDragged ? 'bg-blue-300 scale-125' : isMatchedByStudent ? 'bg-green-500' : 'bg-gray-400'}
-                    ${!readOnly ? 'cursor-grab hover:scale-110' : 'cursor-default'}
-                  `}
-                  onDragEnter={(e) => {
-                    if (draggedSide === 'left') {
-                      e.currentTarget.classList.add('opacity-75');
-                    }
-                  }}
-                  onDragLeave={(e) => {
-                    e.currentTarget.classList.remove('opacity-75');
                   }}
                 />
               </div>
@@ -544,7 +526,7 @@ export default function _MatchingInput(props) {
             ? selectedSide === 'left'
               ? 'Click a definition on the right to connect'
               : 'Click an item on the left to connect'
-            : 'Click dots to match • or drag dots between columns'}
+            : 'Click dots to match'}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
  * Grading logic for matching exercises
  */
 
-import { CORRECTNESS } from '@/lib/blocks/correctness';
+import { correctness } from '@/lib/blocks/correctness';
 import type { MatchingArrangement, MatchingGradingResult } from './types';
 
 /**
@@ -35,11 +35,11 @@ export function gradeMatching(props: any, { input, inputApi }: any) {
   // Determine correctness
   let correct: string;
   if (score === 1) {
-    correct = CORRECTNESS.CORRECT;
+    correct = correctness.correct;
   } else if (correctMatches === 0) {
-    correct = CORRECTNESS.INCORRECT;  // No correct matches (including blank) = incorrect
+    correct = correctness.incorrect;  // No correct matches (including blank) = incorrect
   } else {
-    correct = CORRECTNESS.PARTIALLY_CORRECT;  // Some but not all correct
+    correct = correctness.partiallyCorrect;  // Some but not all correct
   }
 
   return {

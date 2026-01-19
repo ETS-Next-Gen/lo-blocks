@@ -79,20 +79,21 @@ function shuffleArray<T>(array: T[]): T[] {
 /**
  * Extract initialPosition from right-side items
  * Uses the rightKid data directly from pairs (no idMap lookup)
+ * Returns positioned and unpositioned right items by their ID
  */
 function extractDisplayPositions(pairs: any[]) {
-  const positioned: { pairIndex: number; position: number }[] = [];
-  const unpositioned: number[] = [];
+  const positioned: { rightId: string; position: number }[] = [];
+  const unpositioned: string[] = [];
 
-  pairs.forEach((pair, pairIndex) => {
+  pairs.forEach((pair) => {
     // rightKid already contains the block data from parsing
-    const position = pair.rightKid?.attributes?.initialPosition;
+    const position = pair.rightKid.attributes?.initialPosition;
 
     if (position !== undefined) {
       const pos = parseInt(position, 10) - 1; // Convert to 0-based
-      positioned.push({ pairIndex, position: pos });
+      positioned.push({ rightId: pair.rightId, position: pos });
     } else {
-      unpositioned.push(pairIndex);
+      unpositioned.push(pair.rightId);
     }
   });
 
@@ -101,15 +102,16 @@ function extractDisplayPositions(pairs: any[]) {
 
 /**
  * Build initial right-side order (respects initialPosition, then shuffles remaining)
+ * Returns array of right-side item IDs in display order
  */
-function buildInitialRightOrder(pairs: any[], shuffle: boolean) {
+function buildInitialRightOrder(pairs: any[], shuffle: boolean): string[] {
   const { positioned, unpositioned } = extractDisplayPositions(pairs);
-  const result = new Array(pairs.length);
+  const result = new Array(pairs.length) as (string | undefined)[];
 
   // Place items with initialPosition at specified positions
-  positioned.forEach(({ pairIndex, position }) => {
+  positioned.forEach(({ rightId, position }) => {
     if (position >= 0 && position < pairs.length) {
-      result[position] = pairIndex;
+      result[position] = rightId;
     }
   });
 
@@ -130,7 +132,7 @@ function buildInitialRightOrder(pairs: any[], shuffle: boolean) {
     }
   });
 
-  return result;
+  return result as string[];
 }
 
 /**
@@ -560,9 +562,10 @@ export default function _MatchingInput(props) {
 
         {/* Right column */}
         <div className="matching-right flex-1 space-y-3">
-          {rightOrder.map((pairIndex) => {
-            const pair = pairs[pairIndex];
-            const rightId = pair.rightId;
+          {rightOrder.map((rightId) => {
+            const pair = pairs.find(p => p.rightId === rightId);
+            if (!pair) return null; // Skip if pair not found (shouldn't happen)
+
             const isSelected = selectedId === rightId && selectedSide === 'right';
             const isMatchedByStudent = Object.values(arrangement).includes(rightId);
             const canConnect = selectedId !== null && selectedSide !== null && selectedSide !== 'right';
@@ -580,7 +583,7 @@ export default function _MatchingInput(props) {
                     <MatchingItemContent
                       props={props}
                       kid={pair.rightKid}
-                      itemIdPrefix={extendIdPrefix(props, ['right', pairIndex]).idPrefix}
+                      itemIdPrefix={extendIdPrefix(props, ['right', pair.pairIndex]).idPrefix}
                     />
                   </div>
                 </div>

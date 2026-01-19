@@ -364,8 +364,32 @@ export default function _MatchingInput(props) {
   const handleConnectionPointClick = (itemId: string, side: 'left' | 'right') => {
     if (readOnly) return;
 
-    // If clicking the same item, deselect
+    // If clicking the same item, toggle disconnect (if connected) or deselect
     if (selectedId === itemId && selectedSide === side) {
+      // For left items, check if they're connected and disconnect
+      if (side === 'left' && arrangement[itemId] !== undefined) {
+        const newArrangement = { ...arrangement };
+        delete newArrangement[itemId];
+        setArrangement(newArrangement);
+        setSelectedId(null);
+        setSelectedSide(null);
+        return;
+      }
+      // For right items, find and remove the connection pointing to it
+      if (side === 'right') {
+        const leftItemWithConnection = Object.entries(arrangement).find(
+          ([_, rightId]) => rightId === itemId
+        )?.[0];
+        if (leftItemWithConnection) {
+          const newArrangement = { ...arrangement };
+          delete newArrangement[leftItemWithConnection];
+          setArrangement(newArrangement);
+          setSelectedId(null);
+          setSelectedSide(null);
+          return;
+        }
+      }
+      // Not connected - just deselect
       setSelectedId(null);
       setSelectedSide(null);
       return;
@@ -384,6 +408,18 @@ export default function _MatchingInput(props) {
       const rightId = selectedSide === 'left' ? itemId : selectedId;
 
       const newArrangement = { ...arrangement };
+
+      // Remove any existing connection from this left item
+      delete newArrangement[leftId];
+
+      // Remove any existing connections TO this right item (from other left items)
+      Object.keys(newArrangement).forEach((key) => {
+        if (newArrangement[key] === rightId) {
+          delete newArrangement[key];
+        }
+      });
+
+      // Create the new connection
       newArrangement[leftId] = rightId;
       setArrangement(newArrangement);
 

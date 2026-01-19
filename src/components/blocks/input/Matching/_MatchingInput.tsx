@@ -341,12 +341,18 @@ export default function _MatchingInput(props) {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Track mouse movement for preview lines
+  // Helper to deselect
+  const handleDeselect = () => {
+    setSelectedId(null);
+    setSelectedSide(null);
+  };
+
+  // Track mouse movement for preview lines and handle deselection
   useEffect(() => {
-    if (!containerRef.current || !selectedId) return;
+    if (!containerRef.current) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
+      if (!containerRef.current || !selectedId) return;
       const rect = containerRef.current.getBoundingClientRect();
       setMousePos({
         x: e.clientX - rect.left,
@@ -358,12 +364,29 @@ export default function _MatchingInput(props) {
       setMousePos(null);
     };
 
+    const handleContainerClick = (e: MouseEvent) => {
+      // If selectedId exists and click was on the container background (not a target/handle)
+      if (selectedId && e.target === containerRef.current) {
+        handleDeselect();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedId) {
+        handleDeselect();
+      }
+    };
+
     containerRef.current.addEventListener('mousemove', handleMouseMove);
     containerRef.current.addEventListener('mouseleave', handleMouseLeave);
+    containerRef.current.addEventListener('click', handleContainerClick);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       containerRef.current?.removeEventListener('mousemove', handleMouseMove);
       containerRef.current?.removeEventListener('mouseleave', handleMouseLeave);
+      containerRef.current?.removeEventListener('click', handleContainerClick);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedId]);
 

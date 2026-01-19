@@ -27,7 +27,11 @@ import type { RuntimeProps } from '@/lib/types';
 import type { MatchingArrangement } from './types';
 
 export const fields = state.fields([
-  'arrangement'   // Current matching: left item ID → right item ID
+  'arrangement',  // Current matching: left item ID → right item ID
+  'selectedId',   // Currently selected item ID for matching
+  'selectedSide', // Side of selected item: 'left' | 'right'
+  'draggedId',    // Currently dragged item ID
+  'draggedSide'   // Side of dragged item: 'left' | 'right'
 ]);
 
 /**

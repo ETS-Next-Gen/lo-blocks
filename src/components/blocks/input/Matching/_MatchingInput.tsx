@@ -9,7 +9,6 @@ import { extendIdPrefix } from '@/lib/blocks/idResolver';
 import { HandleCommon } from '@/components/common/DragHandle';
 import { fields } from './MatchingInput';
 import type { MatchingArrangement, ItemPosition } from './types';
-import './MatchingInput.css';
 
 /**
  * Render a single matching item's content
@@ -318,11 +317,13 @@ export default function _MatchingInput(props) {
 
   // State management
   const [arrangement, setArrangement] = useReduxState(props, fields.arrangement, {});
-  const [rightOrder, setRightOrder] = useState(() => buildInitialRightOrder(pairs, shuffle, idMap));
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedSide, setSelectedSide] = useState<'left' | 'right' | null>(null);
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [draggedSide, setDraggedSide] = useState<'left' | 'right' | null>(null);
+  const [selectedId, setSelectedId] = useReduxState(props, fields.selectedId, null);
+  const [selectedSide, setSelectedSide] = useReduxState(props, fields.selectedSide, null);
+  const [draggedId, setDraggedId] = useReduxState(props, fields.draggedId, null);
+  const [draggedSide, setDraggedSide] = useReduxState(props, fields.draggedSide, null);
+  // Derive display order from initialPosition and shuffle (not state - computed on each render)
+  const rightOrder = buildInitialRightOrder(pairs, shuffle, idMap);
+  // useState-ok: ephemeral visual feedback state (mouse position for preview line only)
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
   const readOnly = isInputReadOnly(props);

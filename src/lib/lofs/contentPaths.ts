@@ -1,4 +1,4 @@
-// s../lib/lofs/contentPaths.ts
+// src/lib/lofs/contentPaths.ts
 //
 // Server-side utilities for content path validation and resolution.
 //

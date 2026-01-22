@@ -1,4 +1,4 @@
-// s../lib/lofs/providers/stacked.ts
+// src/lib/lofs/providers/stacked.ts
 //
 // Stacked storage provider - layered content access with fallback chain.
 //

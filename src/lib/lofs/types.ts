@@ -1,4 +1,4 @@
-// s../lib/lofs/types.ts
+// src/lib/lofs/types.ts
 //
 // Type definitions for the storage abstraction layer.
 //
@@ -100,6 +100,8 @@ export interface StorageProvider {
   read(path: string): Promise<ReadResult>;
   write(path: string, content: string, options?: WriteOptions): Promise<void>;
   update(path: string, content: string): Promise<void>;
+  delete(path: string): Promise<void>;
+  rename(oldPath: string, newPath: string): Promise<void>;
   listFiles(selection?: FileSelection): Promise<UriNode>;
 
   /**

@@ -1,4 +1,4 @@
-// s../lib/lofs/providers/index.ts
+// src/lib/lofs/providers/index.ts
 //
 // Re-exports storage provider implementations.
 //

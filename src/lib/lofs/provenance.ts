@@ -1,4 +1,4 @@
-// s../lib/lofs/provenance.ts
+// src/lib/lofs/provenance.ts
 //
 // Provenance utilities - tracking content source and location for debugging.
 //

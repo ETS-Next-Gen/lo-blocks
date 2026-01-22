@@ -1,4 +1,4 @@
-// s../lib/lofs/contentPaths.test.ts
+// src/lib/lofs/contentPaths.test.ts
 //
 // Security tests for content path validation.
 // This is the first line of defense at the API route level.

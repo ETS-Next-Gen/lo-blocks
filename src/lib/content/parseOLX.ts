@@ -298,7 +298,7 @@ function extractSiblingMetadata(
 export async function parseOLX(
   xml,
   provenance: Provenance,
-  provider?: import('../storage').StorageProvider
+  provider?: import('../lofs').StorageProvider
 ) {
   const idMap: IdMap = {};
 

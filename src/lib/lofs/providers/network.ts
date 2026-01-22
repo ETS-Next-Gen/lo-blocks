@@ -83,8 +83,10 @@ export class NetworkStorageProvider implements StorageProvider {
     if (lofsPath.startsWith(prefix)) {
       return lofsPath.slice(prefix.length) as OlxRelativePath;
     }
-    // Fallback: return as-is if prefix doesn't match (shouldn't happen)
-    return lofsPath as OlxRelativePath;
+    // Fallback: if prefix doesn't match, return empty string
+    // This shouldn't happen in normal operation (namespace mismatch is a bug)
+    console.warn(`fromLofsPath: path "${lofsPath}" doesn't match namespace "${this.namespace}"`);
+    return '' as OlxRelativePath;
   }
 
   /**

@@ -51,8 +51,9 @@ This is a **live preview** of your content. Edit on the left, see changes on the
   </CapaProblem>
 </Vertical>`;
 
-// Create a single storage provider instance
-const storage = new NetworkStorageProvider();
+// Create a single storage provider instance for content files
+// Paths are relative to this namespace (OlxRelativePath), automatically converted to LofsPath
+const storage = new NetworkStorageProvider('content');
 
 // Redux state wrapper - matches /edit/ pattern for content persistence
 function useEditComponentState(field, provenance, defaultState) {

@@ -8,7 +8,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import PreviewPane from '@/components/common/PreviewPane';
 import Spinner from '@/components/common/Spinner';
-import { ChatPanel, DataPanel, DocsPanel, FilesPanel, SearchPanel } from './panels';
+import { DataPanel, DocsPanel, FilesPanel, SearchPanel } from './panels';
+import EditorLLMChat from '@/components/chat/EditorLLMChat';
 import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider, VersionConflictError } from '@/lib/storage';
 import type { UriNode } from '@/lib/storage/types';
@@ -432,12 +433,15 @@ function StudioPageContent() {
                   />
                 )}
                 {sidebarTab === 'chat' && (
-                  <ChatPanel
-                    filePath={filePath}
-                    content={content}
-                    onApplyEdit={setContent}
-                    onOpenFile={handleFileSelect}
-                  />
+                  <div className="sidebar-panel chat-panel">
+                    <EditorLLMChat
+                      path={filePath}
+                      content={content}
+                      onApplyEdit={setContent}
+                      onOpenFile={handleFileSelect}
+                      theme="dark"
+                    />
+                  </div>
                 )}
                 {sidebarTab === 'search' && (
                   <SearchPanel

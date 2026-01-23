@@ -12,7 +12,14 @@ const provider = new FileStorageProvider('./content');
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const pattern = url.searchParams.get('pattern');
-  const basePath = url.searchParams.get('path') || undefined;
+  let basePath = url.searchParams.get('path') || undefined;
+
+  // Strip namespace prefix if present (client sends "content/..." but FileStorageProvider expects relative paths)
+  if (basePath?.startsWith('content/')) {
+    basePath = basePath.slice('content/'.length) || undefined;
+  } else if (basePath === 'content') {
+    basePath = undefined;
+  }
 
   try {
     if (pattern) {

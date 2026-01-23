@@ -77,16 +77,18 @@ export class NetworkStorageProvider implements StorageProvider {
    *
    * @param lofsPath - Storage path with namespace (e.g., "content/demos/foo.olx")
    * @returns OlxRelativePath relative to namespace (e.g., "demos/foo.olx")
+   * @throws Error if path doesn't match expected namespace
    */
   private fromLofsPath(lofsPath: LofsPath): OlxRelativePath {
     const prefix = `${this.namespace}/`;
     if (lofsPath.startsWith(prefix)) {
       return lofsPath.slice(prefix.length) as OlxRelativePath;
     }
-    // Fallback: if prefix doesn't match, return empty string
-    // This shouldn't happen in normal operation (namespace mismatch is a bug)
-    console.warn(`fromLofsPath: path "${lofsPath}" doesn't match namespace "${this.namespace}"`);
-    return '' as OlxRelativePath;
+    // Namespace mismatch is a bug - fail fast
+    throw new Error(
+      `NetworkStorageProvider namespace mismatch: expected path starting with "${prefix}" but got "${lofsPath}". ` +
+      `This indicates the wrong storage provider was used or paths were corrupted.`
+    );
   }
 
   /**

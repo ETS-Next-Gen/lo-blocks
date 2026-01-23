@@ -5,13 +5,30 @@
 // Defines the StorageProvider interface and related types used across
 // all storage implementations (file, network, memory, git, postgres).
 //
-import { ProvenanceURI } from '../types';
+import { ProvenanceURI, JSONValue } from '../types';
 import { FileType } from './fileTypes';
+
+/**
+ * Provider-specific metadata for change detection.
+ *
+ * Opaque to consumers. Each provider extends this with what it actually tracks.
+ * Must be JSON-serializable - all properties should be primitives, arrays, or plain objects.
+ *
+ * Examples:
+ * - FileStorageProvider: { stat: fs.Stats } (all properties are numbers/strings)
+ * - MemoryStorageProvider: {} (empty for in-memory)
+ * - GitStorageProvider: { hash: string } (commit hash)
+ * - PostgresStorageProvider: { version: number, updated_at: string } (DB metadata)
+ *
+ * Future: May be branded or converted to a union type for better type safety.
+ */
+export type ProviderMetadata = JSONValue;
 
 export interface XmlFileInfo {
   id: ProvenanceURI;
   type: FileType;
-  _metadata: any;
+  /** Provider-specific metadata for change detection (opaque to consumers). */
+  _metadata: ProviderMetadata;
   content: string;
 }
 

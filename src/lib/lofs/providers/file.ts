@@ -23,6 +23,18 @@ import {
   VersionConflictError,
 } from '../types';
 import { fileTypes } from '../fileTypes';
+import type { JSONValue } from '../../types';
+
+/**
+ * FileStorageProvider-specific metadata structure.
+ * Extends the generic ProviderMetadata type with filesystem-specific fields.
+ *
+ * Note: fs.Stats is a class instance, but all its properties are JSON-serializable
+ * (numbers, strings, booleans). We cast to JSONValue when storing in _metadata.
+ */
+interface FileMetadata {
+  stat: any; // fs.Stats - properties are all numbers/strings
+}
 
 /*
  * =============================================================================
@@ -369,15 +381,16 @@ export class FileStorageProvider implements StorageProvider {
           found[id] = true;
           const prev = previous[id];
           if (prev) {
-            if (fileChanged(prev._metadata.stat, stat)) {
+            const prevMetadata = prev._metadata as unknown as FileMetadata;
+            if (fileChanged(prevMetadata.stat, stat)) {
               const content = await fs.readFile(fullPath, 'utf-8');
-              changed[id] = { id, type, _metadata: { stat }, content };
+              changed[id] = { id, type, _metadata: { stat } as unknown as JSONValue, content };
             } else {
               unchanged[id] = prev;
             }
           } else {
             const content = await fs.readFile(fullPath, 'utf-8');
-            added[id] = { id, type, _metadata: { stat }, content };
+            added[id] = { id, type, _metadata: { stat } as unknown as JSONValue, content };
           }
         }
       }

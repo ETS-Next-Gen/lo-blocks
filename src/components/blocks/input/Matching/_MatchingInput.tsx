@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 import { isInputReadOnly, useGraderAnswer, refToOlxKey } from '@/lib/blocks';
@@ -262,10 +262,10 @@ export default function _MatchingInput(props) {
   const rightKidBlockMap = Object.fromEntries(rightKidIds.map((id, i) => [id, rightKidBlocks[i]]));
 
   // State management
-  const [arrangement, setArrangement] = useReduxState(props, fields.arrangement, {});
-  const [selectedId, setSelectedId] = useReduxState(props, fields.selectedId, null);
-  const [selectedSide, setSelectedSide] = useReduxState(props, fields.selectedSide, null);
-  let [endOrder, setEndOrder] = useReduxState(props, fields.endOrder, []);
+  const [arrangement, setArrangement] = useFieldState(props, fields.arrangement, {});
+  const [selectedId, setSelectedId] = useFieldState(props, fields.selectedId, null);
+  const [selectedSide, setSelectedSide] = useFieldState(props, fields.selectedSide, null);
+  let [endOrder, setEndOrder] = useFieldState(props, fields.endOrder, []);
 
   // Compute endOrder with positioned items if not already set
   if ((!endOrder || endOrder.length === 0)) {

@@ -3,7 +3,7 @@
 
 import React, { useEffect } from 'react';
 import { useBlock } from '@/lib/render';
-import { useReduxInput, useReduxState, useValue } from '@/lib/state';
+import { useReduxInput, useFieldState, useValue } from '@/lib/state';
 import HistoryBar from '@/components/common/HistoryBar';
 
 function HistoryContent({ props, current }) {
@@ -23,10 +23,10 @@ export function _UseHistory(props) {
   const defaultIndex = defaultHistory.length > 0 ? defaultHistory.length - 1 : 0;
 
   const [value] = useReduxInput(props, fields.value, effectiveTarget);
-  const [history, setHistory] = useReduxState(props, fields.history, defaultHistory);
-  const [index, setIndex] = useReduxState(props, fields.index, defaultIndex);
-  const [showHistory] = useReduxState(props, fields.showHistory, true);
-  const [follow] = useReduxState(props, fields.follow, true);
+  const [history, setHistory] = useFieldState(props, fields.history, defaultHistory);
+  const [index, setIndex] = useFieldState(props, fields.index, defaultIndex);
+  const [showHistory] = useFieldState(props, fields.showHistory, true);
+  const [follow] = useFieldState(props, fields.follow, true);
 
   useEffect(() => {
     if (!value) return;

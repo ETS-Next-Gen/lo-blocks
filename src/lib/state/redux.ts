@@ -102,8 +102,8 @@ export const selectFromStore = <T>(
   return fieldSelector(state, undefined, field, options);
 };
 
-// Synchronous getter for Redux state - mirrors useReduxState but without re-renders
-// Same signature as useReduxState: (props, field, fallback, { id, tag })
+// Synchronous getter for Redux state - mirrors useFieldState but without re-renders
+// Same signature as useFieldState: (props, field, fallback, { id, tag })
 // Gets store from singleton internally (initialized in storeWrapper.tsx)
 export const getReduxState = (
   props: any,
@@ -159,7 +159,7 @@ export function updateReduxField(
 }
 
 
-export function useReduxState(
+export function useFieldState(
   props,
   field: FieldInfo,
   fallback,
@@ -183,7 +183,7 @@ type ReduxAggregateOptions<T, R = any> = {
 /**
  * React hook to read the same field for multiple component IDs.
  *
- * This mirrors `useReduxState`'s read-path but aggregates the values from
+ * This mirrors `useFieldState`'s read-path but aggregates the values from
  * several IDs into either an array (default) or an object keyed by ID.
  */
 export function useAggregate<T = any, R = any>(
@@ -313,7 +313,7 @@ export function useReduxCheckbox(
   opts: { id?: string; tag?: string } = {}
 ) {
   assertValidField(field);
-  const [checked, setChecked] = useReduxState(props, field, fallback, opts);
+  const [checked, setChecked] = useFieldState(props, field, fallback, opts);
   const onChange = useCallback((event) => setChecked(event.target.checked), [setChecked]);
   return [checked, { name: field.name, checked, onChange }];
 }

@@ -25,7 +25,7 @@ import { legacy_createStore as createStore } from 'redux';
 
 import * as lo_event from 'lo_event';
 
-import { store, extendSettings, useReduxState } from '@/lib/state';
+import { store, extendSettings, useFieldState } from '@/lib/state';
 import { settings } from '@/lib/state/settings';
 import { editorFields } from '@/lib/state/editorFields';
 import { replayToEvent, filterByContext, LoggedEvent, AppState } from '@/lib/replay';
@@ -145,17 +145,17 @@ interface StoreWrapperInnerProps {
 function StoreWrapperInner({ children, reduxID }: StoreWrapperInnerProps) {
   // Read debug settings from Redux (using debugLogEvent with "debug" context)
   // These are separate from app's event context hierarchy
-  const [panelOpen, setPanelOpen] = useReduxState(
+  const [panelOpen, setPanelOpen] = useFieldState(
     { store: reduxStore, logEvent: debugLogEvent },
     settings.debugPanel,
     false
   );
-  const [replayMode, setReplayMode] = useReduxState(
+  const [replayMode, setReplayMode] = useFieldState(
     { store: reduxStore, logEvent: debugLogEvent },
     settings.debugReplayMode,
     false
   );
-  const [replayEventIndex, setReplayEventIndex] = useReduxState(
+  const [replayEventIndex, setReplayEventIndex] = useFieldState(
     { store: reduxStore, logEvent: debugLogEvent },
     settings.debugReplayEventIndex,
     -1

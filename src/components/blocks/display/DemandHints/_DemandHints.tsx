@@ -2,14 +2,14 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 
 export default function _DemandHints(props) {
   const { fields, kids } = props;
 
   // Track how many hints have been revealed (0 = none shown)
-  const [hintsRevealed] = useReduxState(props, fields.hintsRevealed, 0);
+  const [hintsRevealed] = useFieldState(props, fields.hintsRevealed, 0);
 
   // Extract block kids (each is a Hint)
   const hintBlocks = React.useMemo(() => {

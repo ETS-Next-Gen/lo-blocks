@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { DisplayError } from '@/lib/util/debug';
 import { useGraderAnswer } from '@/lib/blocks/useGraderAnswer';
 
@@ -10,7 +10,7 @@ export default function _TabularMCQ(props) {
   const { fields, kids } = props;
 
   // State: { rowId: colIndex } for radio, { rowId: [colIndex, ...] } for checkbox
-  const [value, setValue] = useReduxState(props, fields.value, {});
+  const [value, setValue] = useFieldState(props, fields.value, {});
 
   // Show answer support - displayAnswer is { rowId: correctColIndex }
   const { showAnswer, displayAnswer } = useGraderAnswer(props);

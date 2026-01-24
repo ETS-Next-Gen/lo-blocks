@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 import { isInputReadOnly, useGraderAnswer, refToOlxKey } from '@/lib/blocks';
@@ -36,9 +36,9 @@ export default function _SortableInput(props) {
   const kidBlockMap = Object.fromEntries(kidIds.map((id, i) => [id, kidBlocks[i]]));
 
   // State management
-  const [arrangement, setArrangement] = useReduxState(props, fields.arrangement, []);
-  const [draggedItem, setDraggedItem] = useReduxState(props, fields.draggedItem, null);
-  const [dragOverIndex, setDragOverIndex] = useReduxState(props, fields.dragOverIndex, null);
+  const [arrangement, setArrangement] = useFieldState(props, fields.arrangement, []);
+  const [draggedItem, setDraggedItem] = useFieldState(props, fields.draggedItem, null);
+  const [dragOverIndex, setDragOverIndex] = useFieldState(props, fields.dragOverIndex, null);
   const { showAnswer } = useGraderAnswer(props);
   const readOnly = isInputReadOnly(props);
 

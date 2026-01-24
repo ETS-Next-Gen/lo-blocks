@@ -7,14 +7,14 @@ import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
 import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
-import { useReduxState, settings } from '@/lib/state';
+import { useFieldState, settings } from '@/lib/state';
 import { useContentLoader } from '@/lib/content/useContentLoader';
 import { ComponentError } from '@/lib/types';
 
 export default function PreviewPage() {
   const params = useParams();
   const id = params.id as string;
-  const [debug] = useReduxState(
+  const [debug] = useFieldState(
     {},
     settings.debug,
     false,
@@ -100,7 +100,7 @@ export default function PreviewPage() {
 }
 
 // TODO for hack above
-// We have a hack where useReduxState requires props. We should do several things:
+// We have a hack where useFieldState requires props. We should do several things:
 // * Make a 'global' or 'common' props object to use outside of render. Use a sentinel tag and ID
 //   - Consider a shared props constructor or factory, so things don't go out of sync?
 //   - 2 might places might not be enough to merit that.

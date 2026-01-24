@@ -3,7 +3,7 @@
 
 import React, { useMemo, useEffect, useRef } from 'react';
 import { useBlock } from '@/lib/render';
-import { useReduxState, useFieldSelector, commonFields } from '@/lib/state';
+import { useFieldState, useFieldSelector, commonFields } from '@/lib/state';
 import { extendIdPrefix, toOlxReference } from '@/lib/blocks/idResolver';
 import { correctness } from '@/lib/blocks';
 import { DisplayError } from '@/lib/util/debug';
@@ -187,12 +187,12 @@ export default function _MasteryBank(props) {
     return problemIds.length > 0 ? orderMode.initial(problemIds.length) : 0;
   }, [problemIds.length, orderMode]);
 
-  const [correctStreak, setCorrectStreak] = useReduxState(props, fields.correctStreak, 0);
-  const [completed, setCompleted] = useReduxState(props, fields.completed, false);
-  const [, setCorrect] = useReduxState(props, fields.correct, null);
-  const [modeState, setModeState] = useReduxState(props, fields.modeState, initialModeState);
-  const [firstSubmissionResult, setFirstSubmissionResult] = useReduxState(props, fields.firstSubmissionResult, null);
-  const [attemptNumber, setAttemptNumber] = useReduxState(props, fields.attemptNumber, 0);
+  const [correctStreak, setCorrectStreak] = useFieldState(props, fields.correctStreak, 0);
+  const [completed, setCompleted] = useFieldState(props, fields.completed, false);
+  const [, setCorrect] = useFieldState(props, fields.correct, null);
+  const [modeState, setModeState] = useFieldState(props, fields.modeState, initialModeState);
+  const [firstSubmissionResult, setFirstSubmissionResult] = useFieldState(props, fields.firstSubmissionResult, null);
+  const [attemptNumber, setAttemptNumber] = useFieldState(props, fields.attemptNumber, 0);
 
   // Error: no problems
   if (problemIds.length === 0) {

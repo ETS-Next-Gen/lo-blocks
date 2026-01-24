@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { extendIdPrefix } from '@/lib/blocks/idResolver';
 import { useKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
@@ -30,7 +30,7 @@ export default function _DynamicList(props) {
   const parsedMax = max === undefined ? Infinity : Number(max);
   const parsedStart = Number(start);
 
-  const [count, setCount] = useReduxState(props, fields.count, parsedStart);
+  const [count, setCount] = useFieldState(props, fields.count, parsedStart);
 
   const handleAdd = () => setCount(Math.min(parsedMax, count + 1));
   const handleRemove = () => setCount(Math.max(parsedMin, count - 1));

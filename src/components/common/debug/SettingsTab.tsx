@@ -4,10 +4,10 @@
 //
 'use client';
 
-import { useReduxState, settings } from '@/lib/state';
+import { useFieldState, settings } from '@/lib/state';
 
 export default function SettingsTab() {
-  const [showBlockOverlays, setShowBlockOverlays] = useReduxState(
+  const [showBlockOverlays, setShowBlockOverlays] = useFieldState(
     {},
     settings.debug,
     false,

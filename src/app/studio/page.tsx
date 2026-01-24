@@ -15,7 +15,7 @@ import { NetworkStorageProvider, VersionConflictError } from '@/lib/lofs';
 import type { UriNode } from '@/lib/lofs/types';
 import type { IdMap } from '@/lib/types';
 import { useNotifications, ToastNotifications } from '@/lib/util/debug';
-import { useReduxState, getReduxState, settings } from '@/lib/state';
+import { useFieldState, getReduxState, settings } from '@/lib/state';
 import { editorFields } from '@/lib/state/editorFields';
 import './studio.css';
 
@@ -57,7 +57,7 @@ const storage = new NetworkStorageProvider('content');
 
 // Redux state wrapper - matches /edit/ pattern for content persistence
 function useEditComponentState(field, provenance, defaultState) {
-  return useReduxState(
+  return useFieldState(
     {},
     field,
     defaultState,
@@ -81,7 +81,7 @@ function StudioPageContent() {
   const initialFile = searchParams.get('file') || 'untitled.olx';
 
   // Debug mode toggle (system-wide setting)
-  const [debug, setDebug] = useReduxState({}, settings.debug, false, { tag: 'studio', id: 'studio' });
+  const [debug, setDebug] = useFieldState({}, settings.debug, false, { tag: 'studio', id: 'studio' });
 
   // TODO: Consider moving UI state to redux for analytics
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('chat');

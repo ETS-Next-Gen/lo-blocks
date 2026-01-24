@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { DisplayError } from '@/lib/util/debug';
 
 // Token types for text highlighting (discriminated union on isSpace)
@@ -96,18 +96,18 @@ export default function _TextHighlight(props) {
   }, [parsed.segments]);
 
   // Redux state management - store as array, work with as Set
-  const [selectedArray, setSelectedArray] = useReduxState(props, fields.value, []);
+  const [selectedArray, setSelectedArray] = useFieldState(props, fields.value, []);
   const selectedIndices = useMemo(() => new Set(selectedArray || []), [selectedArray]);
   const setSelectedIndices = (newSet) => setSelectedArray(Array.from(newSet));
 
   // Local state to trigger re-renders during selection
   const [, forceUpdate] = React.useReducer(x => x + 1, 0);
 
-  const [attempts, setAttempts] = useReduxState(props, fields.attempts, 0);
-  const [feedback, setFeedback] = useReduxState(props, fields.feedback, '');
-  const [showAnswer, setShowAnswer] = useReduxState(props, fields.showAnswer, false);
-  const [checked, setChecked] = useReduxState(props, fields.checked, false);
-  const [score, setScore] = useReduxState(props, fields.score, 0);
+  const [attempts, setAttempts] = useFieldState(props, fields.attempts, 0);
+  const [feedback, setFeedback] = useFieldState(props, fields.feedback, '');
+  const [showAnswer, setShowAnswer] = useFieldState(props, fields.showAnswer, false);
+  const [checked, setChecked] = useFieldState(props, fields.checked, false);
+  const [score, setScore] = useFieldState(props, fields.score, 0);
 
   // Refs for DOM elements
   const containerRef = useRef(null);

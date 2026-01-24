@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useBlock } from '@/lib/render';
 import { getBlockByOLXId } from '@/lib/blocks';
 
@@ -16,9 +16,9 @@ function _Course(props) {
   const { chapters = [] } = kids;
 
   // children are { type: 'block', id } objects from parseNode
-  const [selectedChild, setSelectedChild] = useReduxState(props, fields.selectedChild,
+  const [selectedChild, setSelectedChild] = useFieldState(props, fields.selectedChild,
     chapters[0]?.children[0]?.id || null);
-  const [expandedChapter, setExpandedChapter] = useReduxState(props, fields.expandedChapter,
+  const [expandedChapter, setExpandedChapter] = useFieldState(props, fields.expandedChapter,
     chapters[0]?.id || null);
 
   const handleChapterClick = (chapterId) => {

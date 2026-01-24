@@ -3,7 +3,7 @@
 
 import React, { useCallback, useMemo, useEffect } from 'react';
 
-import { useReduxState, updateReduxField } from '@/lib/state';
+import { useFieldState, updateReduxField } from '@/lib/state';
 import { ChatComponent, InputFooter, AdvanceFooter } from '@/components/common/ChatComponent';
 import { DisplayError } from '@/lib/util/debug';
 import { useWaitConditions } from './waitConditions';
@@ -104,7 +104,7 @@ export function _Chat(props) {
    * `index` counts how many raw entries we've consumed
    * (including command entries that never appear in the UI)
    */
-  const [index, setIndex] = useReduxState(
+  const [index, setIndex] = useFieldState(
     props,
     fields.value,
     clipRange.start // start by showing the first block
@@ -137,7 +137,7 @@ export function _Chat(props) {
   /* ----------------------------------------------------------------
    * Advance handler
    * -------------------------------------------------------------- */
-  const [sectionHeader, setSectionHeader] = useReduxState(props, fields.sectionHeader);
+  const [sectionHeader, setSectionHeader] = useFieldState(props, fields.sectionHeader);
 
   const isDisabled = !canAdvance;
 

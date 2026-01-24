@@ -4,8 +4,8 @@
 import { useCallback } from 'react';
 import { ChatComponent, InputFooter } from '@/components/common/ChatComponent';
 import { useChat } from '@/lib/llm/reduxClient';
-import { buildSystemPrompt, getFileType } from '@/lib/editor/context';
-import { createEditorTools } from '@/lib/editor/tools';
+import { buildSystemPrompt, getFileType } from './context';
+import { createEditorTools } from './tools';
 
 /**
  * LLM chat for the editor pane.

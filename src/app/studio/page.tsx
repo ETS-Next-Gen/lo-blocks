@@ -9,7 +9,7 @@ import Link from 'next/link';
 import PreviewPane from '@/components/common/PreviewPane';
 import Spinner from '@/components/common/Spinner';
 import { DataPanel, DocsPanel, FilesPanel, SearchPanel } from './panels';
-import EditorLLMChat from '@/components/chat/EditorLLMChat';
+import EditorLLMChat from './EditorLLMChat';
 import { useDocsData } from '@/lib/docs';
 import { NetworkStorageProvider, VersionConflictError } from '@/lib/lofs';
 import type { UriNode } from '@/lib/lofs/types';

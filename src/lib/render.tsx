@@ -242,6 +242,12 @@ export function render({ node, nodeInfo, runtime }: {
     idPrefix: actualIdPrefix as any,
   };
 
+  // TODO: Store finalRuntime on childNodeInfo for later retrieval by actions
+  // Once OlxDomNode.runtime is uncommented, add:
+  //   childNodeInfo.runtime = finalRuntime;
+  // This captures the correct runtime context (with proper idPrefix, logEvent, etc.)
+  // for when actions/graders later find this node and need to reconstruct props.
+
   // TODO: We probably want more than just data-block-type. Having IDs, etc. will be
   // very nice for debugging and introspection.
 

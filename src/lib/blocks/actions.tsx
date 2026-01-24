@@ -214,14 +214,12 @@ export function grader({ grader, infer = true, slots, inputType }: {
       const loBlock = map[inst.tag];
       const inputNodeInfo = getNodeById(props, id);
 
-      // TODO: Proper runtime context for target blocks
-      // Currently we use the source's runtime context, but this is incomplete:
-      // - The input might be in a different DOM scope (e.g., inside a list) with different idPrefix
-      // - The input might need different side-effect behavior (frozen vs live)
-      // - Runtime context should be computed from the OLX DOM tree relationships
+      // TODO: Use runtime from nodeInfo (when implemented)
+      // Currently we use the source's runtime context, but the input may have been
+      // rendered with a different context (different idPrefix, frozen state, etc).
       //
-      // Design: olxdom should provide a function to compute runtime for a target node
-      // based on its position in the tree. For now, we use source runtime as fallback.
+      // Once OlxDomNode.runtime is uncommented and populated during render(), use:
+      //   const inputRuntime = inputNodeInfo.runtime;
       const inputProps = {
         runtime: props.runtime,
         nodeInfo: inputNodeInfo,
@@ -366,6 +364,13 @@ export async function executeNodeActions(props: RuntimeProps) {
 
     // Create proper props for the action component
     // Match the props structure that render.jsx creates for normal components
+    //
+    // TODO: Use runtime from nodeInfo (when implemented)
+    // Currently we use the button's runtime context, but the action may have been
+    // rendered with a different context (different idPrefix, frozen state, etc).
+    //
+    // Once OlxDomNode.runtime is uncommented and populated during render(), use:
+    //   const actionRuntime = actionNodeInfo.runtime;
     const actionProps = {
       runtime: props.runtime,
 

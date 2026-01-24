@@ -436,7 +436,7 @@ function StudioPageContent() {
                   <div className="sidebar-panel chat-panel">
                     <EditorLLMChat
                       path={filePath}
-                      content={content}
+                      getContent={() => content}
                       onApplyEdit={setContent}
                       onOpenFile={handleFileSelect}
                       theme="dark"

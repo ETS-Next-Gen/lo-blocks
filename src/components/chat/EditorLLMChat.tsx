@@ -12,12 +12,12 @@ import { createEditorTools } from '@/lib/editor/tools';
  *
  * @param {object} props
  * @param {string} props.path - Current file path
- * @param {string} props.content - Current file content
+ * @param {function} props.getContent - Function that returns current file content
  * @param {function} props.onApplyEdit - Called when LLM applies an edit
  * @param {function} props.onOpenFile - Called when LLM wants to open a file
  * @param {'light' | 'dark'} [props.theme='light'] - Color theme
  */
-export default function EditorLLMChat({ path, content, onApplyEdit, onOpenFile, theme = 'light' }) {
+export default function EditorLLMChat({ path, getContent, onApplyEdit, onOpenFile, theme = 'light' }) {
   const initialMessage = path
     ? `Editing: ${path}. Ask me to help with this content.`
     : 'Select a file to edit, then ask me for help.';
@@ -27,18 +27,19 @@ export default function EditorLLMChat({ path, content, onApplyEdit, onOpenFile, 
 
   // Build tools and context fresh at call time - no stale closures
   const handleSendMessage = useCallback(async (text, attachedFile) => {
+    const currentContent = getContent();
     const tools = createEditorTools({
       onApplyEdit,
       onOpenFile,
-      getCurrentContent: () => content,
+      getCurrentContent: getContent,
       getFileType: () => getFileType(path),
       getCurrentPath: () => path,
     });
-    const systemPrompt = await buildSystemPrompt({ path, content });
+    const systemPrompt = await buildSystemPrompt({ path, content: currentContent });
     const attachments = attachedFile ? [attachedFile] : [];
 
     sendMessage(text, { attachments, tools, systemPrompt });
-  }, [path, content, onApplyEdit, onOpenFile, sendMessage]);
+  }, [path, getContent, onApplyEdit, onOpenFile, sendMessage]);
 
   const footer = <InputFooter onSendMessage={handleSendMessage} allowFileUpload theme={theme} />;
 

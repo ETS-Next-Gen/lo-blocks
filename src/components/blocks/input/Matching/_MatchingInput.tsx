@@ -16,7 +16,15 @@ import type { MatchingArrangement, ItemPosition } from './types';
  * Render a single matching item's content
  */
 function MatchingItemContent({ props, kid, itemIdPrefix }) {
-  const { kids } = useKids({ ...props, kids: [kid], idPrefix: itemIdPrefix });
+  const itemRuntime = { ...props.runtime, idPrefix: itemIdPrefix };
+
+  // HACK: Spreading ...props includes deprecated RuntimeProps fields (store, blockRegistry, etc.)
+  // Remove in Phase 6 when old fields removed from RuntimeProps interface
+  const { kids } = useKids({
+    ...props,
+    kids: [kid],
+    runtime: itemRuntime,
+  });
   return <>{kids}</>;
 }
 

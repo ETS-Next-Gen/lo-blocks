@@ -82,7 +82,7 @@ export const CLEAR_OLXJSON = 'CLEAR_OLXJSON';
  * dispatchOlxJson(props, 'inline', parseResult.idMap);
  */
 export function dispatchOlxJson(
-  props: { logEvent: LogEventFn },
+  props: { runtime: { logEvent: LogEventFn } },
   source: string,
   blocks: IdMap
 ): void {
@@ -90,7 +90,7 @@ export function dispatchOlxJson(
     return; // Nothing to dispatch
   }
 
-  props.logEvent(LOAD_OLXJSON, { source, blocks });
+  props.runtime.logEvent(LOAD_OLXJSON, { source, blocks });
 }
 
 /**
@@ -132,11 +132,11 @@ export function dispatchOlxJsonSync(
  * @param id - Block ID being loaded
  */
 export function dispatchOlxJsonLoading(
-  props: { logEvent: LogEventFn },
+  props: { runtime: { logEvent: LogEventFn } },
   source: string,
   id: string
 ): void {
-  props.logEvent(OLXJSON_LOADING, { source, id });
+  props.runtime.logEvent(OLXJSON_LOADING, { source, id });
 }
 
 /**
@@ -148,13 +148,13 @@ export function dispatchOlxJsonLoading(
  * @param error - Error information
  */
 export function dispatchOlxJsonError(
-  props: { logEvent: LogEventFn },
+  props: { runtime: { logEvent: LogEventFn } },
   source: string,
   id: string,
   error: string | Error
 ): void {
   const message = typeof error === 'string' ? error : error.message;
-  props.logEvent(OLXJSON_ERROR, { source, id, error: { message } });
+  props.runtime.logEvent(OLXJSON_ERROR, { source, id, error: { message } });
 }
 
 /**
@@ -164,10 +164,10 @@ export function dispatchOlxJsonError(
  * @param source - Source to clear, or empty/undefined to clear all
  */
 export function dispatchClearOlxJson(
-  props: { logEvent: LogEventFn },
+  props: { runtime: { logEvent: LogEventFn } },
   source?: string
 ): void {
-  props.logEvent(CLEAR_OLXJSON, { source });
+  props.runtime.logEvent(CLEAR_OLXJSON, { source });
 }
 
 // =============================================================================

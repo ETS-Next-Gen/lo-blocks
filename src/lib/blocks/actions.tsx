@@ -184,13 +184,9 @@ export function grader({ grader, infer = true, slots, inputType }: {
   slots?: string[];
   inputType?: 'single' | 'list';
 }) {
-  // TODO: Throughout here, we mix up props in ways which should be cleaner.
-  //
-  // We only have the props for the action source. For the rest, we
-  // have IDs. The hack is we mix in what we need from the input or
-  // the grader, but take the rest from the source.
-  //
-  // This is scaffolding and should be fixed on a future pass.
+  // Props reconstruction: We have full props from the action source (grader).
+  // For inputs and other related blocks, we reconstruct complete props with their
+  // blueprint and nodeInfo. The runtime context is shared from the source props.
 
   const action = async ({ targetId, targetInstance, props }) => {
     const targetNodeInfo = getNodeById(props, targetId);
@@ -205,8 +201,8 @@ export function grader({ grader, infer = true, slots, inputType }: {
       }
     );
 
-    const state = props.store.getState();
-    const map = props.blockRegistry;
+    const state = props.runtime.store.getState();
+    const map = props.runtime.blockRegistry;
 
     // Gather values and APIs from each input (synchronous - blocks are in idMap)
     const inputData = inputIds.map(id => {
@@ -217,8 +213,17 @@ export function grader({ grader, infer = true, slots, inputType }: {
       }
       const loBlock = map[inst.tag];
       const inputNodeInfo = getNodeById(props, id);
-      // HACK: We don't have the input's full props, so copy over fields that downstream code needs
-      const inputProps = { ...props, nodeInfo: inputNodeInfo, id, target: inst.attributes?.target, kids: inst.kids };
+      // Reconstruct complete props with runtime context and input's blueprint
+      const inputProps = {
+        runtime: props.runtime,
+        nodeInfo: inputNodeInfo,
+        id,
+        kids: inst.kids || [],
+        loBlock,
+        fields: loBlock.fields || {},
+        locals: loBlock.locals || {},
+        ...inst.attributes,  // Spread OLX attributes
+      };
 
       const value = loBlock.getValue(inputProps, state, id);
 
@@ -302,8 +307,8 @@ export function grader({ grader, infer = true, slots, inputType }: {
     const currentState = state.application_state?.component?.[scopedTargetId] || {};
     const submitCount = (currentState.submitCount || 0) + 1;
 
-    // Use props.logEvent if available (respects replay mode), fallback to lo_event.logEvent
-    const logEvent = props.logEvent ?? lo_event.logEvent;
+    // Log the result (respects replay mode where logEvent is a no-op)
+    const logEvent = props.runtime.logEvent;
     logEvent('UPDATE_CORRECT', {
       id: scopedTargetId,
       correct: correctnessValue,
@@ -330,7 +335,7 @@ export async function executeNodeActions(props: RuntimeProps) {
     infer: props.infer,
     targets: props.target
   });
-  const map = props.blockRegistry;
+  const map = props.runtime.blockRegistry;
   for (const targetId of ids) {
     const targetInstance = getBlockByOLXId(props, targetId);
     if (!targetInstance) {
@@ -354,12 +359,7 @@ export async function executeNodeActions(props: RuntimeProps) {
     // Create proper props for the action component
     // Match the props structure that render.jsx creates for normal components
     const actionProps = {
-      // Copy essential props from original context
-      olxJsonSources: props.olxJsonSources,
-      blockRegistry: props.blockRegistry,
-      idPrefix: props.idPrefix,  // Preserve prefix so actions update scoped state
-      store: props.store,        // Redux store for state access
-      logEvent: props.logEvent,  // Event logging (no-op during replay)
+      runtime: props.runtime,
 
       // Target-specific props (like render.jsx does)
       ...targetInstance.attributes,        // OLX attributes from target action
@@ -367,6 +367,7 @@ export async function executeNodeActions(props: RuntimeProps) {
       id: targetId,
       loBlock: targetBlueprint,
       fields: targetBlueprint.fields || {}, // Fields are now directly { fieldName: FieldInfo }
+      locals: targetBlueprint.locals || {},
       nodeInfo: actionNodeInfo,
     };
 

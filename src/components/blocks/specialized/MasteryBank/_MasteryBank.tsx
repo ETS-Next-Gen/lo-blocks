@@ -81,7 +81,15 @@ function MasteryProblem({ props, problemId, attemptNumber, masteryState, handler
   const { problemIds, correctStreak, goalNum, firstSubmissionResult, modeState, orderMode } = masteryState;
   const { setCorrectStreak, setModeState, setCompleted, setCorrect, setFirstSubmissionResult, setAttemptNumber } = handlers;
 
-  const scopedProps = { ...props, ...extendIdPrefix(props, `${id}.attempt_${attemptNumber}`) };
+  const { idPrefix: scopedIdPrefix } = extendIdPrefix(props, `${id}.attempt_${attemptNumber}`);
+  const scopedRuntime = { ...props.runtime, idPrefix: scopedIdPrefix };
+
+  // HACK: Spreading ...props includes deprecated RuntimeProps fields (store, blockRegistry, etc.)
+  // Remove in Phase 6 when old fields removed from RuntimeProps interface
+  const scopedProps = {
+    ...props,
+    runtime: scopedRuntime,
+  };
   const scopedGraderRef = toOlxReference(`${problemId}_grader`, 'MasteryBank grader');
 
   // Render problem - useBlock handles loading state with Spinner

@@ -9,10 +9,15 @@ import { DisplayError } from '@/lib/util/debug';
 
 // Each entry renders independently - avoids Promise.all suspense issues
 function DynamicListEntry({ props, template, index, id }) {
+  const { idPrefix: itemIdPrefix } = extendIdPrefix(props, [id, index]);
+  const itemRuntime = { ...props.runtime, idPrefix: itemIdPrefix };
+
+  // HACK: Spreading ...props includes deprecated RuntimeProps fields (store, blockRegistry, etc.)
+  // Remove in Phase 6 when old fields removed from RuntimeProps interface
   const { kids } = useKids({
     ...props,
     kids: [template],
-    ...extendIdPrefix(props, [id, index]),
+    runtime: itemRuntime,
   });
   return <div className="mb-2">{kids}</div>;
 }

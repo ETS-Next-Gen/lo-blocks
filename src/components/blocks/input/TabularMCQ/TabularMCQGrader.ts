@@ -27,10 +27,12 @@ function getTabularMCQDisplayAnswer(props) {
   if (props.displayAnswer != null) return props.displayAnswer;
   if (props.answer != null) return props.answer;
 
+  // TODO: This grader logic should move to /lib/blocks/. Components shouldn't access
+  // blockRegistry and construct props - that's infrastructure logic.
   try {
     const inputIds = getInputs(props);
     const inputNode = getBlockByOLXId(props, inputIds[0]);
-    const inputBlueprint = inputNode ? props.blockRegistry?.[inputNode.tag] : null;
+    const inputBlueprint = inputNode ? props.runtime.blockRegistry?.[inputNode.tag] : null;
 
     if (inputBlueprint?.locals?.getAnswers) {
       const inputProps = {

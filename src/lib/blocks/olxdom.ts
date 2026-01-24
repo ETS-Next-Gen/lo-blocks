@@ -333,7 +333,7 @@ export function getInputs(props, { infer }: { infer? } = {}) {
  * @returns The component's current value
  */
 export function getValueById(props: RuntimeProps, id: OlxReference | null | undefined) {
-  const reduxState = props.store.getState();
+  const reduxState = props.runtime.store.getState();
 
   // valueSelector handles all ID resolution (refToOlxKey for lookup, proper
   // prefix handling for state access) - blocks don't need to know about IDs

@@ -64,7 +64,7 @@ export function useOlxJson(
     if (!id) return;
 
     // Skip side effects during replay/analytics
-    if (props.sideEffectFree) return;
+    if (props.runtime.sideEffectFree) return;
 
     // Already in Redux or already attempted
     if (blockState || fetchAttempted.current.has(olxKey)) return;
@@ -85,7 +85,7 @@ export function useOlxJson(
       .catch(err => {
         dispatchOlxJsonError(props, source, olxKey, err.message || `Failed to load ${olxKey}`);
       });
-  }, [id, blockState, olxKey, source, props.sideEffectFree, props.logEvent]);
+  }, [id, blockState, olxKey, source, props.runtime.sideEffectFree, props.runtime.logEvent]);
 
   // Handle null/undefined id - return after hooks are called
   if (!id) {

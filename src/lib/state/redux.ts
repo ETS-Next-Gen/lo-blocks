@@ -19,6 +19,23 @@
 // with standard React patterns, making it easy for block developers to
 // build stateful learning components.
 //
+//
+// Design:
+//
+// There should be a hierarchy of **selectors** usable within hooks.
+//
+// For each selector, there should be two functions, a hook and a
+// functional version, e.g.
+//
+// fieldSelector
+// - useField (reactive hook version)
+// - getField (functional version, used e.g. inside of an action, grader, or callback)
+//
+// These should be grouped together. The hook and function should be thin wrappers for
+// the selector. The selector is where all logic happens.
+//
+// TODO: Clean up code to reflect the design.
+
 'use client';
 
 import { useRef, useEffect, useCallback } from 'react';
@@ -94,11 +111,11 @@ export const fieldSelector = <T>(
 
 // Convenience selector that fetches the current Redux state automatically.
 export const selectFromStore = <T>(
-  props: { store: Store },
+  props: { runtime: { store: Store } },
   field: FieldInfo,
   options: SelectorOptions<T> = {}
 ): T => {
-  const state = props.store.getState();
+  const state = props.runtime.store.getState();
   return fieldSelector(state, undefined, field, options);
 };
 
@@ -339,13 +356,13 @@ export function componentFieldByName(props: RuntimeProps, targetId: OlxReference
 
   // Use refToOlxKey to normalize the ID for Redux lookup
   const normalizedId = idResolver.refToOlxKey(targetId);
-  const sources = props.olxJsonSources ?? ['content'];
-  const targetNode = selectBlock(props.store.getState(), sources, normalizedId);
+  const sources = props.runtime.olxJsonSources ?? ['content'];
+  const targetNode = selectBlock(props.runtime.store.getState(), sources, normalizedId);
   if (!targetNode) {
     throw new Error(`componentFieldByName: Component "${targetId}" not found in content`);
   }
 
-  const targetLoBlock = props.blockRegistry?.[targetNode.tag];
+  const targetLoBlock = props.runtime.blockRegistry[targetNode.tag];
   if (!targetLoBlock) {
     throw new Error(`componentFieldByName: No LoBlock found for component type "${targetNode.tag}"`);
   }
@@ -377,9 +394,9 @@ export function valueSelector(props: RuntimeProps, state: any, id: OlxReference 
 
   // Use refToOlxKey to strip prefixes for Redux lookup
   const mapKey = idResolver.refToOlxKey(id);
-  const sources = props?.olxJsonSources ?? ['content'];
-  const targetNode = selectBlock(props.store.getState(), sources, mapKey);
-  const loBlock = targetNode ? props.blockRegistry?.[targetNode.tag] : null;
+  const sources = props.runtime.olxJsonSources ?? ['content'];
+  const targetNode = selectBlock(props.runtime.store.getState(), sources, mapKey);
+  const loBlock = targetNode ? props.runtime.blockRegistry[targetNode.tag] : null;
 
   if (!targetNode || !loBlock) {
     const missing: string[] = [];

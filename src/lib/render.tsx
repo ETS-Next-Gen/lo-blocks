@@ -22,7 +22,7 @@ import htmlTags from 'html-tags';
 import React from 'react';
 import { DisplayError, DebugWrapper } from '@/lib/util/debug';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
-import type { OlxKey } from '@/lib/types';
+import type { OlxKey, LoBlockRuntimeContext } from '@/lib/types';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { getGrader, getEventContext } from '@/lib/blocks/olxdom';
 import { assignReactKeys, refToOlxKey } from '@/lib/blocks/idResolver';
@@ -214,6 +214,16 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
       }
     : (() => {}) as LogEventFn;  // No-op if logEvent not provided
 
+  // Bundle runtime context
+  const runtime = {
+    blockRegistry,
+    store,
+    logEvent: contextualLogEvent,
+    sideEffectFree,
+    olxJsonSources,
+    idPrefix,
+  };
+
   // TODO: We probably want more than just data-block-type. Having IDs, etc. will be
   // very nice for debugging and introspection.
 
@@ -229,6 +239,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
           locals={blockType.locals}
           fields={blockType.fields}
           nodeInfo={childNodeInfo}
+          runtime={runtime}
           blockRegistry={blockRegistry}
           idPrefix={idPrefix}
           olxJsonSources={olxJsonSources}
@@ -249,6 +260,7 @@ export function render({ node, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefi
  */
 export function renderCompiledKids(props): React.ReactNode[] {
   let { kids, children, nodeInfo, blockRegistry = BLOCK_REGISTRY, idPrefix = '', olxJsonSources, store, logEvent, sideEffectFree } = props;
+
   if (kids === undefined && children !== undefined) {
     console.log(
       "[renderCompiledKids] WARNING: 'children' prop used instead of 'kids'. Please migrate to 'kids'."

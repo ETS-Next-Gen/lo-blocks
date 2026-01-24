@@ -271,16 +271,27 @@ export default function RenderOLX({
     }
   }, [mergedIdMap, parsed?.root]);
 
+  // Build runtime context
+  const runtime = useMemo(() => ({
+    blockRegistry,
+    store,
+    logEvent,
+    sideEffectFree,
+    olxJsonSources: [source],
+    idPrefix: '',
+  }), [blockRegistry, store, logEvent, sideEffectFree, source]);
+
   // Build props for useBlock - must be before the hook call
   const blockProps = useMemo(() => ({
     nodeInfo: makeRootNode(eventContext),
+    runtime,
     blockRegistry,
     idPrefix: '',
     olxJsonSources: [source],
     store,
     logEvent,
     sideEffectFree,
-  }), [eventContext, blockRegistry, source, store, logEvent, sideEffectFree]);
+  }), [eventContext, runtime, blockRegistry, source]);
 
   // Determine which ID to render - use parsed root if available, else requested id
   // This handles the case where `id` is a file path but parsed content has different IDs

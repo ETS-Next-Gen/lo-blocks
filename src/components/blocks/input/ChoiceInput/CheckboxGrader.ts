@@ -86,6 +86,8 @@ function getCheckboxDisplayAnswer(props) {
   if (props.displayAnswer != null) return props.displayAnswer;
   if (props.answer != null) return props.answer;
 
+  // TODO: This grader logic should move to /lib/blocks/. Components shouldn't access
+  // blockRegistry and construct props - that's infrastructure logic.
   const inputIds = getInputs(props);
   if (inputIds.length === 0) {
     throw new Error(`CheckboxGrader "${props.id}": No input found. Nest a CheckboxInput inside, or add target="inputId".`);
@@ -97,7 +99,9 @@ function getCheckboxDisplayAnswer(props) {
     throw new Error(`CheckboxGrader "${props.id}": Input "${inputId}" not found. Check the target attribute.`);
   }
 
-  const inputBlueprint = props.blockRegistry[inputNode.tag];
+  // TODO: This grader logic should move to /lib/blocks/. Components shouldn't access
+  // blockRegistry and construct props - that's infrastructure logic.
+  const inputBlueprint = props.runtime.blockRegistry[inputNode.tag];
   const inputProps = { ...props, id: inputId, ...inputNode.attributes, kids: inputNode.kids };
   const choices = inputBlueprint.locals.getChoices(inputProps);
   const keyChoices = choices.filter(c => c.tag === 'Key');

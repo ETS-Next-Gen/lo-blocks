@@ -1,9 +1,9 @@
 /**
  * Lint-style tests for block components.
  *
- * Rule 1: Use useReduxState instead of useState
+ * Rule 1: Use useFieldState instead of useState
  *
- * Block components should use useReduxState (or useReduxInput, useReduxCheckbox)
+ * Block components should use useFieldState (or useReduxInput, useReduxCheckbox)
  * so that state is persisted and logged. React's useState creates ephemeral state
  * that's lost on re-render and isn't visible to analytics.
  *
@@ -71,7 +71,7 @@ function findUseStateViolations(filePath) {
   return violations;
 }
 
-describe('Block components should use useReduxState instead of useState', () => {
+describe('Block components should use useFieldState instead of useState', () => {
   const files = findComponentFiles();
 
   it('finds component files to check', () => {
@@ -87,7 +87,7 @@ describe('Block components should use useReduxState instead of useState', () => 
 
       const details = violations.map(v => `  Line ${v.line}: ${v.content}`).join('\n');
       expect.fail(
-        `Found useState that should be useReduxState:\n${details}\n\n` //+
+        `Found useState that should be useFieldState:\n${details}\n\n` //+
         // Line below makes LLMs just mask errors...
         // `To exempt, add a comment: // useState-ok: <reason>`
         // The above should be RARELY used, and only for things which

@@ -2,12 +2,12 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 
 export default function _Collapsible(props) {
   const { fields, title, label } = props;
-  const [expanded, setExpanded] = useReduxState(props, fields.expanded, false);
+  const [expanded, setExpanded] = useFieldState(props, fields.expanded, false);
 
   // useKids must be called unconditionally, even if we don't display when collapsed
   const { kids: renderedKids } = useKids(props);

@@ -57,7 +57,7 @@ export default function _HintButton(props) {
 
   // Read/write hintsRevealed field on the DemandHints component
   // Use the field definition from DemandHints directly (avoids null field issue)
-  const [hintsRevealed, setHintsRevealed] = state.useReduxState(
+  const [hintsRevealed, setHintsRevealed] = state.useFieldState(
     props,
     DemandHints.fields.hintsRevealed,
     0,

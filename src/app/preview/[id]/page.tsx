@@ -7,14 +7,15 @@ import AppHeader from '@/components/common/AppHeader';
 import RenderOLX from '@/components/common/RenderOLX';
 import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
-import { useReduxState, settings } from '@/lib/state';
+import { useFieldState, settings } from '@/lib/state';
 import { useContentLoader } from '@/lib/content/useContentLoader';
+import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 import { ComponentError } from '@/lib/types';
 
 export default function PreviewPage() {
   const params = useParams();
   const id = params.id as string;
-  const [debug] = useReduxState(
+  const [debug] = useFieldState(
     {},
     settings.debug,
     false,
@@ -23,10 +24,11 @@ export default function PreviewPage() {
 
   const { idMap, error, loading } = useContentLoader(id);
   const [renderError, setRenderError] = useState<ComponentError>(null);
+  const localeAttrs = useLocaleAttributes();
 
   if (error) {
     return (
-      <div className="flex flex-col h-screen">
+      <div {...localeAttrs} className="flex flex-col h-screen">
         <AppHeader home user />
         <div className="p-6 flex-1">
           <DisplayError
@@ -43,7 +45,7 @@ export default function PreviewPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-screen">
+      <div {...localeAttrs} className="flex flex-col h-screen">
         <AppHeader home user />
         <Spinner>Loading content...</Spinner>
       </div>
@@ -52,7 +54,7 @@ export default function PreviewPage() {
 
   if (!idMap) {
     return (
-      <div className="flex flex-col h-screen">
+      <div {...localeAttrs} className="flex flex-col h-screen">
         <AppHeader home user />
         <div className="p-6 flex-1">
           <DisplayError
@@ -67,7 +69,7 @@ export default function PreviewPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div {...localeAttrs} className="flex flex-col h-screen">
       <AppHeader home user />
       <div className="p-6 flex-1 overflow-auto">
         <div className="space-y-4">
@@ -100,7 +102,7 @@ export default function PreviewPage() {
 }
 
 // TODO for hack above
-// We have a hack where useReduxState requires props. We should do several things:
+// We have a hack where useFieldState requires props. We should do several things:
 // * Make a 'global' or 'common' props object to use outside of render. Use a sentinel tag and ID
 //   - Consider a shared props constructor or factory, so things don't go out of sync?
 //   - 2 might places might not be enough to merit that.

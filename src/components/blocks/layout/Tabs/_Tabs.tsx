@@ -2,13 +2,13 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 import { useOlxJsonMultiple } from '@/lib/blocks/useOlxJson';
 
 export default function _Tabs(props) {
   const { fields, kids = [] } = props;
-  const [activeTab, setActiveTab] = useReduxState(props, fields.activeTab, 0);
+  const [activeTab, setActiveTab] = useFieldState(props, fields.activeTab, 0);
 
   // Extract kid IDs for batch lookup (for tab labels)
   const kidIds = kids.filter(k => k?.type === 'block' && k?.id).map(k => k.id);

@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 import HistoryBar from '@/components/common/HistoryBar';
 
@@ -16,7 +16,7 @@ function SequentialItem({ props, node }) {
 export default function _Sequential(props) {
   const { fields } = props;
   // Get current index from Redux state
-  const [index, setIndex] = useReduxState(
+  const [index, setIndex] = useFieldState(
     props,
     fields.index,
     0

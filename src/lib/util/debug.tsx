@@ -5,7 +5,7 @@ import React, { ReactNode, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { parseProvenance, formatProvenance } from '@/lib/lofs/provenance';
 import { getExtension } from '@/lib/util/fileTypes';
-import { useReduxState, settings } from '@/lib/state';
+import { useFieldState, settings } from '@/lib/state';
 
 interface TraceProps {
   children?: ReactNode;
@@ -18,7 +18,7 @@ export const Trace = ({
   props = {},
   header
 }: TraceProps) => {
-  const [debug] = useReduxState(props, settings.debug, false,
+  const [debug] = useFieldState(props, settings.debug, false,
     { tag: true, id: true} // HACK
   );
   if (!debug) return null;
@@ -71,7 +71,7 @@ const ClickableText = ({ onClick, children, style = {}, title }: {
 );
 
 export const DebugWrapper = ({ props = {}, loBlock, children }: DebugWrapperProps) => {
-  const [debug] = useReduxState(props, settings.debug, false,
+  const [debug] = useFieldState(props, settings.debug, false,
     { tag: true, id: true} // HACK
   );
   if (!debug) return <>{children}</>;
@@ -158,7 +158,7 @@ export function DisplayError({ props={}, name = 'Error', message, technical, dat
     }
   };
 
-  const [debug] = useReduxState(props, settings.debug, false);
+  const [debug] = useFieldState(props, settings.debug, false);
 
   // In debug mode, crash hard
   if (debug) {

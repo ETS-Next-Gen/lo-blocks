@@ -59,8 +59,10 @@ const Ref = core({
     format: z.enum(['code']).optional().describe('Display format for the value'),
   }),
   getValue: (props: RuntimeProps, state: any, id: OlxReference) => {
+    // TODO: This logic is infrastructure, not component logic. getValue should move to /lib/
+    // so it can access runtime context properly without accessing props directly.
     // Get the Ref block from Redux to access its attributes and content
-    const sources = props.olxJsonSources ?? ['content'];
+    const sources = props.runtime.olxJsonSources ?? ['content'];
     const refNode = selectBlock(state, sources, refToOlxKey(id));
     if (!refNode) {
       return { error: true, message: 'Component not found' };

@@ -2,17 +2,23 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { extendIdPrefix } from '@/lib/blocks/idResolver';
 import { useKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 
 // Each entry renders independently - avoids Promise.all suspense issues
 function DynamicListEntry({ props, template, index, id }) {
+  const { idPrefix: itemIdPrefix } = extendIdPrefix(props, [id, index]);
+
+  // FIXME: Should not spread runtime like this - need proper scoped runtime factory
+  // Components should treat runtime as black box. Only idPrefix changes at boundaries.
+  const itemRuntime = { ...props.runtime, idPrefix: itemIdPrefix };
+
   const { kids } = useKids({
     ...props,
     kids: [template],
-    ...extendIdPrefix(props, [id, index]),
+    runtime: itemRuntime,
   });
   return <div className="mb-2">{kids}</div>;
 }
@@ -30,7 +36,7 @@ export default function _DynamicList(props) {
   const parsedMax = max === undefined ? Infinity : Number(max);
   const parsedStart = Number(start);
 
-  const [count, setCount] = useReduxState(props, fields.count, parsedStart);
+  const [count, setCount] = useFieldState(props, fields.count, parsedStart);
 
   const handleAdd = () => setCount(Math.min(parsedMax, count + 1));
   const handleRemove = () => setCount(Math.max(parsedMin, count - 1));

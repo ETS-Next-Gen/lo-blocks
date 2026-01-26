@@ -18,8 +18,7 @@ import type { OlxJson, OlxReference } from '@/lib/types';
 import type { Store } from 'redux';
 
 interface PropsWithStore {
-  store: Store;
-  olxJsonSources?: string[];
+  runtime: { store: Store; olxJsonSources?: string[] };
 }
 
 /**
@@ -28,7 +27,7 @@ interface PropsWithStore {
  * Synchronous lookup - returns the block or undefined.
  * Content must already be in Redux before calling.
  *
- * @param props - Props containing store and olxJsonSources
+ * @param props - Props containing runtime context with store and olxJsonSources
  * @param id - The OLX ID to look up (can be null for optional lookups)
  * @returns The block entry, or undefined if not found
  */
@@ -43,8 +42,9 @@ export function getBlockByOLXId(props: PropsWithStore, id: OlxReference | string
   }
 
   const key = refToOlxKey(id);
-  const sources = props?.olxJsonSources ?? ['content'];
-  const state = props.store.getState();
+  const store = props.runtime.store;
+  const sources = props.runtime.olxJsonSources ?? ['content'];
+  const state = store.getState();
   return selectBlock(state, sources, key);
 }
 

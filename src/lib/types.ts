@@ -394,16 +394,52 @@ export interface OlxDomNode {
   parent?: OlxDomNode;
   loBlock: LoBlock;
   sentinel?: string;  // 'root' for root node
+  // runtime: LoBlockRuntimeContext;  // TODO: Uncomment and store at render time so actions can retrieve it
 }
 
 /** Selector function for filtering OlxDomNodes in DOM traversal */
 export type OlxDomSelector = (node: OlxDomNode) => boolean;
 
 /**
+ * LocaleContext - language and text direction configuration.
+ *
+ * Enables i18n throughout the platform. For now, `dir` comes from Redux settings.
+ * Future: derive `dir` from Intl.Locale.getTextInfo() when browser support is universal.
+ */
+export interface LocaleContext {
+  code: string;  // BCP 47 locale code: 'en-US', 'zh-Hans-CN', 'ar-SA', 'pl-PL', 'tr-TR'
+  dir: 'ltr' | 'rtl';  // Text direction from Redux settings
+}
+
+/**
+ * LoBlockRuntimeContext - runtime configuration that flows through the component tree.
+ *
+ * Contains system-wide runtime properties that may change based on context:
+ * - blockRegistry: Registry of all available block blueprints
+ * - store: Redux store (may be historical during replay mode)
+ * - logEvent: Event logging function (no-op during replay)
+ * - sideEffectFree: True during replay - disables fetches and logging
+ * - olxJsonSources: Priority-ordered list of Redux source names for OlxJson lookup
+ * - idPrefix: Scope prefix for Redux state keys (changes at list boundaries)
+ *
+ * This is bundled into RuntimeProps to enable easier addition of new runtime properties
+ * (like locale) without full prop-threading updates.
+ */
+export interface LoBlockRuntimeContext {
+  blockRegistry: BlockRegistry;
+  store: Store;
+  logEvent: (event: string, payload: any) => void;  // Event logging - no-op during replay
+  sideEffectFree: boolean;  // True during replay - disables fetches, event logging, etc.
+  olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
+  idPrefix?: IdPrefix;  // Scope prefix for Redux state (changes at list boundaries)
+  locale: LocaleContext;  // Language and text direction
+}
+
+/**
  * RuntimeProps - the context bag passed through the system.
  *
  * This is a hybrid of three things (pragmatic compromise for React):
- * 1. Opaque context (nodeInfo, blockRegistry, idPrefix) - thread through, don't inspect
+ * 1. Opaque context (nodeInfo, runtime) - thread through, don't inspect
  * 2. Block machinery (loBlock, fields, locals) - framework injects these
  * 3. OLX attributes - flow in via [key: string]: any
  *
@@ -417,12 +453,7 @@ export interface RuntimeProps {
 
   // Opaque context - thread through
   nodeInfo: OlxDomNode;
-  blockRegistry: BlockRegistry;
-  idPrefix?: IdPrefix;
-  olxJsonSources?: string[];  // Redux source names in priority order for OlxJson lookup
-  store: Store;  // Redux store - enables replay mode where a different store provides historical state
-  logEvent: (event: string, payload: any) => void;  // Event logging - no-op during replay
-  sideEffectFree: boolean;  // True during replay - disables fetches, event logging, etc.
+  runtime: LoBlockRuntimeContext;  // Bundled runtime context (required)
 
   // Block machinery - framework injects these
   loBlock: LoBlock;

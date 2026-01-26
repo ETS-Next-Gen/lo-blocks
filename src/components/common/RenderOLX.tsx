@@ -44,7 +44,7 @@
 //
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, useTransition } from 'react';
+import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { useStore } from 'react-redux';
 import * as lo_event from 'lo_event';
 import { parseOLX } from '@/lib/content/parseOLX';
@@ -57,9 +57,227 @@ import { isOLXFile } from '@/lib/util/fileTypes';
 import { dispatchOlxJson } from '@/lib/state/olxjson';
 import { useBlock } from '@/lib/blocks/useRenderedBlock';
 import { useDebugSettings } from '@/lib/state/debugSettings';
+import { settings } from '@/lib/state/settings';
+import { useSetting } from '@/lib/state/settingsAccess';
+import { getTextDirection, getBrowserLocale } from '@/lib/i18n/getTextDirection';
 
 // Stable no-op for replay mode - avoids creating new function on each render
-const noopLogEvent = () => {};
+const noopLogEvent = () => { };
+
+// ============================================================================
+// HELPER HOOKS AND FUNCTIONS
+// ============================================================================
+
+/**
+ * Build baseline runtime props: logEvent, locale, store, blockRegistry.
+ * These are available everywhere and form the foundation for content props.
+ *
+ * TODO: Move to lib/blocks/baselineProps.ts once dependencies stabilize
+ */
+export function useBaselineProps() {
+  const store = useStore();
+  const { replayMode } = useDebugSettings();
+  const logEvent = replayMode ? noopLogEvent : lo_event.logEvent;
+  const sideEffectFree = replayMode;
+
+  // HACK: We coerce minimal props to RuntimeProps. We really want a prop hierarchy:
+  // MVPStoreProps { store, logEvent } < GlobalProps < BlockProps
+  // For now, this minimal set is enough for useSetting to work. Future refactor
+  // should introduce proper prop types for non-block contexts.
+  const [reduxLocale, setReduxLocale] = useSetting({ logEvent } as any, settings.locale);
+
+  // Initialize with browser locale if Redux has no setting
+  let locale = reduxLocale;
+  if (!locale) {
+    const browserCode = getBrowserLocale();
+    // HACK: Map unsupported locales to en-KE default
+    const supportedCodes = new Set(['ar-SA', 'en-KE', 'pl-PL', 'es-ES']);
+    const code = supportedCodes.has(browserCode) ? browserCode : 'en-KE';
+    const dir = getTextDirection(code);
+    locale = { code, dir };
+    setReduxLocale(locale);
+  }
+
+  return {
+    store,
+    logEvent,
+    sideEffectFree,
+    blockRegistry: BLOCK_REGISTRY,
+    locale
+  };
+}
+
+/**
+ * Build the provider stack for src="" resolution during parsing.
+ * Stacks inline, files, provider, providers, resolveProvider in priority order.
+ */
+function useBuildProviderStack(
+  inline?: string,
+  files?: Record<string, string>,
+  provider?: any,
+  providers?: any[],
+  resolveProvider?: any
+) {
+  return useMemo(() => {
+    const stack: any[] = [];
+
+    if (inline) {
+      stack.push(new InMemoryStorageProvider({ '_inline.olx': inline }));
+    }
+    if (files) {
+      stack.push(new InMemoryStorageProvider(files));
+    }
+    if (provider) {
+      stack.push(provider);
+    }
+    if (providers) {
+      stack.push(...providers);
+    }
+    if (resolveProvider) {
+      stack.push(resolveProvider);
+    }
+
+    if (stack.length === 0) return null;
+    if (stack.length === 1) return stack[0];
+    return new StackedStorageProvider(stack);
+  }, [inline, files, provider, providers, resolveProvider]);
+}
+
+/**
+ * Parse inline and/or files content.
+ * Returns parsed result with idMap and root, or null if nothing to parse.
+ */
+function useParseContent(
+  inline?: string,
+  files?: Record<string, string>,
+  effectiveProvider?: any,
+  provenance?: string,
+  source?: string,
+  logEvent?: any,
+  sideEffectFree?: boolean,
+  onError?: (err: any) => void
+) {
+  const [parsed, setParsed] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    // Nothing to parse - render from baseIdMap only
+    if (!inline && !files) {
+      startTransition(() => {
+        setParsed(null);
+        setError(null);
+      });
+      return;
+    }
+
+    if (!effectiveProvider) {
+      setError('RenderOLX: No provider for content resolution');
+      return;
+    }
+
+    let cancelled = false;
+
+    async function doParse() {
+      try {
+        // Parse inline content
+        if (inline) {
+          const result = await parseOLX(
+            inline,
+            [provenance || 'inline://'],
+            effectiveProvider
+          );
+          if (!cancelled) {
+            // Dispatch to Redux for reactive block access (skip during replay - viewing historical state)
+            if (!sideEffectFree) {
+              if (!logEvent) throw new Error('useParseContent: logEvent is required for dispatching');
+              if (!source) throw new Error('useParseContent: source is required for dispatching');
+              dispatchOlxJson({ runtime: { logEvent } }, source, result.idMap);
+            }
+            // startTransition prevents Suspense - shows old content while rendering new
+            startTransition(() => {
+              setParsed(result);
+              setError(null);
+            });
+          }
+          return;
+        }
+
+        // Parse all OLX/XML files from files prop
+        if (files) {
+          let mergedIdMap = {};
+          let lastRoot: string | null = null;
+
+          for (const [filename, content] of Object.entries(files)) {
+            if (!isOLXFile(filename)) {
+              continue;
+            }
+
+            const result = await parseOLX(
+              content,
+              [provenance || `memory://${filename}`],
+              effectiveProvider
+            );
+
+            mergedIdMap = { ...mergedIdMap, ...result.idMap };
+            lastRoot = result.root;
+          }
+
+          if (!cancelled) {
+            // Dispatch to Redux for reactive block access (skip during replay - viewing historical state)
+            if (!sideEffectFree) {
+              if (!logEvent) throw new Error('useParseContent: logEvent is required for dispatching');
+              if (!source) throw new Error('useParseContent: source is required for dispatching');
+              dispatchOlxJson({ runtime: { logEvent } }, source, mergedIdMap);
+            }
+            startTransition(() => {
+              setParsed({
+                root: lastRoot,
+                idMap: mergedIdMap,
+                ids: Object.keys(mergedIdMap)
+              });
+              setError(null);
+            });
+          }
+        }
+      } catch (err) {
+        console.error('RenderOLX parse error:', err);
+        if (!cancelled) {
+          setError(err.message || String(err));
+          onError?.(err);
+        }
+      }
+    }
+
+    doParse();
+    return () => { cancelled = true; };
+  }, [inline, files, effectiveProvider, provenance, onError, startTransition, source, sideEffectFree, logEvent]);
+
+  return { parsed, error, isPending };
+}
+
+/**
+ * Merge parsed content idMap with baseIdMap.
+ * Parsed content overrides base (higher priority).
+ */
+function mergeContentIntoProps(baselineProps: any, parsed: any, baseIdMap?: Record<string, any>) {
+  const mergedIdMap = baseIdMap ? { ...baseIdMap, ...parsed?.idMap } : parsed?.idMap;
+  return { ...baselineProps, parsed, mergedIdMap };
+}
+
+/**
+ * Update props with a new locale.
+ */
+function updatePropsLocale(props: any, locale: any) {
+  return { ...props, locale };
+}
+
+/**
+ * Update props with a new logEvent function.
+ */
+function updatePropsLogEvent(props: any, logEvent: any) {
+  return { ...props, logEvent };
+}
 
 /**
  * Props for RenderOLX component.
@@ -114,193 +332,79 @@ export default function RenderOLX({
   source = 'content',
   eventContext,
 }: RenderOLXProps) {
-  const store = useStore();
-  const [parsed, setParsed] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Build baseline runtime context
+  let baselineProps = useBaselineProps();
 
-  // Check if we're in replay mode - if so, use no-op to prevent event logging
-  // and disable side effects (fetches, etc.)
-  const { replayMode } = useDebugSettings();
-  // Use stable reference for noopLogEvent to prevent effect re-runs
-  const logEvent = replayMode ? noopLogEvent : lo_event.logEvent;
-  const sideEffectFree = replayMode;
+  // Override blockRegistry if a custom one was provided
+  if (blockRegistry !== BLOCK_REGISTRY) {
+    baselineProps = { ...baselineProps, blockRegistry };
+  }
 
-  // useTransition prevents Suspense during edits - React shows stale content
-  // while new content is preparing instead of showing spinners
-  const [isPending, startTransition] = useTransition();
-
-  // Build provider stack for src="" resolution during parsing
-  const effectiveProvider = useMemo(() => {
-    const stack: any[] = [];
-
-    if (inline) {
-      stack.push(new InMemoryStorageProvider({ '_inline.olx': inline }));
-    }
-    if (files) {
-      stack.push(new InMemoryStorageProvider(files));
-    }
-    if (provider) {
-      stack.push(provider);
-    }
-    if (providers) {
-      stack.push(...providers);
-    }
-    if (resolveProvider) {
-      stack.push(resolveProvider);
-    }
-
-    if (stack.length === 0) return null;
-    if (stack.length === 1) return stack[0];
-    return new StackedStorageProvider(stack);
-  }, [inline, files, provider, providers, resolveProvider]);
+  // Build provider stack for src="" resolution
+  const effectiveProvider = useBuildProviderStack(inline, files, provider, providers, resolveProvider);
 
   // Parse inline/files content
-  //
-  // BUG: Switching replay modes triggers re-parsing and spurious LOAD_OLXJSON events.
-  // Root cause: RenderOLX manages local parsing state and has effects with mode-related deps.
-  //
-  // Proper fix: Eliminate local state. Studio/docs should use Redux content.* like production.
-  // RenderOLX becomes pure (reads from Redux, renders). Replay mode becomes a Redux setting
-  // (debug.replayMode) that affects props threading at top level, not a context. With content
-  // already in Redux and no parsing effects here, mode switches have nothing to re-trigger.
-  //
+  const { parsed, error: parseError, isPending } = useParseContent(
+    inline,
+    files,
+    effectiveProvider,
+    provenance,
+    source,
+    baselineProps.logEvent,
+    baselineProps.sideEffectFree,
+    onError
+  );
+
+  // Merge parsed content into baseline props
+  const renderProps = mergeContentIntoProps(baselineProps, parsed, baseIdMap);
+
+  // Notify parent when content is parsed
   useEffect(() => {
-    // Nothing to parse - render from baseIdMap only
-    if (!inline && !files) {
-      startTransition(() => {
-        setParsed(null);
-        setError(null);
-      });
-      return;
+    if (onParsed && renderProps.mergedIdMap) {
+      onParsed({ idMap: renderProps.mergedIdMap, root: parsed?.root || null });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderProps.mergedIdMap, parsed?.root]);
 
-    if (!effectiveProvider) {
-      setError('RenderOLX: No provider for content resolution');
-      return;
-    }
+  // Build runtime context for rendering
+  const runtime = {
+    blockRegistry: renderProps.blockRegistry,
+    store: renderProps.store,
+    logEvent: renderProps.logEvent,
+    sideEffectFree: renderProps.sideEffectFree,
+    olxJsonSources: [source],
+    idPrefix: '',
+    locale: renderProps.locale,
+  };
 
-    let cancelled = false;
-
-    async function doParse() {
-      try {
-        // Parse inline content
-        if (inline) {
-          const result = await parseOLX(
-            inline,
-            [provenance || 'inline://'],
-            effectiveProvider
-          );
-          if (!cancelled) {
-            // Dispatch to Redux for reactive block access (skip during replay - viewing historical state)
-            if (!sideEffectFree) {
-              dispatchOlxJson({ logEvent }, source, result.idMap);
-            }
-            // startTransition prevents Suspense - shows old content while rendering new
-            startTransition(() => {
-              setParsed(result);
-              setError(null);
-            });
-          }
-          return;
-        }
-
-        // Parse all OLX/XML files from files prop
-        if (files) {
-          let mergedIdMap = {};
-          let lastRoot: string | null = null;
-
-          for (const [filename, content] of Object.entries(files)) {
-            if (!isOLXFile(filename)) {
-              continue;
-            }
-
-            const result = await parseOLX(
-              content,
-              [provenance || `memory://${filename}`],
-              effectiveProvider
-            );
-
-            mergedIdMap = { ...mergedIdMap, ...result.idMap };
-            lastRoot = result.root;
-          }
-
-          if (!cancelled) {
-            // Dispatch to Redux for reactive block access (skip during replay - viewing historical state)
-            if (!sideEffectFree) {
-              dispatchOlxJson({ logEvent }, source, mergedIdMap);
-            }
-            startTransition(() => {
-              setParsed({
-                root: lastRoot,
-                idMap: mergedIdMap,
-                ids: Object.keys(mergedIdMap)
-              });
-              setError(null);
-            });
-          }
-        }
-      } catch (err) {
-        console.error('RenderOLX parse error:', err);
-        if (!cancelled) {
-          setError(err.message || String(err));
-          onError?.(err);
-        }
-      }
-    }
-
-    doParse();
-    return () => { cancelled = true; };
-  }, [inline, files, effectiveProvider, provenance, onError, startTransition, source, sideEffectFree, logEvent]);
-
-  // Merge parsed idMap with baseIdMap (parsed overrides base)
-  const mergedIdMap = useMemo(() => {
-    if (!parsed && !baseIdMap) return null;
-    if (!parsed) return baseIdMap;
-    if (!baseIdMap) return parsed.idMap;
-    return { ...baseIdMap, ...parsed.idMap };
-  }, [parsed, baseIdMap]);
-
-  // Use ref for onParsed to avoid infinite loops when caller passes inline function
-  const onParsedRef = useRef(onParsed);
-  onParsedRef.current = onParsed;
-
-  // Notify parent when idMap changes
-  useEffect(() => {
-    if (onParsedRef.current && mergedIdMap) {
-      onParsedRef.current({ idMap: mergedIdMap, root: parsed?.root || null });
-    }
-  }, [mergedIdMap, parsed?.root]);
-
-  // Build props for useBlock - must be before the hook call
-  const blockProps = useMemo(() => ({
+  // Build props for useBlock
+  const blockProps = {
     nodeInfo: makeRootNode(eventContext),
-    blockRegistry,
+    runtime,
+    // FIXME: These individual fields are deprecated (kept for migration safety, remove after verification)
+    blockRegistry: renderProps.blockRegistry,
     idPrefix: '',
     olxJsonSources: [source],
-    store,
-    logEvent,
-    sideEffectFree,
-  }), [eventContext, blockRegistry, source, store, logEvent, sideEffectFree]);
+    store: renderProps.store,
+    logEvent: renderProps.logEvent,
+    sideEffectFree: renderProps.sideEffectFree,
+  };
 
   // Determine which ID to render - use parsed root if available, else requested id
-  // This handles the case where `id` is a file path but parsed content has different IDs
   const renderIdToQuery = parsed?.root || id;
 
   // Wait for parsing to complete when inline/files content is provided
-  // This prevents useBlock from triggering fetches for IDs that only exist in inline content
   const parsingPending = (inline || files) && !parsed;
 
-  // useBlock handles loading/error states and renders from Redux
-  // Shows spinner while loading, error if failed, rendered content when ready
-  // Pass null ID when parsing is pending to prevent fetch attempts
+  // Render the block
   const { block, ready } = useBlock(blockProps, parsingPending ? null : renderIdToQuery, source);
 
   // Parse error (from inline/files parsing)
-  if (error) {
+  if (parseError) {
     return (
       <div className="text-red-600 p-2 border border-red-300 rounded bg-red-50">
         <div className="font-semibold">Error rendering OLX</div>
-        <pre className="text-sm mt-1 whitespace-pre-wrap">{error}</pre>
+        <pre className="text-sm mt-1 whitespace-pre-wrap">{parseError}</pre>
       </div>
     );
   }
@@ -324,7 +428,6 @@ export default function RenderOLX({
     <ErrorBoundary
       resetKey={parsed}
       handler={(err) => {
-        setError(err.message);
         onError?.(err);
       }}
     >

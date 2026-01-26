@@ -1,7 +1,7 @@
 // src/components/blocks/_UseDynamic.tsx
 import React from 'react';
 import { useBlock } from '@/lib/render';
-import { useReduxState, useValue } from '@/lib/state';
+import { useFieldState, useValue } from '@/lib/state';
 
 function DynamicContent({ props, value }) {
   const { block } = useBlock(props, value);
@@ -16,7 +16,7 @@ export function _UseDynamic( props ) {
   const refValue = useValue(props, targetRef, { fallback: null });
   const effectiveTarget = refValue || target;
 
-  const [value] = useReduxState(props, fields.value, effectiveTarget);
+  const [value] = useFieldState(props, fields.value, effectiveTarget);
 
   if (!value) {
     return <pre className="text-red-500">[Missing &lt;Use&gt; resolution]</pre>;

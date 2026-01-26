@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 function RevealedItem({ props, node }) {
   const { kids } = useKids({ ...props, kids: [node] });
@@ -11,7 +11,7 @@ function RevealedItem({ props, node }) {
 
 export default function _NextReveal(props) {
   const { fields } = props;
-  const [currentStep, setCurrentStep] = useReduxState(
+  const [currentStep, setCurrentStep] = useFieldState(
     props,
     fields.currentStep,
     1  // Start with first item revealed

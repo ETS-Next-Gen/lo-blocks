@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 import { useOlxJson } from '@/lib/blocks/useOlxJson';
 
@@ -26,8 +26,8 @@ function _Navigator(props) {
   const { olxJson: previewBlock } = useOlxJson(props, preview || '');
   const { olxJson: detailBlock } = useOlxJson(props, detail || '');
 
-  const [selectedItem, setSelectedItem] = useReduxState(props, fields.selectedItem, null);
-  const [searchQuery, setSearchQuery] = useReduxState(props, fields.searchQuery, '');
+  const [selectedItem, setSelectedItem] = useFieldState(props, fields.selectedItem, null);
+  const [searchQuery, setSearchQuery] = useFieldState(props, fields.searchQuery, '');
 
   // Parse YAML data from text content
   const items = useMemo(() => {

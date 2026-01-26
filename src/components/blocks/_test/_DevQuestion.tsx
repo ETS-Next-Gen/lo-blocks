@@ -4,12 +4,12 @@
 import React from 'react';
 // DebugWrapper handles debug output
 
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 
 export function _DevQuestion( props ) {
   const { prompt, options = [], fields } = props;
   const optionList = typeof options === 'string' ? options.split(',') : options;
-  const [activeIndex, setActiveIndex] = useReduxState(
+  const [activeIndex, setActiveIndex] = useFieldState(
     props,
     fields.activeIndex,
     0

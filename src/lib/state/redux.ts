@@ -11,7 +11,7 @@
 //
 // Key functions:
 // - `useFieldSelector`: Get state values with automatic re-rendering
-// - `updateReduxField`: Update state and trigger analytics logging
+// - `updateField`: Update state and trigger analytics logging
 // - `useReduxInput`: Complete form control integration with selection state
 // - `fieldSelector`: Core selector logic for different state scopes
 //
@@ -19,6 +19,23 @@
 // with standard React patterns, making it easy for block developers to
 // build stateful learning components.
 //
+//
+// Design:
+//
+// There should be a hierarchy of **selectors** usable within hooks.
+//
+// For each selector, there should be two functions, a hook and a
+// functional version, e.g.
+//
+// fieldSelector
+// - useField (reactive hook version)
+// - getField (functional version, used e.g. inside of an action, grader, or callback)
+//
+// These should be grouped together. The hook and function should be thin wrappers for
+// the selector. The selector is where all logic happens.
+//
+// TODO: Clean up code to reflect the design.
+
 'use client';
 
 import { useRef, useEffect, useCallback } from 'react';
@@ -94,16 +111,16 @@ export const fieldSelector = <T>(
 
 // Convenience selector that fetches the current Redux state automatically.
 export const selectFromStore = <T>(
-  props: { store: Store },
+  props: { runtime: { store: Store } },
   field: FieldInfo,
   options: SelectorOptions<T> = {}
 ): T => {
-  const state = props.store.getState();
+  const state = props.runtime.store.getState();
   return fieldSelector(state, undefined, field, options);
 };
 
-// Synchronous getter for Redux state - mirrors useReduxState but without re-renders
-// Same signature as useReduxState: (props, field, fallback, { id, tag })
+// Synchronous getter for Redux state - mirrors useFieldState but without re-renders
+// Same signature as useFieldState: (props, field, fallback, { id, tag })
 // Gets store from singleton internally (initialized in storeWrapper.tsx)
 export const getReduxState = (
   props: any,
@@ -130,7 +147,7 @@ export const useFieldSelector = <T>(
   );
 
 
-export function updateReduxField(
+export function updateField(
   props,
   field: FieldInfo,
   newValue,
@@ -159,7 +176,7 @@ export function updateReduxField(
 }
 
 
-export function useReduxState(
+export function useFieldState(
   props,
   field: FieldInfo,
   fallback,
@@ -169,7 +186,7 @@ export function useReduxState(
 
   const value = useFieldSelector(props, field, { fallback, id, tag });
 
-  const setValue = (newValue) => updateReduxField(props, field, newValue, { id, tag });
+  const setValue = (newValue) => updateField(props, field, newValue, { id, tag });
 
   return [value, setValue];
 }
@@ -183,7 +200,7 @@ type ReduxAggregateOptions<T, R = any> = {
 /**
  * React hook to read the same field for multiple component IDs.
  *
- * This mirrors `useReduxState`'s read-path but aggregates the values from
+ * This mirrors `useFieldState`'s read-path but aggregates the values from
  * several IDs into either an array (default) or an object keyed by ID.
  */
 export function useAggregate<T = any, R = any>(
@@ -313,7 +330,7 @@ export function useReduxCheckbox(
   opts: { id?: string; tag?: string } = {}
 ) {
   assertValidField(field);
-  const [checked, setChecked] = useReduxState(props, field, fallback, opts);
+  const [checked, setChecked] = useFieldState(props, field, fallback, opts);
   const onChange = useCallback((event) => setChecked(event.target.checked), [setChecked]);
   return [checked, { name: field.name, checked, onChange }];
 }
@@ -339,13 +356,13 @@ export function componentFieldByName(props: RuntimeProps, targetId: OlxReference
 
   // Use refToOlxKey to normalize the ID for Redux lookup
   const normalizedId = idResolver.refToOlxKey(targetId);
-  const sources = props.olxJsonSources ?? ['content'];
-  const targetNode = selectBlock(props.store.getState(), sources, normalizedId);
+  const sources = props.runtime.olxJsonSources ?? ['content'];
+  const targetNode = selectBlock(props.runtime.store.getState(), sources, normalizedId);
   if (!targetNode) {
     throw new Error(`componentFieldByName: Component "${targetId}" not found in content`);
   }
 
-  const targetLoBlock = props.blockRegistry?.[targetNode.tag];
+  const targetLoBlock = props.runtime.blockRegistry[targetNode.tag];
   if (!targetLoBlock) {
     throw new Error(`componentFieldByName: No LoBlock found for component type "${targetNode.tag}"`);
   }
@@ -377,9 +394,9 @@ export function valueSelector(props: RuntimeProps, state: any, id: OlxReference 
 
   // Use refToOlxKey to strip prefixes for Redux lookup
   const mapKey = idResolver.refToOlxKey(id);
-  const sources = props?.olxJsonSources ?? ['content'];
-  const targetNode = selectBlock(props.store.getState(), sources, mapKey);
-  const loBlock = targetNode ? props.blockRegistry?.[targetNode.tag] : null;
+  const sources = props.runtime.olxJsonSources ?? ['content'];
+  const targetNode = selectBlock(props.runtime.store.getState(), sources, mapKey);
+  const loBlock = targetNode ? props.runtime.blockRegistry[targetNode.tag] : null;
 
   if (!targetNode || !loBlock) {
     const missing: string[] = [];

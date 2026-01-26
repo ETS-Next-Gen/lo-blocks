@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useReduxState } from '@/lib/state';
+import { useFieldState } from '@/lib/state';
 import { useKids } from '@/lib/render';
 
 // Default team data for the Comm360 SBA
@@ -58,8 +58,8 @@ const DEFAULT_TEAM = [
 function _TeamDirectory(props) {
   const { fields, teamData = DEFAULT_TEAM, title = "Team Directory" } = props;
 
-  const [selectedMember, setSelectedMember] = useReduxState(props, fields.selectedMember, null);
-  const [viewMode, setViewMode] = useReduxState(props, fields.viewMode, 'grid');
+  const [selectedMember, setSelectedMember] = useFieldState(props, fields.selectedMember, null);
+  const [viewMode, setViewMode] = useFieldState(props, fields.viewMode, 'grid');
 
   const handleMemberClick = (memberId) => {
     if (selectedMember === memberId) {

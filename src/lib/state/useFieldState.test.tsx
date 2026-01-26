@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { renderHook, act } from '@testing-library/react';
 
 import { fields } from './fields';
-import { useReduxState, useAggregate, updateReduxField } from './redux';
+import { useFieldState, useAggregate, updateField } from './redux';
 import { scopes } from './scopes';
 import { store } from './store';
 
@@ -19,7 +19,7 @@ const props = {
 
 // TODO: These should probably be streamlined into one `it` statement which
 // tests all three end-to-end. This is a little bit verbose and hard-to-read.
-describe('useReduxState integration', () => {
+describe('useFieldState integration', () => {
   it('reads, writes, and re-reads the same Redux slice', async () => {
     const reduxStore = store.init();
     const wrapper = ({ children }: any) => (
@@ -27,7 +27,7 @@ describe('useReduxState integration', () => {
     );
 
     const { result } = renderHook(
-      () => useReduxState({ ...props, id: 'test' }, testFields.input, 'bob'),
+      () => useFieldState({ ...props, id: 'test' }, testFields.input, 'bob'),
       { wrapper }
     );
 
@@ -55,7 +55,7 @@ describe('useReduxState integration', () => {
 
     const { result } = renderHook(
       () =>
-        useReduxState(
+        useFieldState(
           { id: 'vid1', loBlock: { OLXName: 'video' } },
           settingFields.speed,
           1
@@ -80,7 +80,7 @@ describe('useReduxState integration', () => {
     );
 
     const { result } = renderHook(
-      () => useReduxState(props, systemFields.lang, 'en'),
+      () => useFieldState(props, systemFields.lang, 'en'),
       { wrapper }
     );
 
@@ -101,7 +101,7 @@ describe('useReduxState integration', () => {
     );
 
     const { result } = renderHook(
-      () => useReduxState({}, storageFields.content, '', { id: 'file1' }),
+      () => useFieldState({}, storageFields.content, '', { id: 'file1' }),
       { wrapper }
     );
 
@@ -124,8 +124,8 @@ describe('useAggregate aggregate hook', () => {
     );
 
     await act(async () => {
-      updateReduxField(props, testFields.input, 'alpha', { id: 'first' });
-      updateReduxField(props, testFields.input, 'beta', { id: 'second' });
+      updateField(props, testFields.input, 'alpha', { id: 'first' });
+      updateField(props, testFields.input, 'beta', { id: 'second' });
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -145,7 +145,7 @@ describe('useAggregate aggregate hook', () => {
     );
 
     await act(async () => {
-      updateReduxField(props, testFields.input, 'alpha', { id: 'first' });
+      updateField(props, testFields.input, 'alpha', { id: 'first' });
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -165,8 +165,8 @@ describe('useAggregate aggregate hook', () => {
     );
 
     await act(async () => {
-      updateReduxField(props, testFields.input, 'hello', { id: 'first' });
-      updateReduxField(props, testFields.input, 'world', { id: 'second' });
+      updateField(props, testFields.input, 'hello', { id: 'first' });
+      updateField(props, testFields.input, 'world', { id: 'second' });
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 

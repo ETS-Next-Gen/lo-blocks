@@ -177,11 +177,12 @@ export function useGraderAnswer(props: RuntimeProps) {
   let slot: string | undefined = undefined;
 
   if (showAnswer && graderId && graderInstance) {
-    const graderBlueprint = props.blockRegistry[graderInstance.tag];
+    const graderBlueprint = props.runtime.blockRegistry[graderInstance.tag];
     const displayMode = graderBlueprint.answerDisplayMode ?? 'per-input';
 
     // Only show per-input answer in 'per-input' mode
     if (displayMode === 'per-input') {
+      // TODO: graderProps should include complete runtime context and blueprint fields
       const graderProps = {
         ...props,
         id: graderId,
@@ -240,11 +241,12 @@ export function useGraderSummary(props: RuntimeProps, graderId: OlxKey | null) {
   let summaryAnswer = undefined;
 
   if (showAnswer && graderId && graderInstance) {
-    const graderBlueprint = props.blockRegistry[graderInstance.tag];
+    const graderBlueprint = props.runtime.blockRegistry[graderInstance.tag];
     const displayMode = graderBlueprint.answerDisplayMode ?? 'per-input';
 
     // Only return summary for 'summary' mode
     if (displayMode === 'summary' && graderBlueprint.getDisplayAnswer) {
+      // TODO: graderProps should include complete runtime context and blueprint fields
       const graderProps = {
         ...props,
         id: graderId,

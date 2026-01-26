@@ -71,8 +71,10 @@ const noopLogEvent = () => { };
 /**
  * Build baseline runtime props: logEvent, locale, store, blockRegistry.
  * These are available everywhere and form the foundation for content props.
+ *
+ * TODO: Move to lib/blocks/baselineProps.ts once dependencies stabilize
  */
-function useBaselineProps(blockRegistry: Record<string, any>) {
+export function useBaselineProps() {
   const store = useStore();
   const { replayMode } = useDebugSettings();
   const logEvent = replayMode ? noopLogEvent : lo_event.logEvent;
@@ -80,11 +82,13 @@ function useBaselineProps(blockRegistry: Record<string, any>) {
 
   const [reduxLocale, setReduxLocale] = useSetting({ logEvent }, settings.locale);
 
-
   // Initialize with browser locale if Redux has no setting
   let locale = reduxLocale;
   if (!locale) {
-    const code = getBrowserLocale();
+    const browserCode = getBrowserLocale();
+    // HACK: Map unsupported locales to en-KE default
+    const supportedCodes = new Set(['ar-SA', 'en-KE', 'pl-PL', 'es-ES']);
+    const code = supportedCodes.has(browserCode) ? browserCode : 'en-KE';
     const dir = getTextDirection(code);
     locale = { code, dir };
     setReduxLocale(locale);
@@ -94,7 +98,7 @@ function useBaselineProps(blockRegistry: Record<string, any>) {
     store,
     logEvent,
     sideEffectFree,
-    blockRegistry,
+    blockRegistry: BLOCK_REGISTRY,
     locale
   };
 }
@@ -321,7 +325,12 @@ export default function RenderOLX({
   eventContext,
 }: RenderOLXProps) {
   // Build baseline runtime context
-  const baselineProps = useBaselineProps(blockRegistry);
+  let baselineProps = useBaselineProps();
+
+  // Override blockRegistry if a custom one was provided
+  if (blockRegistry !== BLOCK_REGISTRY) {
+    baselineProps = { ...baselineProps, blockRegistry };
+  }
 
   // Build provider stack for src="" resolution
   const effectiveProvider = useBuildProviderStack(inline, files, provider, providers, resolveProvider);

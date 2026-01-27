@@ -1,0 +1,21 @@
+<!--
+---
+description: Apply behavioral psychology concepts to understand function of behavior and create intervention plans
+category: psychology
+language: en-US
+---
+-->
+<!-- Psychology SBA Part 2: Function of Behavior and Intervention Planning -->
+<SplitPanel id="psych_sba_fba" title="Psychology Study Group: Function of Behavior" launchable="true">
+
+  <!-- Left Panel: SMS Conversation -->
+  <LeftPane>
+    <Chat id="psych_fba_chat" src="psych_sba_fba.chatpeg" height="400px" />
+  </LeftPane>
+
+  <!-- Right Panel: Activities reference -->
+  <RightPane>
+    <UseHistory id="psych_fba_sidebar" initial="fba_introduction" />
+  </RightPane>
+
+</SplitPanel>

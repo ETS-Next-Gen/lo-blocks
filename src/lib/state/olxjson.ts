@@ -289,9 +289,19 @@ export function selectBlock(
     const entry = olxjson[source]?.[id];
     if (entry?.loadingState.status === 'ready' && entry.olxJson) {
       const stored = entry.olxJson as any;
+      const availableLocales = Object.keys(stored);
+      if (availableLocales.length === 0) continue;
 
       // Nested structure: { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
-      const langVariant = stored[locale];
+      // Try exact locale match first
+      // HACK HACK HACK. The selection / fallback logic should be common in /lib/i18n
+      let langVariant = stored[locale];
+
+      // Fallback to first available locale if requested locale not found
+      if (!langVariant) {
+        langVariant = stored[availableLocales[0]];
+      }
+
       if (langVariant && typeof langVariant === 'object' && langVariant.tag) {
         return langVariant as OlxJson;
       }

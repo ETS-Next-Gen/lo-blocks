@@ -17,6 +17,7 @@ import {
   dispatchOlxJsonError
 } from '@/lib/state/olxjson';
 import { refToOlxKey } from '@/lib/blocks/idResolver';
+import { getBestLocaleClient } from '@/lib/i18n/getBestLocale';
 import type { OlxJson, OlxKey, OlxReference, RuntimeProps } from '@/lib/types';
 import type { LogEventFn } from '@/lib/render';
 
@@ -119,19 +120,20 @@ export function useOlxJson(
     return { olxJson: null, loading: false, error: null };
   }
 
-  const locale = (props as any).runtime?.locale?.code;
-  if (!locale) {
+  const userLocale = (props as any).runtime?.locale?.code;
+  if (!userLocale) {
     throw new Error('useOlxJson: runtime.locale.code is required for language-aware rendering');
   }
 
   // Nested structure: { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
-  const langVariant = stored[locale];
-  if (!langVariant || typeof langVariant !== 'object' || !(langVariant as any).tag) {
-    throw new Error(
-      `useOlxJson: Block "${olxKey}" does not have a variant for locale "${locale}". ` +
-      `Available: ${Object.keys(stored).join(', ')}`
-    );
+  const availableLocales = Object.keys(stored);
+  if (availableLocales.length === 0) {
+    return { olxJson: null, loading: false, error: null };
   }
+
+  // Use getBestLocaleClient to find best match with fallback
+  const bestLocale = getBestLocaleClient(props as RuntimeProps, availableLocales);
+  const langVariant = stored[bestLocale];
 
   return { olxJson: langVariant, loading: false, error: null };
 }

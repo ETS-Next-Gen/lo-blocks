@@ -1,18 +1,18 @@
 // src/app/page.js
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
-import { useContentLoader } from '@/lib/content/useContentLoader';
+import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 
 const ENDPOINT_LINKS = [
   {
-    href: '/api/content/root',
-    label: '/api/content/root',
+    href: '/api/activities',
+    label: '/api/activities',
     type: 'JSON',
-    description: 'Launchable content entries (GET)',
+    description: 'Activity cards for browsing and launching (GET)',
   },
   {
     href: '/api/content/all',
@@ -90,11 +90,40 @@ function categorizeActivities(entries) {
   return Object.values(categories).filter(cat => cat.items.length > 0);
 }
 
-function ActivityRow({ entry }) {
-  const title = entry.attributes.title || entry.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  const description = entry.description || entry.attributes.description;  // Prefer metadata description
+function ActivityRow({ entry, userLocale }) {
+  // Pick best title from available locales
+  let title = entry.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  if (entry.title) {
+    if (typeof entry.title === 'string') {
+      title = entry.title;
+    } else {
+      // title is { [locale]: string }
+      const availableLocales = Object.keys(entry.title);
+      if (availableLocales.includes(userLocale)) {
+        title = entry.title[userLocale];
+      } else if (availableLocales.length > 0) {
+        title = entry.title[availableLocales[0]];
+      }
+    }
+  }
+
+  // Pick best description from available locales
+  let description = '';
+  if (entry.description) {
+    if (typeof entry.description === 'string') {
+      description = entry.description;
+    } else {
+      // description is { [locale]: string }
+      const availableLocales = Object.keys(entry.description);
+      if (availableLocales.includes(userLocale)) {
+        description = entry.description[userLocale];
+      } else if (availableLocales.length > 0) {
+        description = entry.description[availableLocales[0]];
+      }
+    }
+  }
+
   const type = entry.tag || 'Activity';
-  // editPath is computed server-side from provenance (see /api/content/[id])
   const editPath = entry.editPath || entry.id;
 
   return (
@@ -150,20 +179,43 @@ function ActivityRow({ entry }) {
 }
 
 function Activities() {
-  const { idMap, error, loading } = useContentLoader('root');
+  const [activities, setActivities] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const entries = idMap ? Object.keys(idMap).map(key => {
-    const langMap = idMap[key];
-    // Extract the OlxJson from nested structure { lang: OlxJson }
-    const olxJson = langMap?.['en-Latn-US'];
-    if (!olxJson || typeof olxJson !== 'object' || !olxJson.tag) {
-      throw new Error(`Block "${key}" does not have en-Latn-US variant`);
+  // Get user's locale from Redux
+  const localeAttrs = useLocaleAttributes();
+  const userLocale = localeAttrs.lang;
+
+  useEffect(() => {
+    if (!userLocale) {
+      setLoading(false);
+      return;
     }
-    return {
-      id: key,
-      ...olxJson
-    };
-  }) : [];
+
+    setLoading(true);
+    setError(null);
+    globalThis.fetch('/api/activities', {
+      headers: {
+        'Accept-Language': userLocale,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) {
+          setError(data.error);
+        } else {
+          setActivities(data.activities);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [userLocale]);
+
+  const entries = activities ? Object.values(activities) : [];
 
   if (loading) {
     return <Spinner>Loading activities...</Spinner>;
@@ -193,7 +245,7 @@ function Activities() {
           </h2>
           <div className="bg-white rounded-lg">
             {category.items.map(entry => (
-              <ActivityRow key={entry.id} entry={entry} />
+              <ActivityRow key={entry.id} entry={entry} userLocale={userLocale} />
             ))}
           </div>
         </section>

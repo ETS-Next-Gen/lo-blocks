@@ -11,17 +11,26 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
+import { getBestLocaleClient } from '@/lib/i18n/getBestLocale';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
-import type { OlxKey, OlxJson, IdMap } from '@/lib/types';
+import type { OlxKey, OlxJson, IdMap, RuntimeProps } from '@/lib/types';
 
 /**
  * Find all component IDs in idMap that have stateful fields.
  */
-function findStatefulIds(idMap, blockRegistry = BLOCK_REGISTRY) {
+function findStatefulIds(idMap, blockRegistry = BLOCK_REGISTRY, locale?: string) {
   if (!idMap) return [];
 
   return Object.entries(idMap)
-    .filter(([id, node]: [OlxKey, OlxJson]) => {
+    .filter(([id, langMap]) => {
+      // langMap is nested structure { 'en-Latn-US': OlxJson, ... }
+      const langMapTyped = langMap as any;
+      const availableLocales = Object.keys(langMapTyped);
+      // Use provided locale if available, otherwise first available
+      const bestLocale = locale && availableLocales.includes(locale) ? locale : availableLocales[0];
+      const node = langMapTyped[bestLocale];
+      if (!node) return false;
+
       const blockType = blockRegistry[node.tag];
       // Has fields defined = stateful (fields is the map of field name -> FieldInfo)
       const hasFields = blockType?.fields && Object.keys(blockType.fields).length > 0;
@@ -39,10 +48,11 @@ function StateRow({ id, idMap }) {
     shallowEqual
   );
 
-  // Extract the OlxJson from nested structure { lang: OlxJson }
-  const langMap = idMap[id];
-  const olxJson = langMap?.['en-Latn-US'];
-  const tag = olxJson?.tag || '?';
+  // Extract the OlxJson from nested structure { lang: OlxJson, ... }
+  const langMap = idMap[id] as any;
+  const availableLocales = Object.keys(langMap);
+  const olxJson = langMap[availableLocales[0]];
+  const tag = olxJson.tag;
 
   return (
     <div className="border-b last:border-b-0 py-2">
@@ -65,10 +75,11 @@ function StateRow({ id, idMap }) {
  */
 export default function StatePanel({ idMap, blockRegistry = BLOCK_REGISTRY }) {
   const [expanded, setExpanded] = useState(false);
+  const locale = useSelector((state: any) => state?.application_state?.settings?.locale?.code);
 
   const statefulIds = useMemo(
-    () => findStatefulIds(idMap, blockRegistry),
-    [idMap, blockRegistry]
+    () => findStatefulIds(idMap, blockRegistry, locale),
+    [idMap, blockRegistry, locale]
   );
 
   if (statefulIds.length === 0) {

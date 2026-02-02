@@ -35,9 +35,9 @@ export function parseIdMap(idMap: Record<string, any>, locale: string = 'en-Latn
   for (const [id, langMap] of Object.entries(idMap)) {
     // Extract OlxJson from nested structure { locale: OlxJson }
     // Use extractLocalizedVariant for consistent fallback logic
-    const node = extractLocalizedVariant(langMap, locale);
+    const node = extractLocalizedVariant(langMap, locale) as any;
 
-    if (!node) {
+    if (!node || typeof node !== 'object' || !node.tag) {
       continue;
     }
 

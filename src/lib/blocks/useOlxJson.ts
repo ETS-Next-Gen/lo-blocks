@@ -127,9 +127,9 @@ export function useOlxJson(
 
   // Nested structure: { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
   // Use extractLocalizedVariant for consistent fallback logic
-  const langVariant = extractLocalizedVariant(stored, userLocale);
+  const langVariant = extractLocalizedVariant(stored, userLocale) as OlxJson | undefined;
 
-  return { olxJson: langVariant, loading: false, error: null };
+  return { olxJson: langVariant || null, loading: false, error: null };
 }
 
 /**

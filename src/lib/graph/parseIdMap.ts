@@ -22,8 +22,9 @@ interface ParseResult {
  * Parses the idMap structure into React Flow compatible nodes and edges.
  *
  * TODO: Remove duplicate IDs
+ * TODO: Hardcoded locale. Use browser locale and proper accessors
  */
-export function parseIdMap(idMap: Record<string, any>): ParseResult {
+export function parseIdMap(idMap: Record<string, any>, locale: string = 'en-Latn-US'): ParseResult {
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
   const launchable: string[] = [];
@@ -31,7 +32,21 @@ export function parseIdMap(idMap: Record<string, any>): ParseResult {
   // Issues found during graph parsing - these should be surfaced to help debug problems
   const issues: ParseError[] = [];
 
-  for (const [id, node] of Object.entries(idMap)) {
+  for (const [id, langMap] of Object.entries(idMap)) {
+    // Extract OlxJson from nested structure { locale: OlxJson }
+    let node = langMap[locale];
+
+    // Fallback to first available locale if requested locale not found
+    // HACK. Should be using common locale fallback logic in lib/i18n
+    if (!node) {
+      const availableLocales = Object.keys(langMap);
+      node = availableLocales.length > 0 ? langMap[availableLocales[0]] : undefined;
+    }
+
+    if (!node) {
+      continue;
+    }
+
     let childIds = [];
     const comp = BLOCK_REGISTRY[node.tag];
 
@@ -51,15 +66,15 @@ export function parseIdMap(idMap: Record<string, any>): ParseResult {
     }
 
     // Avoid duplicates
-    if(nodes.find(n => n.id === id)) {
+    if (nodes.find(n => n.id === id)) {
       continue;
     }
 
     // Add edges
     for (const childId of childIds) {
       const edgeId = `${id}->${childId}`;
-      if(!edges.find(e => e.id === edgeId)) {
-	edges.push({ id: edgeId, source: id, target: childId });
+      if (!edges.find(e => e.id === edgeId)) {
+        edges.push({ id: edgeId, source: id, target: childId });
       }
     }
 
@@ -70,14 +85,14 @@ export function parseIdMap(idMap: Record<string, any>): ParseResult {
         label: `${node.tag}\n(${id})`,
         attributes: node.attributes ?? {},
         tag: node.tag,
-	provenance: node.provenance
+        provenance: node.provenance
       },
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: 'custom'
     });
 
     // Include root nodes
-    if(node?.attributes?.launchable) {
+    if (node?.attributes?.launchable) {
       launchable.push(id);
     }
   }

@@ -169,17 +169,21 @@ function findOlxFilesDependingOn(
 ): Set<ProvenanceURI> {
   const olxFilesToReparse = new Set<ProvenanceURI>();
 
-  for (const block of Object.values(blockIndex)) {
-    if (!block.provenance || !Array.isArray(block.provenance)) continue;
+  for (const langMap of Object.values(blockIndex)) {
+    // blockIndex stores nested structure { locale: OlxJson }
+    // Extract the OlxJson from the first available locale
+    const locales = Object.keys(langMap);
+    const olxJson = locales.length > 0 ? langMap[locales[0]] : undefined;
+    if (!olxJson?.provenance || !Array.isArray(olxJson.provenance)) continue;
 
     // Check if this block's provenance includes a changed auxiliary file
-    const dependsOnChangedFile = block.provenance.some(
+    const dependsOnChangedFile = olxJson.provenance.some(
       (prov: string) => changedAuxiliaryFiles.has(prov as ProvenanceURI)
     );
 
     if (dependsOnChangedFile) {
       // The root OLX file is the first element in the provenance chain
-      const rootOlxFile = block.provenance[0] as ProvenanceURI;
+      const rootOlxFile = olxJson.provenance[0] as ProvenanceURI;
       if (rootOlxFile && unchangedFiles[rootOlxFile]) {
         olxFilesToReparse.add(rootOlxFile);
       }

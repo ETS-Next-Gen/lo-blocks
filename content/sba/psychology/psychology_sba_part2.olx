@@ -5,16 +5,16 @@ category: psychology
 ---
 -->
 <!-- Psychology SBA: Sleep Refusal Scenario -->
-<SplitPanel id="psych_sba" title="Psychology Study Group: Sleep Refusal Case" launchable="true">
+<SplitPanel id="psych_sba2" title="Psychology Study Group: Operant Conditioning" launchable="true">
 
   <!-- Left Panel: SMS Conversation -->
   <LeftPane>
-    <Chat id="psych_chat" src="psych_sba_complete.chatpeg" height="400px" />
+    <Chat id="psych_chat2" src="psych_sba_part2.chatpeg" height="400px" />
   </LeftPane>
 
   <!-- Right Panel: Activities reference -->
   <RightPane>
-    <UseHistory id="psych_sba_sidebar" initial="bedtime_problem_introduction" />
+    <UseHistory id="psych_sba_sidebar2" initial="bedtime_problem_introduction2" />
   </RightPane>
 
 </SplitPanel>

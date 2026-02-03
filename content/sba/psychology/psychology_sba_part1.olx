@@ -1,0 +1,20 @@
+<!--
+---
+description: Apply behavioral psychology concepts to solve a child's bedtime problem through interactive study group discussion
+category: psychology
+---
+-->
+<!-- Psychology SBA: Sleep Refusal Scenario -->
+<SplitPanel id="psych_sba" title="Psychology Study Group: Sleep Refusal Case" launchable="true">
+
+  <!-- Left Panel: SMS Conversation -->
+  <LeftPane>
+    <Chat id="psych_chat" src="psych_sba_part1.chatpeg" height="400px" />
+  </LeftPane>
+
+  <!-- Right Panel: Activities reference -->
+  <RightPane>
+    <UseHistory id="psych_sba_sidebar" initial="bedtime_problem_introduction" />
+  </RightPane>
+
+</SplitPanel>

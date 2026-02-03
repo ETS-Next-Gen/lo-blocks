@@ -4,16 +4,15 @@ description: Instructor collection of psychology SBA activities for editing and 
 category: psychology
 ---
 -->
-<Vertical id="psych_sba_activities" title="Activities for Psychology SBA" launchable="true">
+<Vertical id="psych_sba_activities_part2" title="Activities for Psychology SBA, part 2" launchable="true">
 
   <!-- Introduction section -->
-  <Vertical id="bedtime_problem_introduction">
-    <Markdown id="bedtime_problem_intro_text">
+  <Vertical id="bedtime_problem_introduction2">
+    <Markdown id="bedtime_problem_intro_text2">
 ## Introduction
 
 In this module, you will review and apply several concepts from your coursework on behavioral modification. Specifically, you will:
 
-- Read about behavior modification techniques and think about how they apply to a real-life situation.
 - Understand the differences between reinforcement and punishment.
 - Identify whether behavior modification techniques are positive or negative.
 
@@ -22,221 +21,8 @@ To complete these parts, you will imagine that you are working in a breakout gro
 Let's begin.
     </Markdown>
   </Vertical>
-  <Vertical id="bedtime_problem_clear_screen_1">
-    <Markdown>
-      &nbsp;
-    </Markdown>
-  </Vertical>
 
-  <!-- Opening screen - problem image -->
-  <Vertical id="bedtime_scenario_image">
-    <Markdown id="bedtime_intro_text">
-## The Bedtime Problem
-
-Annie's roommate is babysitting a 6-year-old who refuses to go to bed. The parents have tried everything:
-- Taking away toys and games
-- Letting him figure it out on his own
-- Various punishments
-
-Nothing seems to work! Let's use psychology principles to help.
-    </Markdown>
-    <Image id="bedtime_problem_img" src="images/child_bedtime_problem.png" alt="Child refusing bedtime" />
-  </Vertical>
-
-  <!-- Student suggestion activity -->
-  <Vertical id="student_suggestion">
-    <Markdown id="student_suggestion_prompt">
-## Your Initial Thoughts
-
-What do YOU think Annie's roommate should do to get the 6-year-old to go to sleep at bedtime?
-    </Markdown>
-    <TextArea id="initial_suggestion"
-              placeholder="Share your initial strategy (2-3 sentences)..." />
-    <ActionButton id="submit_suggestion_btn" dependsOn="@initial_suggestion.value" target="psych_chat" action="advance" label="Submit and Continue" />
-  </Vertical>
-
-  <!-- Group brainstorm sorting activity -->
-  <Vertical id="brainstorm_sorting">
-    <Markdown id="brainstorm_sorting_prompt">
-## Comparing Ideas
-
-The group has several different suggestions. Rank these ideas from **best** to **worst** based on what you think would work for the 6-year-old:
-    </Markdown>
-
-    <CapaProblem id="rank_bedtime_strategies" submitLabel="Lock in order">
-      <Markdown>Drag to rank from **best** (top) to **worst** (bottom):</Markdown>
-      <SortableGrader id="bedtime_strategy_grader" algorithm="survey">
-        <SortableInput dragMode="whole">
-          <Ref target="initial_suggestion" id="ref_student_suggestion_in_brainstorm" fallback="[Please make sure you've entered a suggestion on the prior screen]" />
-          <Markdown>Give him 50 cents if he goes to bed on time (money reward)</Markdown>
-          <Markdown>Say you won't play games with him ever again unless he sleeps at bedtime (threat)</Markdown>
-          <Markdown>Do nothing - let him stay up and be tired the next day (natural consequences)</Markdown>
-        </SortableInput>
-      </SortableGrader>
-    </CapaProblem>
-
-  <Vertical id="bedtime_problem_clear_screen_2">
-    <Markdown>
-      &nbsp;
-    </Markdown>
-  </Vertical>
-
-    <ActionButton id="continue_after_sorting" dependsOn="@bedtime_strategy_grader.submitCount > 0" target="psych_chat" action="advance" label="Continue Discussion" />
-  </Vertical>
-
-  <!-- Messages screenshot -->
-  <Vertical id="messages_image">
-    <Markdown id="messages_text">
-## Text Messages from the Babysitter
-
-**Parent:** He's doing it again. Running around at bedtime.
-
-**Roommate:** I tried everything. Should I just yell at him?
-
-**Parent:** That's what we usually do but it doesn't seem to help.
-
-**Key observation:** The yelling seems to be making things worse - it might be accidentally *reinforcing* the behavior by giving attention!
-    </Markdown>
-  </Vertical>
-
-  <!-- Student suggestion activity -->
-  <Vertical id="student_ai_suggestion">
-    <Markdown id="student_ai_suggestion_prompt">
-## Your Initial Thoughts
-
-What prompt should we write for the AI in order to learn about sleep refusal and no-rules parenting and to also learn about other strategies to get a young child to go to bed?
-   </Markdown>
-    <TextArea id="initial_ai_suggestion"
-              placeholder="Share your initial idea for a prompt (2-3 sentences)..." />
-    <ActionButton id="submit_ai_suggestion_btn" dependsOn="@initial_ai_suggestion.value" target="psych_chat" action="advance" label="Submit and Continue" />
-  </Vertical>
-
-  <!-- Group brainstorm sorting activity -->
-  <Vertical id="brainstorm_ai_sorting">
-    <Markdown id="brainstorm_ai_sorting_prompt">
-## Comparing Ideas
-The group has several different suggestions. Rank these ideas from **best** to **worst** based on what you think would produce the best AI output:
-    </Markdown>
-  <!-- Student ranking activity -->
-    <CapaProblem id="rank_ai_prompts" submitLabel="Lock in order">
-      <Markdown>Drag to rank from **best** (top) to **worst** (bottom):</Markdown>
-      <SortableGrader id="ai_prompt_grader" algorithm="survey">
-        <SortableInput dragMode="whole">
-          <Ref target="initial_ai_suggestion" id="ref_student_ai_suggestion_in_brainstorm" fallback="[Please make sure you've entered a suggestion on the prior screen]" />
-          <Markdown>Is no-rules parenting any good for sleep refusal, 
-                    and if not, what other things could I try?
-          </Markdown>
-          <Markdown>What is the evidence for no-rules parenting and any
-                    alternatives to address sleep refusal?
-          </Markdown>
-          <Markdown>What is the evidence-based way to stop sleep refusal: 
-                    no-rules parenting or something else like behavior modification?
-          </Markdown>
-        </SortableInput>
-      </SortableGrader>
-    </CapaProblem>
-  </Vertical>
-  
-  <!-- Ask AI about the problem -->
-  <Vertical id="ai_info">
-    <Markdown id="ai_info_md">
-         From all of your group member’s AI prompt suggestions, your group
-         chose this prompt. If you still want to edit the AI prompt before
-         you try it, you can.
-    </Markdown>
-    <TextArea id="ai_response" rows="2" placeholder="Paste or type your prompt here." />
-    <LLMFeedback id="ai_feedback" render="markdown" />
-
-    <ActionButton id="ai_btn" label="Get AI Info on Sleep Refusal">
-      <LLMAction id="ai_action" target="ai_feedback">
-        If the following question is about dealing with sleep refusal in children,
-        answer it; otherwise, point out the the prompt provided is irrelevant to
-        sleep refusal and stop.
-        <Ref id="ai_ref" target="ai_response" />
-        Use Markdown to format your reply with bolded headers and with five nonbreaking 
-        spaces before the start of each paragraph.
-      </LLMAction>
-    </ActionButton>
-  </Vertical>  
-  <Vertical id="vetted_info_part1">  
-     <Markdown>
-     
-       # No-Rules Parenting and Sleep Refusal
-       
-       "No-rules parenting," or "permissive parenting," is an approach where parents avoid 
-       setting firm boundaries and rules, often seeking to be very lenient in their child's 
-       behavior, including sleep routines. While this style might seem appealing in some 
-       ways, there is limited evidence to support its effectiveness in promoting healthy 
-       behaviors like sleep habits. In fact, research generally favors more structured 
-       approaches to sleep and behavior management. Below is the evidence regarding 
-       no-rules parenting and alternatives for addressing sleep refusal.
-
-       ## Evidence For and Against No-Rules Parenting to Address Sleep Refusal
-
-       1. **Child-Led Autonomy**
-       
-        **Claim**: Allowing children to choose when to sleep can foster autonomy, reducing bedtime power struggles and increasing intrinsic motivation to rest.
-        
-        **Evidence and Counterevidence**:
-
-        Studies on self-determination theory suggest that giving children choices 
-        promotes a sense of control, potentially reducing defiance.
-        
-        However, young children often lack the biological and cognitive maturity 
-        to make health-conscious decisions about sleep. Sleep research shows that 
-        inconsistent schedules can disrupt circadian rhythms, leading to insufficient 
-        or fragmented sleep.
-     </Markdown>
-  </Vertical>
-  <Vertical id="vetted_info_part2">  
-     <Markdown>
-  
-    2. **Natural Consequences**
-    
-        **Claim**: Experiencing the effects of insufficient sleep (e.g., feeling tired) 
-        could motivate a child to adjust bedtime without external pressure.
-        
-        **Evidence and CounterEvidence**:
-        
-            Natural consequences are more effective for older children and adolescents
-            who can connect cause and effect.
-            
-            However, younger children may not link fatigue with staying up late and could
-            experience negative effects like irritability, reduced focus, and 
-            weakened immune function.
-            
-    3. **Reduced Stress Around Sleep**
-    
-        **Claim**: Removing strict bedtime rules may create a relaxed environment, making 
-        it easier for children to fall asleep naturally.
-        
-        **Evidence and Counterevidence**:
-        
-            Stress and anxiety are known to interfere with sleep onset.
-            
-            However, research suggests that structured bedtime routines reduce 
-            cortisol levels and promote melatonin release, facilitating better sleep.  
-     </Markdown>
-  </Vertical>
-
-  <!-- Student suggestion activity -->
-  <Vertical id="draft_email">
-    <Markdown id="student_suggestion_prompt">
-        **Draft an email Annie can use to explain to her friend why, since no-rules 
-        parenting is a bad idea, she should figure out an effective bedtime strategy 
-        for her 6-year-old.**
-        
-        _Put your answer in the box below. You can use the little dots between the forward
-        and back arrows on the top right of the screen to go back to review the arguments
-        and evidence you have just read.._
-    </Markdown>
-    <TextArea id="email_draft"
-              rows="8"
-              placeholder="Write your email here..." />
-    <ActionButton id="submit_email_btn" dependsOn="@email_draft.value" target="psych_chat" action="advance" label="Submit and Continue" />
-  </Vertical>
-
-  <!-- Positive/Negative Reinforcement/Punishment categorization -->
+<!-- Positive/Negative Reinforcement/Punishment categorization -->
   <Vertical id="positive_negative_reinforcement_punishment">
     <Markdown id="behavior_mod_intro">
 ## Understanding Behavior Modification
@@ -855,8 +641,8 @@ Annie found research showing that "no-rules parenting" (permissive parenting) ca
 Help write an email explaining why "giving up" isn't the answer and what might work better.
     </Markdown>
 
-    <TextArea id="email_draft"
-              placeholder="Draft your email here..." />
+    <UseDynamic id="email_draft2"
+              target="email_draft" />
 
     <ActionButton id="get_feedback_btn" target="psych_chat" action="advance" label="Get Feedback" />
   </Vertical>

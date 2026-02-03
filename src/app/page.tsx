@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 
 const ENDPOINT_LINKS = [
@@ -341,16 +342,23 @@ function Sidebar() {
 }
 
 export default function Home() {
+  const localeAttrs = useLocaleAttributes();
+
   return (
-    <div className="flex h-screen">
+    <div {...localeAttrs} className="flex h-screen">
       <Sidebar />
-      <main className="flex-1 overflow-auto bg-gray-50/30">
-        <div className="max-w-4xl mx-auto p-8">
-          <header className="mb-8">
-            <h1 className="text-3xl font-semibold text-gray-900">Activities</h1>
-            <p className="text-gray-600 mt-2">Choose an activity to begin</p>
-          </header>
-          <Activities />
+      <main className="flex-1 overflow-auto bg-gray-50/30 flex flex-col">
+        <div className="flex justify-end p-4 border-b border-gray-200">
+          <LanguageSwitcher />
+        </div>
+        <div className="flex-1 overflow-auto">
+          <div className="max-w-4xl mx-auto p-8">
+            <header className="mb-8">
+              <h1 className="text-3xl font-semibold text-gray-900">Activities</h1>
+              <p className="text-gray-600 mt-2">Choose an activity to begin</p>
+            </header>
+            <Activities />
+          </div>
         </div>
       </main>
     </div>

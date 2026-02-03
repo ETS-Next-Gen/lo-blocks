@@ -7,6 +7,7 @@ import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
+import { extractLocalizedVariant } from '@/lib/i18n/getBestLocale';
 
 const ENDPOINT_LINKS = [
   {
@@ -92,34 +93,30 @@ function categorizeActivities(entries) {
 }
 
 function ActivityRow({ entry, userLocale }) {
-  // Pick best title from available locales
+  // Pick best title from available locales with BCP 47 fallback
   let title = entry.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   if (entry.title) {
     if (typeof entry.title === 'string') {
       title = entry.title;
     } else {
-      // title is { [locale]: string }
-      const availableLocales = Object.keys(entry.title);
-      if (availableLocales.includes(userLocale)) {
-        title = entry.title[userLocale];
-      } else if (availableLocales.length > 0) {
-        title = entry.title[availableLocales[0]];
+      // title is { [locale]: string } - use BCP 47 hierarchy fallback
+      const localizedTitle = extractLocalizedVariant(entry.title, userLocale);
+      if (localizedTitle) {
+        title = localizedTitle;
       }
     }
   }
 
-  // Pick best description from available locales
+  // Pick best description from available locales with BCP 47 fallback
   let description = '';
   if (entry.description) {
     if (typeof entry.description === 'string') {
       description = entry.description;
     } else {
-      // description is { [locale]: string }
-      const availableLocales = Object.keys(entry.description);
-      if (availableLocales.includes(userLocale)) {
-        description = entry.description[userLocale];
-      } else if (availableLocales.length > 0) {
-        description = entry.description[availableLocales[0]];
+      // description is { [locale]: string } - use BCP 47 hierarchy fallback
+      const localizedDesc = extractLocalizedVariant(entry.description, userLocale);
+      if (localizedDesc && typeof localizedDesc === 'string') {
+        description = localizedDesc;
       }
     }
   }

@@ -88,26 +88,44 @@ export function extractLocalizedVariant<T>(
     return langMap[requestedLocale];
   }
 
-  // Parse BCP 47 locale code: language[-script[-region]]
-  const parts = requestedLocale.split('-');
-  const fallbackChain: string[] = [];
+  // Parse requested locale: language[-script[-region]]
+  const reqParts = requestedLocale.split('-');
+  const reqLanguage = reqParts[0];
+  const reqScript = reqParts.length > 1 && reqParts[1].length === 4 ? reqParts[1] : undefined;
+  const reqRegion = reqParts.length > 1 && reqParts[1].length === 2 ? reqParts[1] : (reqParts.length > 2 ? reqParts[2] : undefined);
 
-  // If we have 3 parts (language-script-region), try language-script and language-region
-  if (parts.length === 3) {
-    fallbackChain.push(`${parts[0]}-${parts[1]}`); // language-script
-    fallbackChain.push(`${parts[0]}-${parts[2]}`); // language-region
-  }
+  // Try to match against available locales using fallback hierarchy
+  // For each available locale, extract its components and score the match
+  let bestMatch: { locale: string; score: number } | null = null;
 
-  // If we have 2 parts (language-script or language-region), try just language
-  if (parts.length >= 2) {
-    fallbackChain.push(parts[0]); // language only
-  }
+  for (const availableLocale of availableLocales) {
+    const avParts = availableLocale.split('-');
+    const avLanguage = avParts[0];
+    const avScript = avParts.length > 1 && avParts[1].length === 4 ? avParts[1] : undefined;
+    const avRegion = avParts.length > 1 && avParts[1].length === 2 ? avParts[1] : (avParts.length > 2 ? avParts[2] : undefined);
 
-  // Try each fallback in priority order
-  for (const fallback of fallbackChain) {
-    if (langMap[fallback]) {
-      return langMap[fallback];
+    // Score matching: exact match (4) > language+script (3) > language+region (2) > language only (1) > no match (0)
+    let score = 0;
+    if (avLanguage === reqLanguage) {
+      score = 1; // Language matches
+      if (avScript && reqScript && avScript === reqScript) {
+        score = 3; // Language + script match
+      }
+      if (avRegion && reqRegion && avRegion === reqRegion) {
+        score = Math.max(score, 2); // Language + region match
+      }
+      if (avScript === reqScript && avRegion === reqRegion) {
+        score = 4; // All parts match (exact or equivalent)
+      }
     }
+
+    if (score > (bestMatch?.score ?? 0)) {
+      bestMatch = { locale: availableLocale, score };
+    }
+  }
+
+  if (bestMatch && bestMatch.score > 0) {
+    return langMap[bestMatch.locale];
   }
 
   // Fall back to first available locale

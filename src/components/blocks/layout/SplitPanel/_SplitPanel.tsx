@@ -16,23 +16,26 @@ export default function _SplitPanel(props) {
   const { dir } = useLocaleAttributes();
   const isRtl = dir === 'rtl';
 
-  // Handle both physical (left/right) and logical (start/end) panes
-  // If only start/end are provided, map them based on text direction
-  let firstPane = kids.left ?? kids.start ?? [];
-  let secondPane = kids.right ?? kids.end ?? [];
+  let firstPane, secondPane;
 
-  // If both physical and logical are provided, physical takes precedence
-  // For logical panes in RTL mode, swap the order
-  if (kids.start && kids.end && !kids.left && !kids.right) {
-    // Only logical panes provided
+  // Check if using logical (start/end) or physical (left/right) panes
+  const hasStartEnd = Boolean(kids.start || kids.end);
+  const hasLeftRight = Boolean(kids.left || kids.right);
+
+  if (hasStartEnd && !hasLeftRight) {
+    // Logical panes: StartPane and EndPane adapt to text direction via dir attribute
+    // No additional swapping needed - just render in logical order
+    firstPane = kids.start ?? [];
+    secondPane = kids.end ?? [];
+  } else {
+    // Physical panes: LeftPane and RightPane need swapping in RTL
+    // to keep "left" visually on the left side of the screen
     if (isRtl) {
-      // In RTL: StartPane goes to the right, EndPane goes to the left
-      firstPane = kids.end;
-      secondPane = kids.start;
+      firstPane = kids.right ?? [];
+      secondPane = kids.left ?? [];
     } else {
-      // In LTR: StartPane goes to the left, EndPane goes to the right
-      firstPane = kids.start;
-      secondPane = kids.end;
+      firstPane = kids.left ?? [];
+      secondPane = kids.right ?? [];
     }
   }
 

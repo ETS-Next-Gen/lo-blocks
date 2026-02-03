@@ -3,9 +3,7 @@
 
 import Link from 'next/link';
 import { Home, UserCircle } from 'lucide-react';
-import { useSetting } from '@/lib/state/settingsAccess';
-import { settings } from '@/lib/state/settings';
-import { getTextDirection } from '@/lib/i18n/getTextDirection';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 // TODO: Import useBaselineProps from lib/blocks/baselineProps once it's extracted
 import { useBaselineProps } from '@/components/common/RenderOLX';
 
@@ -30,38 +28,6 @@ function HomeLink() {
   );
 }
 
-function LocaleSelector() {
-  const props = useBaselineProps();
-  // HACK: Coerce props to RuntimeProps. System-scoped settings don't actually use props,
-  // but useSetting's signature requires it. Future changes to store/logEvent will
-  // force us to revisit this. See useBaselineProps comment about prop hierarchy.
-  const [locale, setLocale] = useSetting(props as any, settings.locale);
-
-  const localeOptions = [
-    { code: 'ar-Arab-SA', label: 'Arabic' },
-    { code: 'en-Latn-KE', label: 'English (Kenya)' },
-    { code: 'pl-Latn-PL', label: 'Polish' },
-    { code: 'es-Latn-ES', label: 'Spanish' },
-  ];
-
-  return (
-    <select
-      value={locale?.code || 'en-Latn-KE'}
-      onChange={(e) => {
-        const code = e.target.value;
-        setLocale({ code, dir: getTextDirection(code) });
-      }}
-      className="px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
-    >
-      {localeOptions.map((opt) => (
-        <option key={opt.code} value={opt.code}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 function UserIcon() {
   return <UserCircle className="w-4 h-4 text-gray-600" />;
 }
@@ -73,7 +39,7 @@ export default function AppHeader({ home = true, user = true }: AppHeaderProps) 
         {home && <HomeLink />}
       </div>
       <div className="flex items-center space-x-4">
-        <LocaleSelector />
+        <LanguageSwitcher />
         {user && <UserIcon />}
       </div>
     </header>

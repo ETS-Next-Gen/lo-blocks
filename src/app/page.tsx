@@ -339,14 +339,47 @@ function Sidebar() {
 }
 
 export default function Home() {
+  const [availableLocales, setAvailableLocales] = useState<string[]>([]);
   const localeAttrs = useLocaleAttributes();
+  const userLocale = localeAttrs.lang;
+
+  // Extract available locales when activities load
+  useEffect(() => {
+    if (!userLocale) return;
+
+    globalThis.fetch('/api/activities', {
+      headers: {
+        'Accept-Language': userLocale,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.activities) {
+          // Extract available locales from activity titles/descriptions
+          const localeSet = new Set<string>();
+          for (const activity of Object.values(data.activities)) {
+            const act = activity as any;
+            if (act.title && typeof act.title === 'object') {
+              Object.keys(act.title).forEach(lang => localeSet.add(lang));
+            }
+            if (act.description && typeof act.description === 'object') {
+              Object.keys(act.description).forEach(lang => localeSet.add(lang));
+            }
+          }
+          setAvailableLocales(Array.from(localeSet).sort());
+        }
+      })
+      .catch(() => {
+        // Silently fail - Activities component will handle the fetch
+      });
+  }, [userLocale]);
 
   return (
     <div {...localeAttrs} className="flex h-screen">
       <Sidebar />
       <main className="flex-1 overflow-auto bg-gray-50/30 flex flex-col">
         <div className="flex justify-end p-4 border-b border-gray-200">
-          <LanguageSwitcher />
+          <LanguageSwitcher availableLocales={availableLocales} />
         </div>
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-8">

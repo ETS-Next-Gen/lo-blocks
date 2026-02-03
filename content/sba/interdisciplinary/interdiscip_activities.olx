@@ -2,7 +2,7 @@
 ---
 description: Activity file for the Interdisciplinary SBA with all activities organized for easy editing
 category: interdisciplinary
-language: en-US
+lang: en-US
 ---
 -->
 <Vertical id="interdisciplinary_activities" launchable="true">

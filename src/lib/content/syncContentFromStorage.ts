@@ -329,8 +329,12 @@ function collectParseErrors(
 }
 
 /**
- * Adds parsed blocks to the block index, checking for duplicates.
- * Duplicate blocks are skipped and an error is recorded.
+ * Adds parsed blocks to the block index, merging language variants.
+ *
+ * Same block ID across files is allowed if they have different languages.
+ * Different languages are merged into nested structure: { id: { lang: OlxJson } }
+ *
+ * Duplicate error only if: same ID + same language in different files.
  */
 function indexParsedBlocks(
   newBlocks: Record<string, any>,
@@ -338,20 +342,29 @@ function indexParsedBlocks(
   sourceFile: ProvenanceURI,
   errors: OLXLoadingError[]
 ): void {
-  for (const [blockId, langMap] of Object.entries(newBlocks)) {
+  for (const [blockId, newLangMap] of Object.entries(newBlocks)) {
     // newBlocks is { id: { lang: OlxJson } }
-    // Store the entire nested structure with all language variants
     const existingBlock = blockIndex[blockId];
 
-    if (existingBlock) {
-      // existingBlock is also nested { lang: OlxJson }, extract first available for error message
-      const existingLang = Object.values(existingBlock)[0] as any;
-      const newLang = Object.values(langMap)[0] as any;
-      errors.push(createDuplicateIdError(blockId, existingLang, newLang, sourceFile));
-      continue;  // Skip duplicate, keep the first one
+    if (!existingBlock) {
+      // First time seeing this ID - store the entire language map
+      blockIndex[blockId] = newLangMap;
+      continue;
     }
 
-    blockIndex[blockId] = langMap;  // Store nested structure with all languages
+    // Block exists - merge language variants
+    // existingBlock is { lang: OlxJson, ... }
+    for (const [lang, newOlxJson] of Object.entries(newLangMap)) {
+      if (existingBlock[lang]) {
+        // Same ID + same language in different files = real duplicate error
+        const existingOlxJson = existingBlock[lang] as any;
+        errors.push(createDuplicateIdError(blockId, existingOlxJson, newOlxJson as any, sourceFile));
+        continue;  // Skip this language variant, keep the first one
+      }
+
+      // New language for this ID - merge it in
+      existingBlock[lang] = newOlxJson;
+    }
   }
 }
 

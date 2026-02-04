@@ -1,12 +1,12 @@
 <!--
 ---
-description: Apply behavioral psychology concepts to understand function of behavior and create intervention plans
+description: Review functions of behavior and create intervention plans for sleep refusal (continuation of the psychology study group discussion).
 category: psychology
 language: en-US
 ---
 -->
-<!-- Psychology SBA Part 2: Function of Behavior and Intervention Planning -->
-<SplitPanel id="psych_sba_fba" title="Psychology Study Group: Function of Behavior" launchable="true">
+<!-- Psychology SBA Part 2: 3. Function of Behavior and Intervention Planning -->
+<SplitPanel id="psych_sba_fba" title="Psychology Study Group: 3. Function of Behavior" launchable="true">
 
   <!-- Left Panel: SMS Conversation -->
   <LeftPane>

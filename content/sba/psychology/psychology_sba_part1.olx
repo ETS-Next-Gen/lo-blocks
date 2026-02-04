@@ -5,7 +5,7 @@ category: psychology
 ---
 -->
 <!-- Psychology SBA: Sleep Refusal Scenario -->
-<SplitPanel id="psych_sba" title="Psychology Study Group: Sleep Refusal Case" launchable="true">
+<SplitPanel id="psych_sba" title="Psychology Study Group: 1. Sleep Refusal" launchable="true">
 
   <!-- Left Panel: SMS Conversation -->
   <LeftPane>

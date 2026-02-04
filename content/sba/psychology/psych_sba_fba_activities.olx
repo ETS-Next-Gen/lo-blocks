@@ -5,7 +5,7 @@ category: psychology
 language: en-US
 ---
 -->
-<Vertical id="psych_sba_fba_activities" title="Activities for Psychology SBA - FBA" launchable="true">
+<Vertical id="psych_sba_fba_activities" title="Activities for Psychology SBA - FBA" launchable="false">
 
   <!-- Introduction section -->
   <Vertical id="fba_introduction">

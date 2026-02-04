@@ -49,6 +49,15 @@ const xmlParser = new XMLParser({
 });
 
 /**
+ * Apply Zod schema defaults to metadata object.
+ * Ensures curationStatus always has a value (defaults to 'curated').
+ */
+function normalizeMetadata(partial: any): OLXMetadata {
+  const result = OLXMetadataSchema.safeParse(partial);
+  return result.success ? result.data : { curationStatus: 'curated' };
+}
+
+/**
  * Determines if a block type requires unique IDs based on its configuration.
  *
  * @param Component - The block component (may be undefined for unknown components)
@@ -167,7 +176,7 @@ function extractMetadataFromComment(
       message: 'Internal parser error: Comment node found but text content is missing. This may indicate a parser configuration issue.',
       technical: { commentText }
     });
-    return {};
+    return normalizeMetadata({});
   }
 
   if (typeof commentText !== 'string') {
@@ -177,7 +186,7 @@ function extractMetadataFromComment(
       message: `Internal parser error: Comment text has unexpected type '${typeof commentText}' (expected string).`,
       technical: { commentText, type: typeof commentText }
     });
-    return {};
+    return normalizeMetadata({});
   }
 
   // Trim whitespace and check for YAML frontmatter delimiters (---)
@@ -186,7 +195,7 @@ function extractMetadataFromComment(
   // Allow optional whitespace before closing --- to handle indented comments in tests
   const frontmatterMatch = trimmed.match(/^---\s*\n([\s\S]*?)\n\s*---\s*$/);
   if (!frontmatterMatch) {
-    return {}; // Not metadata, just a regular comment
+    return normalizeMetadata({}); // Not metadata, just a regular comment
   }
 
   const yamlContent = frontmatterMatch[1];
@@ -233,7 +242,7 @@ Common issues:
           zodIssues: result.error.issues
         }
       });
-      return {};
+      return normalizeMetadata({});
     }
 
     return result.data;
@@ -270,7 +279,7 @@ Example of correct format:
         yamlErrorDetails: yamlError
       }
     });
-    return {};
+    return normalizeMetadata({});
   }
 }
 
@@ -294,7 +303,7 @@ function extractSiblingMetadata(
   errors: OLXLoadingError[]
 ): OLXMetadata {
   if (!siblings || nodeIndex <= 0) {
-    return {};
+    return normalizeMetadata({});
   }
 
   // Look backwards for a comment with valid metadata
@@ -328,7 +337,7 @@ function extractSiblingMetadata(
     break;
   }
 
-  return {};
+  return normalizeMetadata({});
 }
 
 export async function parseOLX(
@@ -582,7 +591,7 @@ export async function parseOLX(
     )
     : parsedTree;
 
-  let fileMetadata: OLXMetadata = {};
+  let fileMetadata: OLXMetadata = normalizeMetadata({});
 
   if (rootNode) {
     // We take the ID from the result of `parseNode` rather than directly from

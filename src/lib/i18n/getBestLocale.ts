@@ -4,18 +4,18 @@ import type { RuntimeProps, UserLocale, ContentVariant, RenderedVariant } from '
 /**
  * Select best locale on the server from Accept-Language header.
  *
- * Returns null if availableLocales is empty (indicates malformed content).
+ * Requires availableLocales to be non-empty. Throws if empty (indicates malformed content).
  *
  * @param request - NextRequest with headers
- * @param availableLocales - Array of available BCP 47 locale codes
- * @returns The best matching locale, or null if no locales available
+ * @param availableLocales - Array of available BCP 47 locale codes (must be non-empty)
+ * @returns The best matching locale
  */
 export function getBestLocaleServer(
   request: NextRequest,
   availableLocales: string[]
-): string | null {
+): string {
   if (!availableLocales || availableLocales.length === 0) {
-    return null;
+    throw new Error('getBestLocaleServer: availableLocales cannot be empty');
   }
 
   const preferredLocale = request.headers.get('accept-language');

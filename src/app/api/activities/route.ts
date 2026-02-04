@@ -39,9 +39,8 @@ export async function GET(request: NextRequest) {
           // langMap is { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
           const availableLocales = Object.keys(langMap);
           const bestLocale = getBestLocaleServer(request, availableLocales);
-          if (!bestLocale) return false;  // Skip entries with no valid locales
           const olxJson = langMap[bestLocale];
-          return olxJson?.attributes?.launchable === 'true';
+          return olxJson.attributes.launchable === 'true';
         })
         .map(([id, langMap]: [string, any]) => {
           // Transform nested OlxJson structure into activity card
@@ -56,9 +55,8 @@ export async function GET(request: NextRequest) {
             const olxJson = langMap[locale];
             if (olxJson) {
               title[locale] = olxJson.attributes?.title || id;
-              description[locale] = (olxJson as any).description || '';
-              // TODO: Track source (human vs auto) - for now default to 'human'
-              availableLocalesMap[locale] = 'human';
+              description[locale] = olxJson.description || '';
+              availableLocalesMap[locale] = olxJson.curationStatus;
             }
           }
 

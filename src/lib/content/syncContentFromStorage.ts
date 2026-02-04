@@ -171,21 +171,22 @@ function findOlxFilesDependingOn(
 
   for (const langMap of Object.values(blockIndex)) {
     // blockIndex stores nested structure { locale: OlxJson }
-    // Extract the OlxJson from the first available locale
-    const locales = Object.keys(langMap);
-    const olxJson = locales.length > 0 ? langMap[locales[0]] : undefined;
-    if (!olxJson?.provenance || !Array.isArray(olxJson.provenance)) continue;
+    // Check ALL locale variants for dependencies on changed auxiliary files
+    // (e.g., Arabic variant might include src="aux.ar.png" that English doesn't)
+    for (const olxJson of Object.values(langMap) as any[]) {
+      if (!olxJson?.provenance || !Array.isArray(olxJson.provenance)) continue;
 
-    // Check if this block's provenance includes a changed auxiliary file
-    const dependsOnChangedFile = olxJson.provenance.some(
-      (prov: string) => changedAuxiliaryFiles.has(prov as ProvenanceURI)
-    );
+      // Check if this variant's provenance includes a changed auxiliary file
+      const dependsOnChangedFile = olxJson.provenance.some(
+        (prov: string) => changedAuxiliaryFiles.has(prov as ProvenanceURI)
+      );
 
-    if (dependsOnChangedFile) {
-      // The root OLX file is the first element in the provenance chain
-      const rootOlxFile = olxJson.provenance[0] as ProvenanceURI;
-      if (rootOlxFile && unchangedFiles[rootOlxFile]) {
-        olxFilesToReparse.add(rootOlxFile);
+      if (dependsOnChangedFile) {
+        // The root OLX file is the first element in the provenance chain
+        const rootOlxFile = olxJson.provenance[0] as ProvenanceURI;
+        if (rootOlxFile && unchangedFiles[rootOlxFile]) {
+          olxFilesToReparse.add(rootOlxFile);
+        }
       }
     }
   }

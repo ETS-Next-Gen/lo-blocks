@@ -401,13 +401,31 @@ export interface OlxDomNode {
 export type OlxDomSelector = (node: OlxDomNode) => boolean;
 
 /**
+ * Branded locale types - prevent mixing up semantic concepts.
+ *
+ * These represent different stages of the locale/variant selection pipeline:
+ * 1. UserLocale - What the user can read (browser → Redux → author override)
+ * 2. ContentVariant - What variants exist for content (from idMap keys)
+ * 3. RenderedVariant - The selected variant to actually render
+ */
+
+/** What the user can read (browser → Redux selection → author override via lang=) */
+export type UserLocale = string & { readonly __userLocale: true };
+
+/** A language/accessibility/context variant available for content (e.g., "ar-Arab-SA", "en:audio-only") */
+export type ContentVariant = string & { readonly __variant: true };
+
+/** The variant we actually render (result of matching UserLocale against available ContentVariants) */
+export type RenderedVariant = string & { readonly __rendered: true };
+
+/**
  * LocaleContext - language and text direction configuration.
  *
  * Enables i18n throughout the platform. For now, `dir` comes from Redux settings.
  * Future: derive `dir` from Intl.Locale.getTextInfo() when browser support is universal.
  */
 export interface LocaleContext {
-  code: string;  // BCP 47 locale code: 'en-Latn-US', 'zh-Hans-CN', 'ar-Arab-SA', 'pl-Latn-PL', 'tr-TR'
+  code: UserLocale;  // BCP 47 locale code: 'en-Latn-US', 'zh-Hans-CN', 'ar-Arab-SA', 'pl-Latn-PL', 'tr-TR'
   dir: 'ltr' | 'rtl';  // Text direction from Redux settings
 }
 

@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import type { RuntimeProps } from '@/lib/types';
+import type { RuntimeProps, UserLocale, ContentVariant, RenderedVariant } from '@/lib/types';
 
 /**
  * Select best locale on the server from Accept-Language header.
@@ -48,11 +48,13 @@ export function getBestLocaleClient(
  *
  * Scoring: exact match (4) > language+script (3) > language+region (2) > language only (1) > no match (0)
  *
+ * Used by both pickBestLocale and extractLocalizedVariant, and exported for variant selection.
+ *
  * @param requested - BCP 47 locale code (normalized, without Accept-Language qualifiers)
  * @param available - BCP 47 locale code to match against
  * @returns Score 0-4 indicating how well the locales match
  */
-function scoreBCP47Match(requested: string, available: string): number {
+export function scoreBCP47Match(requested: string, available: string): number {
   // Parse requested locale: language[-script[-region]]
   const reqParts = requested.split('-');
   const reqLanguage = reqParts[0];
@@ -116,6 +118,76 @@ function pickBestLocale(
   }
 
   return availableLocales[0];
+}
+
+/**
+ * Type constructors - convert plain strings to branded types safely.
+ */
+function asRenderedVariant(code: string): RenderedVariant {
+  if (!code) throw new Error('RenderedVariant cannot be empty');
+  return code as RenderedVariant;
+}
+
+function getBaseVariant(variant: string): string {
+  return variant.split(':')[0];
+}
+
+/**
+ * Select the best content variant for a given user locale.
+ *
+ * Algorithm:
+ * 1. Try exact match (e.g., "en-Latn-US" → "en-Latn-US")
+ * 2. Try BCP 47 hierarchy (e.g., "en-Latn-KE" → "en-Latn" → "en")
+ * 3. Try feature variants (e.g., "en:audio-only" if "en" requested)
+ * 4. Try wildcard variant "*" if available
+ * 5. Return first available as last resort
+ *
+ * @param userLocale - User's current locale (what they can read)
+ * @param availableVariants - Content variants available for this content
+ * @returns The best matching variant, or null if none available
+ */
+export function selectBestVariant(
+  userLocale: UserLocale,
+  availableVariants: (ContentVariant | string)[]
+): RenderedVariant | null {
+  if (!availableVariants || availableVariants.length === 0) {
+    return null;
+  }
+
+  const userLocaleStr = userLocale as string;
+  const variants = availableVariants as string[];
+
+  // 1. Try exact match
+  if (variants.includes(userLocaleStr)) {
+    return asRenderedVariant(userLocaleStr);
+  }
+
+  // 2. Try BCP 47 hierarchy on base variants (without features)
+  const userBase = getBaseVariant(userLocaleStr);
+  let bestMatch: { variant: string; score: number } | null = null;
+
+  for (const variant of variants) {
+    const variantBase = getBaseVariant(variant);
+
+    // Score BCP 47 match (e.g., "en-Latn-KE" vs "en-Latn" scores 3)
+    const score = scoreBCP47Match(userBase, variantBase);
+
+    if (score > (bestMatch?.score ?? 0)) {
+      bestMatch = { variant, score };
+    }
+  }
+
+  if (bestMatch && bestMatch.score > 0) {
+    return asRenderedVariant(bestMatch.variant);
+  }
+
+  // 3. Try wildcard variant "*"
+  if (variants.includes('*')) {
+    return asRenderedVariant('*');
+  }
+
+  // 4. Last resort: first available
+  return asRenderedVariant(variants[0]);
 }
 
 /**

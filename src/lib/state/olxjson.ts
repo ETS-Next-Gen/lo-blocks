@@ -17,7 +17,7 @@
 
 import { useSelector } from 'react-redux';
 import * as lo_event from 'lo_event';
-import { extractLocalizedVariant } from '@/lib/i18n/getBestLocale';
+import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
 import type { OlxJson, OlxKey, IdMap } from '../types';
 import type { LogEventFn } from '../render';
 

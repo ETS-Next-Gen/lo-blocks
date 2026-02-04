@@ -7,7 +7,7 @@ import Spinner from '@/components/common/Spinner';
 import { DisplayError } from '@/lib/util/debug';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
-import { extractLocalizedVariant } from '@/lib/i18n/getBestLocale';
+import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
 
 const ENDPOINT_LINKS = [
   {

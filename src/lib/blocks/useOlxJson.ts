@@ -17,7 +17,7 @@ import {
   dispatchOlxJsonError
 } from '@/lib/state/olxjson';
 import { refToOlxKey } from '@/lib/blocks/idResolver';
-import { extractLocalizedVariant } from '@/lib/i18n/getBestLocale';
+import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
 import type { OlxJson, OlxKey, OlxReference, RuntimeProps } from '@/lib/types';
 import type { LogEventFn } from '@/lib/render';
 

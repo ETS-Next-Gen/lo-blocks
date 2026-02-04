@@ -16,7 +16,7 @@
  *       editPath: string,
  *       title: { [variant]: string },
  *       description: { [variant]: string },
- *       availableVariants: { [variant]: 'human' | 'auto' },
+ *       availableVariants: { [variant]: 'supported' | 'bestEffort' },
  *       provenance: string[]
  *     }
  *   }
@@ -26,7 +26,7 @@
 import { NextRequest } from 'next/server';
 import { syncContentFromStorage } from '@/lib/content/syncContentFromStorage';
 import { getEditPathFromProvenance } from '@/lib/lofs/contentPaths';
-import { getBestVariantServer } from '@/lib/i18n/getBestLocale';
+import { getBestVariantServer } from '@/lib/i18n/getBestVariant';
 import type { ContentTier } from '@/lib/types';
 
 export async function GET(request: NextRequest) {

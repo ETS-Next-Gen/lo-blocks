@@ -9,7 +9,7 @@
 // Currently used for debugging content structure and relationships in DAG-based content.
 //
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
-import { extractLocalizedVariant } from '@/lib/i18n/getBestLocale';
+import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
 import { GraphNode, GraphEdge, ParseError } from '@/lib/types';
 
 interface ParseResult {

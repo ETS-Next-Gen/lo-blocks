@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
-import { getBestVariantClient } from '@/lib/i18n/getBestLocale';
+import { getBestVariantClient } from '@/lib/i18n/getBestVariant';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
 import type { OlxKey, OlxJson, IdMap, RuntimeProps } from '@/lib/types';
 

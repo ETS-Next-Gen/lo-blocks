@@ -16,11 +16,12 @@ import { selectVariantTiers } from '@/lib/state/olxjson';
 import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 import { useBaselineProps } from '@/components/common/RenderOLX';
 import { ALL_LANGUAGES, getLanguageLabel, filterLanguages } from '@/lib/i18n/languages';
+import type { Locale } from '@/lib/types';
 
 interface LanguageSwitcherProps {
   className?: string;
   sources?: string[];  // Which sources to scan for available variants (defaults to all)
-  availableLocales?: string[];  // Optional: explicit list of available variants (e.g., from activities)
+  availableLocales?: Locale[];  // Optional: explicit list of available variants (e.g., from activities)
 }
 
 /**

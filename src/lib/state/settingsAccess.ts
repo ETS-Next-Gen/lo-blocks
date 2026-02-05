@@ -36,8 +36,9 @@ export interface SettingAttributes {
 /**
  * Minimal interface for settings access outside React components.
  *
- * HACK: This is a temporary subset of RuntimeProps. Eventually we'll have
- * a proper settings context object that components and actions can pass.
+ * TODO: Deprecated by BaselineProps. getSetting should accept BaselineProps
+ * and access props.runtime.store instead of props.store. Remove SettingsProps
+ * once getSetting is updated (currently has no callers, so low urgency).
  */
 export interface SettingsProps {
   store: Store;
@@ -87,6 +88,10 @@ export function useSetting(props: BaselineProps | null | undefined, field: Field
  *   const locale = getSetting(props, settings.locale, { school: 'kaust' })
  *
  * Used in non-React contexts or when you already have a props-like object.
+ *
+ * TODO: Migrate to accept BaselineProps and use props.runtime.store.
+ * The `SettingsProps | any` type is meaningless (collapses to any).
+ * No callers exist yet, so this can be fixed when first used.
  *
  * @param props - SettingsProps (contains store), BaselineProps, or RuntimeProps
  * @param field - Field definition with name property (from settings object)

@@ -41,8 +41,8 @@ interface LanguageSwitcherProps {
  */
 
 export default function LanguageSwitcher({ className = '', sources, availableLocales }: LanguageSwitcherProps) {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false); // TODO: useFieldState
+  const [searchTerm, setSearchTerm] = useState(''); // TODO: useFieldState
 
   // Initialize Redux locale (ensures Redux has locale before any locale-dependent code runs)
   const baselineProps = useBaselineProps();
@@ -102,6 +102,10 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
     }
   };
 
+  // TODO:
+  // * Common controls
+  // * Pagination or scrolling on long list from translanguaging
+  // * Pretty flags?
   return (
     <div className={`relative inline-block ${className}`}>
       <button

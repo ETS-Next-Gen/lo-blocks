@@ -38,15 +38,18 @@ export function getTextDirection(localeCode: string): 'ltr' | 'rtl' {
  * Get browser's preferred locale code.
  *
  * Returns the best guess at user's locale from navigator.language or navigator.languages.
- * Safe for use in both browser and Node.js (returns 'en-Latn-US' if not in browser).
+ * Normalizes to primary language code (e.g., 'en-US' -> 'en', 'fr-CA' -> 'fr').
+ * Safe for use in both browser and Node.js (returns 'en' if not in browser).
  *
- * @returns BCP 47 locale code
+ * @returns BCP 47 locale code (primary language only)
  */
 export function getBrowserLocale(): string {
   if (typeof navigator === 'undefined') {
-    return 'en-Latn-US';  // Node.js environment
+    return 'en';  // Node.js environment
   }
 
-  // Prefer navigator.language over navigator.languages[0]
-  return navigator.language || 'en-Latn-US';
+  const browserLang = navigator.language || 'en';
+
+  // Extract primary language code (first part before hyphen)
+  return browserLang.split('-')[0].toLowerCase();
 }

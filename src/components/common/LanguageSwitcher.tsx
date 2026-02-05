@@ -51,6 +51,24 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
   // Filter translanguaging options
   const filteredTransLanguages = filterLanguages(searchTerm);
 
+  /**
+   * Parse code and display name from language option label
+   * Label format: "code - Display Name" or just display name if from search
+   */
+  function parseLanguageLabel(option: any): { code: string; displayName: string } {
+    // If this is a LanguageOption from our list, use code directly
+    if (option.code && typeof option === 'object') {
+      // Extract display name from label (format: "code - display name")
+      const parts = option.label.split(' - ');
+      return {
+        code: option.code,
+        displayName: parts[1] || option.label
+      };
+    }
+    // Fallback for other cases
+    return { code: option, displayName: getLanguageLabel(option) };
+  }
+
   const handleSelectLocale = (code: string) => {
     setLocale({ code, dir: getTextDirection(code) });
     setShowDropdown(false);
@@ -73,22 +91,30 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
       </button>
 
       {showDropdown && (
-        <div className="absolute top-full end-0 mt-1 w-72 bg-white border border-gray-300 rounded shadow-lg z-50">
-          <div className="max-h-96 overflow-y-auto">
+        <div className="absolute top-full end-0 mt-1 w-96 bg-white border border-gray-300 rounded shadow-lg z-50">
+          <div className="max-h-96 overflow-y-auto font-mono text-sm">
             {/* Browser Language - Always show */}
             {browserLanguage && (
               <div className="border-b">
                 <div className="px-3 py-2 text-xs font-semibold text-blue-600 uppercase bg-blue-50">
                   🌐 Browser Language
                 </div>
-                <button
-                  onClick={() => handleSelectLocale(browserLanguage)}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 ${
-                    localeCode === browserLanguage ? 'bg-blue-100 font-semibold' : ''
-                  }`}
-                >
-                  {getLanguageLabel(browserLanguage)}
-                </button>
+                {(() => {
+                  const label = getLanguageLabel(browserLanguage);
+                  const parts = label.split(' - ');
+                  const displayName = parts[1] || label;
+                  return (
+                    <button
+                      onClick={() => handleSelectLocale(browserLanguage)}
+                      className={`w-full text-left px-3 py-1.5 hover:bg-blue-50 flex justify-between items-center ${
+                        localeCode === browserLanguage ? 'bg-blue-100 font-semibold' : ''
+                      }`}
+                    >
+                      <span className="font-sans">{displayName}</span>
+                      <span className="text-xs text-gray-500 font-mono ms-4 flex-shrink-0">({browserLanguage})</span>
+                    </button>
+                  );
+                })()}
               </div>
             )}
 
@@ -98,19 +124,24 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
                 <div className="px-3 py-2 text-xs font-semibold text-green-700 uppercase bg-green-50">
                   ✓ Available for This Content
                 </div>
-                {tiers.curated.map((code) => (
-                  code !== browserLanguage && (
+                {tiers.curated.map((code) => {
+                  if (code === browserLanguage) return null;
+                  const label = getLanguageLabel(code);
+                  const parts = label.split(' - ');
+                  const displayName = parts[1] || label;
+                  return (
                     <button
                       key={code}
                       onClick={() => handleSelectLocale(code)}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-green-50 ${
+                      className={`w-full text-left px-3 py-1.5 hover:bg-green-50 flex justify-between items-center ${
                         localeCode === code ? 'bg-green-100 font-semibold' : ''
                       }`}
                     >
-                      {getLanguageLabel(code)}
+                      <span className="font-sans">{displayName}</span>
+                      <span className="text-xs text-gray-500 font-mono ms-4 flex-shrink-0">({code})</span>
                     </button>
-                  )
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -120,17 +151,23 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
                 <div className="px-3 py-2 text-xs font-semibold text-amber-700 uppercase bg-amber-50">
                   ⚠ Auto-translated
                 </div>
-                {tiers.bestEffort.map((code) => (
-                  <button
-                    key={code}
-                    onClick={() => handleSelectLocale(code)}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-amber-50 ${
-                      localeCode === code ? 'bg-amber-100 font-semibold' : ''
-                    }`}
-                  >
-                    {getLanguageLabel(code)}
-                  </button>
-                ))}
+                {tiers.bestEffort.map((code) => {
+                  const label = getLanguageLabel(code);
+                  const parts = label.split(' - ');
+                  const displayName = parts[1] || label;
+                  return (
+                    <button
+                      key={code}
+                      onClick={() => handleSelectLocale(code)}
+                      className={`w-full text-left px-3 py-1.5 hover:bg-amber-50 flex justify-between items-center ${
+                        localeCode === code ? 'bg-amber-100 font-semibold' : ''
+                      }`}
+                    >
+                      <span className="font-sans">{displayName}</span>
+                      <span className="text-xs text-gray-500 font-mono ms-4 flex-shrink-0">({code})</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -151,17 +188,22 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
                 />
               </div>
               <div className="max-h-40 overflow-y-auto px-3">
-                {filteredTransLanguages.slice(0, 15).map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => handleSelectLocale(lang.code)}
-                    className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-50 ${
-                      localeCode === lang.code ? 'bg-gray-100 font-semibold' : ''
-                    }`}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
+                {filteredTransLanguages.slice(0, 15).map((lang) => {
+                  const parts = lang.label.split(' - ');
+                  const displayName = parts[1] || lang.label;
+                  return (
+                    <button
+                      key={lang.code}
+                      onClick={() => handleSelectLocale(lang.code)}
+                      className={`w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 flex justify-between items-center ${
+                        localeCode === lang.code ? 'bg-gray-100 font-semibold' : ''
+                      }`}
+                    >
+                      <span className="font-sans">{displayName}</span>
+                      <span className="text-xs text-gray-500 font-mono ms-4 flex-shrink-0">({lang.code})</span>
+                    </button>
+                  );
+                })}
               </div>
               <div className="text-xs text-gray-500 px-3 py-2 border-t">
                 Type language code or name, press Enter

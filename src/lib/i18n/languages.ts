@@ -1,29 +1,94 @@
 // src/lib/i18n/languages.ts
 //
-// BCP 47 language list utilities for the language selector.
+// BCP 47 language list utilities using CLDR data.
 // Provides comprehensive language code -> label mapping with support
 // for custom language codes (translanguaging).
 
-import languageData from './languages.json';
+import cldrLocales from 'cldr-core/availableLocales.json';
 
 export interface LanguageOption {
   code: string;
   label: string;
 }
 
-// All available languages, combined
-export const ALL_LANGUAGES: LanguageOption[] = [
-  ...languageData.common,
-  ...languageData.extended
-];
+/**
+ * Get all CLDR locale codes (comprehensive list of world languages/regions)
+ */
+function getAvailableLocales(): string[] {
+  const data = cldrLocales as { availableLocales: { full: string[] } };
+  return data.availableLocales.full || [];
+}
 
 /**
- * Find language label by code, or return the code if not found
- * (supports custom/oddball language codes)
+ * Get display name for a language code using Intl.DisplayNames
+ * Uses the provided locale for localized display names.
+ * Falls back to the code itself if display name cannot be generated
  */
-export function getLanguageLabel(code: string): string {
-  const lang = ALL_LANGUAGES.find(l => l.code === code);
-  return lang?.label || code;
+function getDisplayName(code: string, displayLocale: string = 'en'): string {
+  try {
+    const displayNames = new Intl.DisplayNames(displayLocale, { type: 'language' });
+    return displayNames.of(code) || code;
+  } catch {
+    // If Intl.DisplayNames fails, return the code as-is
+    return code;
+  }
+}
+
+/**
+ * Build language options from CLDR locales
+ * Uses full locale codes (en-Latn-US, zh-Hans-CN, etc.) with display names
+ */
+function buildLanguageOptions(displayLocale: string = 'en'): LanguageOption[] {
+  const locales = getAvailableLocales();
+  const options: LanguageOption[] = locales.map(locale => ({
+    code: locale,
+    label: `${locale} - ${getDisplayName(locale, displayLocale)}`
+  }));
+
+  // Sort by label for better UX in dropdown
+  options.sort((a, b) => a.label.localeCompare(b.label));
+  return options;
+}
+
+// Cache language options per display locale
+const cachedLanguageOptions = new Map<string, LanguageOption[]>();
+
+/**
+ * Get all available language options
+ *
+ * @param displayLocale - The locale to use for display names (default 'en')
+ * @returns Array of language options with codes and localized names
+ */
+export function getLanguageOptions(displayLocale: string = 'en'): LanguageOption[] {
+  if (!cachedLanguageOptions.has(displayLocale)) {
+    cachedLanguageOptions.set(displayLocale, buildLanguageOptions(displayLocale));
+  }
+  return cachedLanguageOptions.get(displayLocale)!;
+}
+
+// Export for backward compatibility with LanguageSwitcher
+// Built with English display names by default
+export const ALL_LANGUAGES = getLanguageOptions('en');
+
+/**
+ * Find language label by code
+ * Returns the code and display name (e.g., 'en-Latn-US - English (United States)')
+ * Supports custom/oddball language codes via Intl.DisplayNames fallback
+ *
+ * @param code - Language code to look up
+ * @param displayLocale - Optional locale for display names (default 'en')
+ */
+export function getLanguageLabel(code: string, displayLocale: string = 'en'): string {
+  // Check cache first
+  const options = getLanguageOptions(displayLocale);
+  const lang = options.find(l => l.code === code);
+  if (lang) {
+    return lang.label;
+  }
+
+  // Try to get display name for codes not in our list
+  // (supports translanguaging with custom codes)
+  return `${code} - ${getDisplayName(code, displayLocale)}`;
 }
 
 /**
@@ -37,4 +102,30 @@ export function filterLanguages(term: string, options: LanguageOption[] = ALL_LA
   return options.filter(
     opt => opt.code.toLowerCase().includes(lower) || opt.label.toLowerCase().includes(lower)
   );
+}
+
+/**
+ * Normalize browser locale code to BCP 47 format
+ *
+ * Browser returns codes like: en-US, ar-SA, fr
+ * We want to return: en, ar, fr (just primary language for now)
+ *
+ * This enables consistent handling between browser locale and our system.
+ * In the future, we could expand to full BCP 47 with script tags (en-Latn-US)
+ * by using Intl.Locale API.
+ */
+export function normalizeBrowserLocale(code: string): string {
+  if (!code) return 'en';
+
+  // Extract primary language code (first part before hyphen)
+  const primary = code.split('-')[0].toLowerCase();
+
+  // Verify it's a real language code by checking if we can get a display name
+  try {
+    new Intl.DisplayNames('en', { type: 'language' }).of(primary);
+    return primary;
+  } catch {
+    // Invalid language code, fall back to 'en'
+    return 'en';
+  }
 }

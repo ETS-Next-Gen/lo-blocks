@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
-import { getBestVariantClient } from '@/lib/i18n/getBestVariant';
+import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
 import type { OlxKey, OlxJson, IdMap, RuntimeProps } from '@/lib/types';
 
@@ -24,10 +24,10 @@ function findStatefulIds(idMap, blockRegistry = BLOCK_REGISTRY, locale?: string)
   return Object.entries(idMap)
     .filter(([id, variantMap]) => {
       // variantMap is nested structure { 'en-Latn-US': OlxJson, ... }
-      const node = getBestVariantClient(variantMap as any, locale);
+      const node = extractLocalizedVariant(variantMap as any, locale || '');
       if (!node) return false;
 
-      const blockType = blockRegistry[node.tag];
+      const blockType = blockRegistry[(node as any).tag];
       // Has fields defined = stateful (fields is the map of field name -> FieldInfo)
       const hasFields = blockType?.fields && Object.keys(blockType.fields).length > 0;
       return hasFields;
@@ -49,13 +49,13 @@ function StateRow({ id, idMap }) {
 
   // Extract the OlxJson from nested structure { variant: OlxJson, ... }
   const variantMap = idMap[id] as any;
-  const olxJson = getBestVariantClient(variantMap, locale);
+  const olxJson = extractLocalizedVariant(variantMap, locale || '');
 
   if (!olxJson) {
     return null;
   }
 
-  const tag = olxJson.tag;
+  const tag = (olxJson as any).tag;
 
   return (
     <div className="border-b last:border-b-0 py-2">

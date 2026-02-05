@@ -18,7 +18,7 @@
 import { useSelector } from 'react-redux';
 import * as lo_event from 'lo_event';
 import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
-import type { OlxJson, OlxKey, IdMap } from '../types';
+import type { OlxJson, OlxKey, IdMap, UserLocale } from '../types';
 import type { LogEventFn } from '../render';
 
 // =============================================================================
@@ -273,15 +273,37 @@ export function olxjsonReducer(
  * @param locale - BCP 47 locale code (e.g., 'en-Latn-US'). Defaults to 'en-Latn-US' for backward compatibility.
  * @returns OlxJson if found and ready, undefined otherwise
  */
+/**
+ * Select a block from Redux by ID and locale.
+ *
+ * NOTE: This is written as a pure Redux selector (takes state
+ * directly) rather than following the codebase idiom of props-based
+ * functions, because it's called from pure selectors, which have
+ * state only
+ *
+ * HACK/TODO: This has appeared throughout the codebase used directly
+ * where props are available. We should probably have the standards
+ * select/get/use breakdown so component code does NOT use this
+ * directly, and break `props.runtime` abstraction boundaries.
+ *
+ * This is left as a TODO because we're merging a gigantic PR, and
+ * feels a bit beyond scope.
+ *
+ * Callers should extract state and locale from props before calling:
+ *   selectBlock(props.runtime.store.getState(), sources, olxKey, props.runtime.locale.code)
+ *
+ * @param state - Redux root state
+ * @param sources - Array of source names in priority order
+ * @param id - OlxKey to look up
+ * @param locale - User's current locale for language variant selection
+ * @returns OlxJson if found and ready, undefined otherwise
+ */
 export function selectBlock(
   state: RootState,
   sources: string[],
-  id: OlxKey | string,
-  locale: string
+  id: OlxKey,
+  locale: UserLocale
 ): OlxJson | undefined {
-  if (!locale) {
-    throw new Error('selectBlock: locale parameter is required for language-aware rendering');
-  }
 
   const olxjson = state.application_state?.olxjson;
   if (!olxjson) return undefined;
@@ -455,10 +477,7 @@ export function selectVariantTiers(state: RootState): VariantTiers {
  * @param locale - BCP 47 locale code (e.g., 'en-Latn-US')
  * @returns OlxJson if found and ready, undefined otherwise
  */
-export function useOlxJsonBlock(sources: string[], id: OlxKey | string, locale: string): OlxJson | undefined {
-  if (!locale) {
-    throw new Error('useOlxJsonBlock: locale is required');
-  }
+export function useOlxJsonBlock(sources: string[], id: OlxKey, locale: UserLocale): OlxJson | undefined {
   return useSelector((state: RootState) => selectBlock(state, sources, id, locale));
 }
 

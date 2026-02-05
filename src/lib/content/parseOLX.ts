@@ -136,8 +136,8 @@ function resolveElementLanguage(
     return fileLang;
   }
 
-  // 4. Default
-  return 'en-Latn-US';
+  // 4. Default - generic/language-agnostic content (shown to everyone)
+  return '*';
 }
 
 /**

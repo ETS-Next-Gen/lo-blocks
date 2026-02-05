@@ -117,6 +117,11 @@ function pickBestVariant(
     return bestMatch.variant;
   }
 
+  // Try generic variant (*) if available
+  if (availableVariants.includes('*')) {
+    return '*';
+  }
+
   return availableVariants[0];
 }
 

@@ -69,60 +69,26 @@ function categorizeActivities(entries) {
   };
 
   entries.forEach(entry => {
-    // Use metadata category if available, otherwise fall back to ID-based categorization
-    const category = entry.category?.toLowerCase();
-
-    if (category && categories[category]) {
+    const category = entry.category?.toLowerCase() || 'other';
+    if (categories[category]) {
       categories[category].items.push(entry);
     } else {
-      // Fallback: ID-based categorization for uncategorized items
-      const id = entry.id.toLowerCase();
-      if (id.includes('demo')) {
-        categories.demo.items.push(entry);
-      } else if (id.includes('psych')) {
-        categories.psychology.items.push(entry);
-      } else if (id.includes('interdisciplinary')) {
-        categories.interdisciplinary.items.push(entry);
-      } else {
-        categories.other.items.push(entry);
-      }
+      categories.other.items.push(entry);
     }
   });
 
   return Object.values(categories).filter(cat => cat.items.length > 0);
 }
 
-function ActivityRow({ entry, userLocale }) {
+function ActivityRow({ entry, userLocale }: { entry: any; userLocale: string }) {
   // Pick best title from available locales with BCP 47 fallback
-  let title = entry.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  if (entry.title) {
-    if (typeof entry.title === 'string') {
-      title = entry.title;
-    } else {
-      // title is { [locale]: string } - use BCP 47 hierarchy fallback
-      const localizedTitle = extractLocalizedVariant(entry.title, userLocale);
-      if (localizedTitle) {
-        title = localizedTitle;
-      }
-    }
-  }
+  const title: string = extractLocalizedVariant(entry.title, userLocale) || entry.id;
 
   // Pick best description from available locales with BCP 47 fallback
-  let description = '';
-  if (entry.description) {
-    if (typeof entry.description === 'string') {
-      description = entry.description;
-    } else {
-      // description is { [locale]: string } - use BCP 47 hierarchy fallback
-      const localizedDesc = extractLocalizedVariant(entry.description, userLocale);
-      if (localizedDesc && typeof localizedDesc === 'string') {
-        description = localizedDesc;
-      }
-    }
-  }
+  const description: string = extractLocalizedVariant(entry.description, userLocale) || '';
 
   const type = entry.tag || 'Activity';
-  const editPath = entry.editPath;  // null if provenance invalid
+  const editPath = entry.editPath;
 
   return (
     <div className="group py-4 border-b border-gray-200/50 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent transition-all">
@@ -150,12 +116,7 @@ function ActivityRow({ entry, userLocale }) {
               Edit
             </Link>
           ) : (
-            <span
-              className="text-gray-300 cursor-not-allowed"
-              title={entry.editError || 'Editing not available'}
-            >
-              Edit
-            </span>
+            <span className="text-gray-300 cursor-not-allowed">Edit</span>
           )}
           <Link
             href={`/graph/${entry.id}`}

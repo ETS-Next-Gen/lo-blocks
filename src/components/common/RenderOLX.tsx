@@ -89,10 +89,7 @@ export function useBaselineProps() {
   // Initialize with browser locale if Redux has no setting
   let locale = reduxLocale;
   if (!locale) {
-    const browserCode = getBrowserLocale();
-    // HACK: Map unsupported locales to en-Latn-KE default
-    const supportedCodes = new Set(['ar-Arab-SA', 'en-Latn-KE', 'pl-Latn-PL', 'es-Latn-ES']);
-    const code = supportedCodes.has(browserCode) ? browserCode : 'en-Latn-KE';
+    const code = getBrowserLocale();
     const dir = getTextDirection(code);
     locale = { code, dir };
     setReduxLocale(locale);

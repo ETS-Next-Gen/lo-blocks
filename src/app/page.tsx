@@ -8,6 +8,7 @@ import { DisplayError } from '@/lib/util/debug';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
+import type { ContentVariant } from '@/lib/types';
 
 const ENDPOINT_LINKS = [
   {
@@ -292,7 +293,7 @@ function Sidebar() {
 }
 
 export default function Home() {
-  const [availableLocales, setAvailableLocales] = useState<string[]>([]);
+  const [availableLocales, setAvailableLocales] = useState<ContentVariant[]>([]);
   const localeAttrs = useLocaleAttributes();
   const userLocale = localeAttrs.lang;
 
@@ -309,14 +310,14 @@ export default function Home() {
       .then(data => {
         if (data.activities) {
           // Extract available locales from activity titles/descriptions
-          const localeSet = new Set<string>();
+          const localeSet = new Set<ContentVariant>();
           for (const activity of Object.values(data.activities)) {
             const act = activity as any;
             if (act.title && typeof act.title === 'object') {
-              Object.keys(act.title).forEach(lang => localeSet.add(lang));
+              Object.keys(act.title).forEach(lang => localeSet.add(lang as ContentVariant));
             }
             if (act.description && typeof act.description === 'object') {
-              Object.keys(act.description).forEach(lang => localeSet.add(lang));
+              Object.keys(act.description).forEach(lang => localeSet.add(lang as ContentVariant));
             }
           }
           setAvailableLocales(Array.from(localeSet).sort());

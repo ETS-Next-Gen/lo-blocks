@@ -165,8 +165,10 @@ export function updateField(
     : undefined;
   const resolvedTag = tag ?? props?.loBlock?.OLXName;
 
-  // Use props.logEvent if available (respects replay mode), fallback to lo_event.logEvent
-  const logEvent = props.logEvent ?? lo_event.logEvent;
+  // Use props.logEvent if available (respects replay mode), HACK: fallback to lo_event.logEvent
+  // TODO: Global components like LanguageSwitcher pass null props, then fall back to global logEvent.
+  // Should have root/global props threaded through instead of reaching into global namespace.
+  const logEvent = props?.logEvent ?? lo_event.logEvent;
   logEvent(field.event, {
     scope,
     [fieldName]: newValue,

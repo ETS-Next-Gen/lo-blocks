@@ -13,7 +13,7 @@ import { useSetting } from '@/lib/state/settingsAccess';
 import { settings } from '@/lib/state/settings';
 import { getTextDirection, getBrowserLocale } from '@/lib/i18n/getTextDirection';
 import { selectVariantTiers } from '@/lib/state/olxjson';
-import { useBaselineProps } from '@/components/common/RenderOLX';
+import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 import { ALL_LANGUAGES, getLanguageLabel, filterLanguages } from '@/lib/i18n/languages';
 
 interface LanguageSwitcherProps {
@@ -23,13 +23,15 @@ interface LanguageSwitcherProps {
 }
 
 export default function LanguageSwitcher({ className = '', sources, availableLocales }: LanguageSwitcherProps) {
-  const props = useBaselineProps();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // HACK: Coerce props to RuntimeProps (see useBaselineProps comment)
-  const [locale, setLocale] = useSetting(props as any, settings.locale);
-  const localeCode = locale?.code || 'en-Latn-KE';
+  // Read current locale from Redux with fallback
+  const localeAttrs = useLocaleAttributes();
+  const localeCode = localeAttrs.lang;
+
+  // Get setter for locale changes
+  const [, setLocale] = useSetting(null, settings.locale);
 
   // Get available variants from either explicit prop or Redux selector
   // Note: selectVariantTiers scans all sources; sources prop is ignored when using Redux

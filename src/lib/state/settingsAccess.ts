@@ -67,7 +67,7 @@ export function selectSetting(state: any, field: { name: string }, attributes?: 
  * Usage:
  *   const [locale, setLocale] = useSetting(props, settings.locale)
  *   const [locale, setLocale] = useSetting(props, settings.locale, { school: 'kaust' })
- *   const [locale, setLocale] = useSetting(null, settings.locale)  // props optional for now
+ *   const [locale, setLocale] = useSetting(null, settings.locale)  // HACK: props optional until PMSS integration
  *
  * @param props - BaselineProps (contains runtime.logEvent, runtime.store). Also accepts RuntimeProps which extends BaselineProps.
  * @param field - FieldInfo for the setting (e.g., settings.locale)
@@ -77,7 +77,7 @@ export function selectSetting(state: any, field: { name: string }, attributes?: 
 export function useSetting(props: BaselineProps | null | undefined, field: FieldInfo, attributes?: SettingAttributes): [any, (value: any) => void] {
   // TODO: When PMSS-style cascading is implemented, use attributes to select among matching rules
   // For now: attributes parameter is reserved but unused
-  return useFieldState(props, field, undefined, {}) as [any, (value: any) => void];
+  return useFieldState(props ?? null, field, undefined, {}) as [any, (value: any) => void];
 }
 
 /**

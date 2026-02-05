@@ -92,10 +92,7 @@ export const fieldSelector = <T>(
   const value: T | undefined = (() => {
     switch (scope) {
       case scopes.componentSetting: {
-        const tag = // TODO: Simplify
-          optTag ??
-          props?.loBlock?.OLXName ??
-          props.nodeInfo?.node?.tag;
+        const tag = optTag ?? props?.loBlock?.OLXName;
         return selector(scopedState?.[tag]);
       }
       case scopes.system:
@@ -154,8 +151,11 @@ export const useFieldSelector = <T>(
   );
 
 
+// Accepts BaselineProps (system scope) or RuntimeProps (component/storage scope).
+// Polymorphic: branches on field.scope to access different properties.
+// TODO: Consider splitting into updateSystemField / updateComponentField for type safety.
 export function updateField(
-  props: BaselineProps | RuntimeProps | any,
+  props: BaselineProps | null,
   field: FieldInfo,
   newValue,
   { id, tag }: { id?: string | boolean; tag?: string | boolean } = {}
@@ -163,18 +163,16 @@ export function updateField(
   assertValidField(field);
   const scope = field.scope;
   const fieldName = field.name;
-  // If id override is provided, apply prefix via refToReduxKey (supports /absolute syntax)
-  // Otherwise, use the component's own ID from props
+  // For component/storage scope, resolve the ID for Redux state key.
+  // These scopes require RuntimeProps (with id/idPrefix) for resolution.
   const resolvedId = (scope === scopes.component || scope === scopes.storage)
-    ? (id !== undefined
-      ? idResolver.refToReduxKey({ ...props, id })
-      : idResolver.refToReduxKey(props))
+    ? (typeof id === 'string'
+      ? idResolver.refToReduxKey({ ...(props as RuntimeProps), id })
+      : idResolver.refToReduxKey(props as RuntimeProps))
     : undefined;
-  const resolvedTag = tag ?? props?.loBlock?.OLXName;
+  const resolvedTag = tag ?? (props as RuntimeProps)?.loBlock?.OLXName;
 
-  // Extract logEvent from props. If props is null, use global lo_event.logEvent.
-  // TODO: With baselineprops, we should be able to eliminate all cases where it might be null
-  const logEvent = props?.runtime?.logEvent ?? lo_event.logEvent;
+  const logEvent = props ? props.runtime.logEvent : lo_event.logEvent;
   logEvent(field.event, {
     scope,
     [fieldName]: newValue,
@@ -185,9 +183,9 @@ export function updateField(
 
 
 export function useFieldState(
-  props,
+  props: BaselineProps | null,
   field: FieldInfo,
-  fallback,
+  fallback?,
   { id, tag }: { id?: string | boolean; tag?: string | boolean } = {}
 ) {
   assertValidField(field);
@@ -250,7 +248,7 @@ type ReduxInputOptions = {
 
 
 export function useReduxInput(
-  props,
+  props: RuntimeProps,
   field: FieldInfo,
   fallback = '',
   options: ReduxInputOptions = {}
@@ -277,7 +275,7 @@ export function useReduxInput(
   );
 
   const id = idResolver.refToReduxKey(props);
-  const tag = props?.loBlock.OLXName; // TODO: Eliminate ?.
+  const tag = props.loBlock.OLXName;
   const logEvent = props.runtime.logEvent;
 
   const onChange = useCallback((event) => {

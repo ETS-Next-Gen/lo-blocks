@@ -27,7 +27,7 @@ import { NextRequest } from 'next/server';
 import { syncContentFromStorage } from '@/lib/content/syncContentFromStorage';
 import { getEditPathFromProvenance } from '@/lib/lofs/contentPaths';
 import { getBestVariantServer } from '@/lib/i18n/getBestVariant';
-import type { ContentTier } from '@/lib/types';
+import type { ContentTier, ContentVariant } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,9 +48,9 @@ export async function GET(request: NextRequest) {
           const availableVariants = Object.keys(variantMap);
 
           // Build localized title and description
-          const title: Record<string, string> = {};
-          const description: Record<string, string> = {};
-          const availableVariantsMap: Record<string, ContentTier> = {};
+          const title: Record<ContentVariant, string> = {};
+          const description: Record<ContentVariant, string> = {};
+          const availableVariantsMap: Record<ContentVariant, ContentTier> = {};
 
           for (const variant of availableVariants) {
             const olxJson = variantMap[variant];

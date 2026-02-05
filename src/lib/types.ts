@@ -421,8 +421,8 @@ export type UserLocale = string & { readonly __userLocale: true };
 /** A language/accessibility/context variant available for content (e.g., "ar-Arab-SA", "en:audio-only") */
 export type ContentVariant = string & { readonly __variant: true };
 
-/** The variant we actually render (result of matching UserLocale against available ContentVariants) */
-export type RenderedVariant = string & { readonly __rendered: true };
+/** The variant we actually render - a ContentVariant selected via getBestVariant* functions */
+export type RenderedVariant = ContentVariant & { readonly __rendered: true };
 
 /**
  * LocaleContext - language and text direction configuration.

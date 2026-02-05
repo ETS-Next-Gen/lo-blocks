@@ -313,15 +313,14 @@ export default function Home() {
           // Extract available locales from activity titles/descriptions
           // Variants come from idMap keys; extract just the language part (no feature flags)
           const localeSet = new Set<Locale>();
-          for (const activity of Object.values(data.activities)) {
-            const act = activity as any;
-            if (act.title && typeof act.title === 'object') {
-              Object.keys(act.title).forEach(variant => {
+          for (const activity of Object.values(data.activities) as Record<string, any>[]) {
+            if (activity.title && typeof activity.title === 'object') {
+              Object.keys(activity.title).forEach(variant => {
                 localeSet.add(localeFromVariant(variant as ContentVariant));
               });
             }
-            if (act.description && typeof act.description === 'object') {
-              Object.keys(act.description).forEach(variant => {
+            if (activity.description && typeof activity.description === 'object') {
+              Object.keys(activity.description).forEach(variant => {
                 localeSet.add(localeFromVariant(variant as ContentVariant));
               });
             }

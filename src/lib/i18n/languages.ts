@@ -4,6 +4,8 @@
 // Provides comprehensive language code -> label mapping with support
 // for custom language codes (translanguaging).
 
+// TODO: Show in native language. Eliminate all the places we use `en`
+
 import cldrLocales from 'cldr-core/availableLocales.json';
 
 export interface LanguageOption {

@@ -170,7 +170,7 @@ it('byProvenance.nodes stays in sync with byId when auxiliary files add/remove I
 
     // Every ID in idMap that came from this file should be in nodes
     for (const [id, langMap] of Object.entries(second.idMap)) {
-      const entry = (langMap as any)['en-Latn-US'];
+      const entry = (langMap as Record<string, any>)['*'];
       if (entry?.provenance && entry.provenance[0] === olxUri) {
         expect(secondNodes).toContain(id);
       }

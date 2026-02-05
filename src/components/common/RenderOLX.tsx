@@ -60,7 +60,7 @@ import { useDebugSettings } from '@/lib/state/debugSettings';
 import { settings } from '@/lib/state/settings';
 import { useSetting } from '@/lib/state/settingsAccess';
 import { getTextDirection, getBrowserLocale } from '@/lib/i18n/getTextDirection';
-import type { BaselineProps, LoBlockRuntimeContext } from '@/lib/types';
+import type { BaselineProps, LoBlockRuntimeContext, UserLocale } from '@/lib/types';
 
 // Stable no-op for replay mode - avoids creating new function on each render
 const noopLogEvent = () => { };
@@ -92,7 +92,7 @@ export function useBaselineRuntime(): LoBlockRuntimeContext {
     store,
     logEvent,
     sideEffectFree,
-    locale: { code: 'eo' as any, dir: 'ltr' }  // Esperanto placeholder - overwritten from Redux/browser below
+    locale: { code: 'eo' as UserLocale, dir: 'ltr' }  // Esperanto placeholder - overwritten from Redux/browser below
   };
 
   // Wrap in BaselineProps structure for useSetting

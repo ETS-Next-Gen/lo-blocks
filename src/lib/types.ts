@@ -711,7 +711,7 @@ export interface GraphNode {
   id: OlxKey;  // Block ID that this node represents
   data: {
     label: string;
-    attributes: Record<string, string>;
+    attributes: Record<string, JSONValue>;
     tag: OLXTag;
     provenance?: any;
   };

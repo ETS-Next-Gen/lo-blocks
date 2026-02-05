@@ -115,16 +115,13 @@ export function useOlxJson(
   }
 
   // Extract the language variant from nested structure
-  const stored = blockState.olxJson as any;
+  const stored = blockState.olxJson;
   if (!stored) {
     return { olxJson: null, loading: false, error: null };
   }
 
-  const userLocale = (props as any).runtime.locale.code;
-
-  // Nested structure: { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
-  // Use extractLocalizedVariant for consistent fallback logic
-  const langVariant = extractLocalizedVariant(stored, userLocale) as OlxJson | undefined;
+  const userLocale = props.runtime.locale.code;
+  const langVariant = extractLocalizedVariant(stored, userLocale);
 
   return { olxJson: langVariant || null, loading: false, error: null };
 }

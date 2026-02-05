@@ -24,10 +24,10 @@ function findStatefulIds(idMap, blockRegistry = BLOCK_REGISTRY, locale?: string)
   return Object.entries(idMap)
     .filter(([id, variantMap]) => {
       // variantMap is nested structure { 'en-Latn-US': OlxJson, ... }
-      const node = extractLocalizedVariant(variantMap as any, locale || '');
+      const node = extractLocalizedVariant(variantMap as Record<string, any>, locale || '');
       if (!node) return false;
 
-      const blockType = blockRegistry[(node as any).tag];
+      const blockType = blockRegistry[node.tag];
       // Has fields defined = stateful (fields is the map of field name -> FieldInfo)
       const hasFields = blockType?.fields && Object.keys(blockType.fields).length > 0;
       return hasFields;
@@ -48,14 +48,14 @@ function StateRow({ id, idMap }) {
   const locale = useSelector((state: any) => state?.application_state?.settings?.locale?.code);
 
   // Extract the OlxJson from nested structure { variant: OlxJson, ... }
-  const variantMap = idMap[id] as any;
-  const olxJson = extractLocalizedVariant(variantMap, locale || '');
+  const variantMap = idMap[id];
+  const olxJson = extractLocalizedVariant(variantMap as Record<string, any>, locale || '');
 
   if (!olxJson) {
     return null;
   }
 
-  const tag = (olxJson as any).tag;
+  const tag = olxJson.tag;
 
   return (
     <div className="border-b last:border-b-0 py-2">

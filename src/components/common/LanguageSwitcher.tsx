@@ -60,7 +60,7 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
   const olxjson = useSelector((state: any) => state.application_state?.olxjson);
   const reduxTiers = useMemo(() => {
     if (!olxjson) return { curated: [], bestEffort: [], all: [] };
-    return selectVariantTiers({ application_state: { olxjson } } as any);
+    return selectVariantTiers({ application_state: { olxjson } });
   }, [olxjson]);
 
   const tiers = availableLocales

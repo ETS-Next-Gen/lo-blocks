@@ -1,7 +1,6 @@
 // src/app/api/content/[id]/route.js
 import { syncContentFromStorage } from '@/lib/content/syncContentFromStorage';
-import { getEditPathFromProvenance } from '@/lib/lofs/contentPaths';
-import { getBestVariantServer } from '@/lib/i18n/getBestLocale';
+import { getBestVariantServer } from '@/lib/i18n/getBestVariant';
 import { BLOCK_REGISTRY } from '@/components/blockRegistry';
 
 // Block fetching mode for testing async loading:
@@ -39,28 +38,6 @@ function collectBlockWithKids(idMap, id, request, collected = {}) {
   }
 
   return collected;
-}
-
-/**
- * Add editPath and editError to nested entry based on its provenance.
- * editPath is the content-relative path for editing.
- * editError explains why editing isn't available (if applicable).
- */
-function addEditInfo(variantMap, request) {
-  // variantMap is nested structure { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
-  const availableVariants = Object.keys(variantMap);
-  const bestVariant = getBestVariantServer(request, availableVariants);
-  if (!bestVariant) return variantMap;  // No valid variant for this block
-  const entry = variantMap[bestVariant];
-  if (!entry) return variantMap;
-
-  const result = getEditPathFromProvenance(entry.provenance);
-  const editedEntry = result.valid
-    ? { ...entry, editPath: result.relativePath }
-    : { ...entry, editPath: null, editError: result.error };
-
-  // Return nested structure with edited entry updated
-  return { ...variantMap, [bestVariant]: editedEntry };
 }
 
 export async function GET(request, { params }) {

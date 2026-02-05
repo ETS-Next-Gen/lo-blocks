@@ -8,7 +8,8 @@ import { DisplayError } from '@/lib/util/debug';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { useLocaleAttributes } from '@/lib/i18n/useLocaleAttributes';
 import { extractLocalizedVariant } from '@/lib/i18n/getBestVariant';
-import type { ContentVariant } from '@/lib/types';
+import { localeFromVariant } from '@/lib/i18n/localeUtils';
+import type { ContentVariant, Locale } from '@/lib/types';
 
 const ENDPOINT_LINKS = [
   {
@@ -293,7 +294,7 @@ function Sidebar() {
 }
 
 export default function Home() {
-  const [availableLocales, setAvailableLocales] = useState<ContentVariant[]>([]);
+  const [availableLocales, setAvailableLocales] = useState<Locale[]>([]);
   const localeAttrs = useLocaleAttributes();
   const userLocale = localeAttrs.lang;
 
@@ -310,14 +311,19 @@ export default function Home() {
       .then(data => {
         if (data.activities) {
           // Extract available locales from activity titles/descriptions
-          const localeSet = new Set<ContentVariant>();
+          // Variants come from idMap keys; extract just the language part (no feature flags)
+          const localeSet = new Set<Locale>();
           for (const activity of Object.values(data.activities)) {
             const act = activity as any;
             if (act.title && typeof act.title === 'object') {
-              Object.keys(act.title).forEach(lang => localeSet.add(lang as ContentVariant));
+              Object.keys(act.title).forEach(variant => {
+                localeSet.add(localeFromVariant(variant as ContentVariant));
+              });
             }
             if (act.description && typeof act.description === 'object') {
-              Object.keys(act.description).forEach(lang => localeSet.add(lang as ContentVariant));
+              Object.keys(act.description).forEach(variant => {
+                localeSet.add(localeFromVariant(variant as ContentVariant));
+              });
             }
           }
           setAvailableLocales(Array.from(localeSet).sort());

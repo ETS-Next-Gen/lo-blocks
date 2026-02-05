@@ -9,14 +9,14 @@
  * {
  *   ok: boolean,
  *   activities: {
- *     [id]: {
- *       id: string,
+ *     [id: OlxKey]: {
+ *       id: OlxKey,
  *       category: string,
  *       tag: string,
- *       editPath: string,
- *       title: { [variant]: string },
- *       description: { [variant]: string },
- *       availableVariants: { [variant]: 'supported' | 'bestEffort' },
+ *       editPath: string | null,
+ *       title: { [variant: ContentVariant]: string },
+ *       description: { [variant: ContentVariant]: string },
+ *       availableVariants: { [variant: ContentVariant]: 'supported' | 'bestEffort' },
  *       provenance: string[]
  *     }
  *   }

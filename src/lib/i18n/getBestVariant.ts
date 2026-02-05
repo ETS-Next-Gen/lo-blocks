@@ -1,3 +1,6 @@
+// TODO: Are we reinventing wheels? Should this call into @formatjs/intl-localematcher
+// And how will we handle more complex types? en:noaudio es:lowbandwidth, etc.
+
 import type { NextRequest } from 'next/server';
 import type { RuntimeProps, UserLocale, ContentVariant, RenderedVariant } from '@/lib/types';
 

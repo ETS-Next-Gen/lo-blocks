@@ -23,7 +23,7 @@ import { BLOCK_REGISTRY } from '@/components/blockRegistry';
 import { transformTagName } from '@/lib/content/xmlTransforms';
 
 import * as parsers from '@/lib/content/parsers';
-import { Provenance, IdMap, OLXLoadingError, OlxReference, OlxKey } from '@/lib/types';
+import { Provenance, IdMap, OLXLoadingError, OlxReference, OlxKey, JSONValue } from '@/lib/types';
 import { formatProvenanceList } from '@/lib/lofs/provenance';
 import { baseAttributes } from '@/lib/blocks/attributeSchemas';
 import { OLXMetadataSchema, type OLXMetadata } from '@/lib/content/metadata';
@@ -107,33 +107,36 @@ function shouldBlockRequireUniqueId(Component, tag, storeId, entry, idMap, prove
 /**
  * Resolves the language for an element using the cascade:
  * 1. OLX attribute on element (`lang="..."`)
- * 2. Parent element's language
- * 3. File-level metadata language
- * 4. Default to 'en-Latn-US'
+ * 2. Element's own metadata language (from YAML comment above it)
+ * 3. Parent element's resolved language (carries file-level lang via cascade)
+ * 4. Default '*' (language-agnostic)
+ *
+ * File-level language doesn't need a separate parameter - the root element's
+ * metadata lang becomes its resolved lang, which cascades to children via parentLang.
  *
  * @param elementAttributes - The parsed attributes of the current element
  * @param parentLang - Language inherited from parent element
- * @param fileLang - Language from file metadata
+ * @param metadataLang - Language from this element's own metadata comment
  * @returns The resolved BCP 47 language tag
  */
 function resolveElementLanguage(
-  elementAttributes: Record<string, any>,
+  elementAttributes: Record<string, JSONValue>,
   parentLang: string | undefined,
-  fileLang: string | undefined
+  metadataLang: string | undefined
 ): string {
   // 1. Check element's own lang attribute
   if (elementAttributes?.lang && typeof elementAttributes.lang === 'string') {
     return elementAttributes.lang;
   }
 
-  // 2. Inherit from parent
-  if (parentLang) {
-    return parentLang;
+  // 2. Check element's own metadata (from YAML comment above this element)
+  if (metadataLang) {
+    return metadataLang;
   }
 
-  // 3. Use file-level language from metadata
-  if (fileLang) {
-    return fileLang;
+  // 3. Inherit from parent (carries file-level lang via cascade)
+  if (parentLang) {
+    return parentLang;
   }
 
   // 4. Default - generic/language-agnostic content (shown to everyone)
@@ -423,9 +426,9 @@ export async function parseOLX(
 
     // Resolve language for this element using cascade:
     // 1. Element's own lang attribute
-    // 2. Inherited from parent element
-    // 3. File-level metadata language
-    // 4. Default 'en-Latn-US'
+    // 2. Element's own metadata language (from YAML comment above)
+    // 3. Inherited from parent element (carries file-level lang via cascade)
+    // 4. Default '*'
     const metadataLang = metadata?.lang;
     const currentLang = resolveElementLanguage(attributes, parentLang, metadataLang);
 
@@ -526,7 +529,7 @@ export async function parseOLX(
         // Support both direct entry and updater function patterns:
         // - storeEntry(id, entry) - store/overwrite
         // - storeEntry(id, (existing) => newEntry) - update existing
-        // Resolve language using cascade: element attr → parent → metadata (file-level) → default
+        // Resolve language using cascade: element attr → element metadata → parent → default
         // For direct entries, prefer the entry's own attributes (for blocks created by parsers)
         // For updater functions or missing attributes, fall back to current element's attributes
         let entryAttributes = parsedAttributes;

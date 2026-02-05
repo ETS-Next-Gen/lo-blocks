@@ -268,15 +268,6 @@ export function olxjsonReducer(
 // =============================================================================
 
 /**
- * Select a block's OlxJson from state, checking sources in priority order.
- *
- * @param state - Redux root state
- * @param sources - Array of source names in priority order (first match wins)
- * @param id - OlxKey to look up
- * @param locale - BCP 47 locale code (e.g., 'en-Latn-US'). Defaults to 'en-Latn-US' for backward compatibility.
- * @returns OlxJson if found and ready, undefined otherwise
- */
-/**
  * Select a block from Redux by ID and locale.
  *
  * NOTE: This is written as a pure Redux selector (takes state

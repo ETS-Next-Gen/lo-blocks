@@ -113,7 +113,7 @@ export default function LanguageSwitcher({ className = '', sources, availableLoc
         onClick={() => setShowDropdown(!showDropdown)}
         className="px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
       >
-        {getLanguageLabel(localeCode, 'en', 'short')}
+        {localeCode ? getLanguageLabel(localeCode, 'en', 'short') : '…'}
       </button>
 
       {showDropdown && (

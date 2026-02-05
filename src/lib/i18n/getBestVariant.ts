@@ -99,8 +99,10 @@ function pickBestVariant(
     return availableVariants[0];
   }
 
-  // Accept-Language can include a list; take the first tag if present.
-  const normalizedLocale = requestedLocale.split(',')[0].trim();
+  // TODO: Parse full Accept-Language header (q-values, fallback tags).
+  // Currently only uses the first tag; ignores "en;q=0.9,ar;q=0.8" fallbacks.
+  // Consider @formatjs/intl-localematcher or manual q-value sorting.
+  const normalizedLocale = requestedLocale.split(',')[0].trim().split(';')[0].trim();
 
   if (availableVariants.includes(normalizedLocale)) {
     return normalizedLocale;

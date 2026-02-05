@@ -345,8 +345,9 @@ function extractSiblingMetadata(
         continue;
       }
 
-      if ('type' in result && result.type === 'metadata_error') {
-        // Error found in metadata - return defaults (error already added to errors array by extractMetadataFromComment)
+      if ('type' in result) {
+        // Error found in metadata (parse_error or metadata_error) -
+        // return defaults. Error already added to errors array by extractMetadataFromComment.
         return OLXMetadataSchema.parse({});
       }
 

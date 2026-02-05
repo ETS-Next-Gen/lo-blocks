@@ -77,18 +77,36 @@ export const ALL_LANGUAGES = getLanguageOptions('en');
  *
  * @param code - Language code to look up
  * @param displayLocale - Optional locale for display names (default 'en')
+ * @param format - 'full' (code - name) or 'short' (language (region)) or 'name' (just name)
  */
-export function getLanguageLabel(code: string, displayLocale: string = 'en'): string {
+export function getLanguageLabel(code: string, displayLocale: string = 'en', format: 'full' | 'short' | 'name' = 'full'): string {
   // Check cache first
   const options = getLanguageOptions(displayLocale);
   const lang = options.find(l => l.code === code);
-  if (lang) {
-    return lang.label;
+
+  let fullLabel = lang?.label || `${code} - ${getDisplayName(code, displayLocale)}`;
+
+  // Handle format options
+  if (format === 'full') {
+    return fullLabel;
   }
 
-  // Try to get display name for codes not in our list
-  // (supports translanguaging with custom codes)
-  return `${code} - ${getDisplayName(code, displayLocale)}`;
+  // Extract display name from "code - display name" format
+  const parts = fullLabel.split(' - ');
+  const displayName = parts[1] || fullLabel;
+
+  if (format === 'name') {
+    return displayName;
+  }
+
+  // format === 'short': extract language and region
+  // e.g., "English (United States)" -> "English (US)"
+  const codeParts = code.split('-');
+  const region = codeParts[codeParts.length - 1]; // Last part is region
+  const langMatch = displayName.match(/^([^(]+)/); // Text before parentheses
+  const langName = langMatch ? langMatch[1].trim() : displayName;
+
+  return `${langName} (${region})`;
 }
 
 /**

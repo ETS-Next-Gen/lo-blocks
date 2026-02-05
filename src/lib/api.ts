@@ -28,10 +28,7 @@ export async function fetch(
   path: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const locale = props.runtime?.locale?.code;
-  if (!locale) {
-    throw new Error('api.fetch: props.runtime.locale.code is required');
-  }
+  const locale = props.runtime.locale.code;
 
   return globalThis.fetch(path, {
     ...options,

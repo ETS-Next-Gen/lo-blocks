@@ -108,17 +108,7 @@ export function render({ node, nodeInfo, runtime }: {
         />
       );
     }
-    const locale = runtime.locale?.code;
-    if (!locale) {
-      return (
-        <DisplayError
-          id={`missing-locale-${node.id}`}
-          name="render"
-          message="runtime.locale.code is required for language-aware rendering"
-          technical={{ blockId: node.id, hint: 'Locale is missing from runtime context' }}
-        />
-      );
-    }
+    const locale = runtime.locale.code;
     const olxKey = refToOlxKey(node.id);
     const sources = actualOlxJsonSources ?? ['content'];
     const entry = selectBlock(actualStore.getState(), sources, olxKey, locale);

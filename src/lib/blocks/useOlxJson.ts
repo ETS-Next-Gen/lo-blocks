@@ -120,10 +120,7 @@ export function useOlxJson(
     return { olxJson: null, loading: false, error: null };
   }
 
-  const userLocale = (props as any).runtime?.locale?.code;
-  if (!userLocale) {
-    throw new Error('useOlxJson: runtime.locale.code is required for language-aware rendering');
-  }
+  const userLocale = (props as any).runtime.locale.code;
 
   // Nested structure: { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... }
   // Use extractLocalizedVariant for consistent fallback logic

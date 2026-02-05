@@ -396,6 +396,13 @@ export default function RenderOLX({
   // Wait for parsing to complete when inline/files content is provided
   const parsingPending = (inline || files) && !parsed;
 
+  // Wait for locale to be available before rendering children
+  // (setReduxLocale is de facto synchronous, but adding a guard ensures
+  // we never render with undefined locale, which would break all getValue logic)
+  if (!runtime.locale?.code) {
+    return <Spinner>Loading language settings...</Spinner>;
+  }
+
   // Render the block
   const { block, ready } = useBlock(blockProps, parsingPending ? null : renderIdToQuery, source);
 

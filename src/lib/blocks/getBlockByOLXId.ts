@@ -44,10 +44,7 @@ export function getBlockByOLXId(props: PropsWithStore, id: OlxReference | string
   const key = refToOlxKey(id);
   const store = props.runtime.store;
   const sources = props.runtime.olxJsonSources ?? ['content'];
-  const locale = props.runtime.locale?.code;
-  if (!locale) {
-    throw new Error('getBlockByOLXId: runtime.locale.code is required');
-  }
+  const locale = props.runtime.locale.code;
   const state = store.getState();
   return selectBlock(state, sources, key, locale);
 }

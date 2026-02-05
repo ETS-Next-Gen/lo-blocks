@@ -11,16 +11,457 @@ category: psychology
     <Markdown id="bedtime_problem_intro_text2">
 ## Introduction
 
-In this module, you will review and apply several concepts from your coursework on behavioral modification. Specifically, you will:
+In this module, you will pick up where you left off in helping Annie's friend, who babysits for a 6-year-old who has been engaging in sleep refusal.
 
-- Understand the differences between reinforcement and punishment.
-- Identify whether behavior modification techniques are positive or negative.
+During your last session, you learned about parenting techniques and the strengths and limitations of AI. Your group decided that positive reinforcement would be the best way for Annie's friend to proceed.
 
-To complete these parts, you will imagine that you are working in a breakout group with classmates named Annie, JJ, and Lin. But keep in mind that this is not an actual breakout group, and these are not real people. They are characters who will help you as you go along. You will also be able to use an AI assistant that is built into this module.
+In this session, you will review and apply several concepts from your coursework in psychology on behavior modification. Specifically, you will:
+
+ - **Understand the differences between reinforcement and punishment.**
+ - **Identify whether behavior modification techniques are positive or negative.**
+ - **Classify scenarios as being examples of positive reinforcement, negative
+   reinforcement, positive punishment, or negative punishment.**
+
+During this session, you will continue to work in the breakout group with the characters Annie, JJ, and Lin, and you will continue to use the embedded AI Assistant to help you.
 
 Let's begin.
     </Markdown>
   </Vertical>
+
+  <!-- First page of JJ's lecture notes -->
+  <Vertical id="lecture_notes_1">
+    <Markdown id="lecture_notes_text1">
+## Lecture Notes:
+
+**Definition of Reinforcement**: Reinforcement is any event that strengthens (increases the frequency of) a preceding response.
+
+**Examples**:
+
+  - _Charlotte shares her crayons with classmates because it earns her positive attention from peers._
+  - _Sofia screams in the grocery store until her parent gives her candy._
+  - _Benjamin plays nicely with others because he gets extra playtime when he shares._
+  - _Daniel whines loudly whenever his caregiver focuses on another child._
+    </Markdown>
+  </Vertical>
+
+  <!-- Second page of JJ's lecture notes -->
+  <Vertical id="lecture_notes_2">
+    <Markdown id="lecture_notes_text2">
+## Lecture Notes:
+
+**Definition of Punishment**: Punishment is any consequence that decreases the frequency of a preceding behavior.
+
+**Examples**:
+
+  - _Liam stops throwing toys after being told firmly that it's unacceptable._
+  - _Amelia avoids asking questions in class because she once received an impatient response from her teacher._
+  - _Nathan follows classroom rules after being sent to the principal's office for breaking them._
+  - _Ella withdraws from group activities because her peers laughed at her during a presentation._
+    </Markdown>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 1 -->
+  <Vertical id="reinforce_punish_practice_1">
+    <Markdown id="pq1_1">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 1: Sticker" id="reinforcement_v_punishment_sticker">
+      <KeyGrader>
+        <p>Liam reads a book every night because he earns a sticker for each completed book.</p>
+        <ChoiceInput>
+          <Key id="pq1_key">Reinforcement</Key>
+          <Distractor id="pq1_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting the sticker increases the likelihood that Liam will read the book, so 
+          this is reinforcement.
+      </Explanation>
+    </CapaProblem>   
+  </Vertical>
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 2 -->
+  <Vertical id="reinforce_punish_practice_1b">
+    <Markdown id="pq1_2">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 2: Asking" id="reinforcement_v_punishment_asking">
+      <KeyGrader>
+        <p>Daniel puts away his toys so his parents will stop asking him to clean up.</p>
+        <ChoiceInput>
+          <Distractor id="pq2_distractor">Reinforcement</Distractor>
+          <Key id="pq2_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          The parent's asking reduces the likelihood that Daniel will continue his normal
+          behavior (leaving his toys out), so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 3 -->
+  <Vertical id="reinforce_punish_practice_1c">
+    <Markdown id="pq1_3">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 3: Getting Burned" id="reinforcement_v_punishment_getting_burned">
+      <KeyGrader>
+        <p>Lucas stops touching the hot stove after he accidentally burns his hand.</p>
+        <ChoiceInput>
+          <Distractor id="pq3_distractor">Reinforcement</Distractor>
+          <Key id="pq3_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting his hand burned reduces the likelihood that Daniel will continue his previous
+          behavior (touching the hot stove), so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 4 -->
+  <Vertical id="reinforce_punish_practice_1d">
+    <Markdown id="pq1_4">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 4: Tantrum" id="reinforcement_v_punishment_tantrum">
+      <KeyGrader>
+        <p>Victoria throws a tantrum at dinner to get out of eating her vegetables.</p>
+        <ChoiceInput>
+          <Key id="pq4_key">Reinforcement</Key>
+          <Distractor id="pq4_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting out of eating her vegetables makes Victoria more likely to throw another tantrum,
+          so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 5 -->
+  <Vertical id="reinforce_punish_practice_1e">
+    <Markdown id="pq1_5">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 5: Glaring" id="reinforcement_v_punishment_glaring">
+      <KeyGrader>
+        <p>Michael stays seated during meals after his father frowns and glares at him every time he stands up.</p>
+        <ChoiceInput>
+          <Distractor id="pq5_distractor">Reinforcement</Distractor>
+          <Key id="pq5_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Glaring makes Michael less likely to stand up,
+          so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 6 -->
+  <Vertical id="reinforce_punish_practice_1f">
+    <Markdown id="pq1_6">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 6: Less Screen Time" id="reinforcement_v_punishment_screentime">
+      <KeyGrader>
+        <p>Nicole avoids showing her homework to her parents because they reduce her screen time when it's incomplete.</p>
+        <ChoiceInput>
+          <Distractor id="pq6_distractor">Reinforcement</Distractor>
+          <Key id="pq6_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting less screen time decreases the likelihood that Nicole will show her homework
+          to her parents, so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 7 -->
+  <Vertical id="reinforce_punish_practice_1g">
+    <Markdown id="pq1_7">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 7: Candy" id="reinforcement_v_punishment_candy">
+      <KeyGrader>
+        <p>Mia whines at the store because her parents give her candy to quiet her.</p>
+        <ChoiceInput>
+          <Key id="pq7_key">Reinforcement</Key>
+          <Distractor id="pq7_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          The parents giving Mia candy makes her more likely to whine,
+          so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 8 -->
+  <Vertical id="reinforce_punish_practice_1h">
+    <Markdown id="pq1_8">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 8: Uncalled-on" id="reinforcement_v_punishment_cheer_on">
+      <KeyGrader>
+        <p>Noah practices the piano daily because his parents cheer him on after each session.</p>
+        <ChoiceInput>
+          <Key id="pq8_key">Reinforcement</Key>
+          <Distractor id="pq8_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting cheered on increases the likelihood that Noah will practice daily,
+          so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, Question 9 -->
+  <Vertical id="reinforce_punish_practice_1i">
+    <Markdown id="pq1_9">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 9: Getting Upset" id="reinforcement_v_punishment_upset">
+      <KeyGrader>
+        <p>Matthew makes his bed every morning so his mom doesn't get upset.</p>
+        <ChoiceInput>
+          <Key id="pq9_key">Reinforcement</Key>
+          <Distractor id="pq9_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          His mom getting upset increases the probability of Matthew making his bed
+          every morning, so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1j">
+    <Markdown id="pq1_10">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 10: Not Called On" id="reinforcement_v_punishment_not_called_on">
+      <KeyGrader>
+        <p>Luna stops asking questions in class because her teacher never calls on her to speak.</p>
+        <ChoiceInput>
+          <Distractor id="pq10_distractor">Reinforcement</Distractor>
+          <Key id="pq10_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Not being called on makes Luna less likely to ask questions in class, so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1k">
+    <Markdown id="pq1_11">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 11: Artist!" id="reinforcement_v_punishment_artist">
+      <KeyGrader>
+        <p>Layla scribbles on walls because her sibling laughs and calls her "an artist."</p>
+        <ChoiceInput>
+          <Key id="pq11_key">Reinforcement</Key>
+          <Distractor id="pq11_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Being called an artist makes Layla more likely to scribble on walls,
+          so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1l">
+    <Markdown id="pq1_12">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 12: Firm Command" id="reinforcement_v_punishment_firm_command">
+      <KeyGrader>
+        <p>Benjamin stops throwing toys after being told firmly that it's unacceptable.</p>
+        <ChoiceInput>
+          <Distractor id="pq12_distractor">Reinforcement</Distractor>
+          <Key id="pq12_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Being firmly told that it's unacceptable decreases the probability of Benjamin throwing toys,
+          so it's punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1m">
+    <Markdown id="pq1_13">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>          
+    <CapaProblem title="Question 13: Timeout" id="reinforcement_v_punishment_timeout">
+      <KeyGrader>
+        <p>Nathan stops interrupting when his teacher starts making him sit in a "quiet corner."</p>
+        <ChoiceInput>
+          <Distractor id="pq13_distractor">Reinforcement</Distractor>
+          <Key id="pq13_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+           Being made to sit in a quiet corner makes Nathan less likely to interrupt,
+           so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1n">
+    <Markdown id="pq1_14">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 14: Lose Recess Time" id="reinforcement_v_punishment_lose_recess_time">
+      <KeyGrader>
+        <p>William follows playground rules so he doesn't lose recess time.</p>
+        <ChoiceInput>
+          <Key id="pq14_key">Reinforcement</Key>
+          <Distractor id="pq14_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+           Losing recess time makes William more likely to follow classroom rules,
+           so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1o">
+    <Markdown id="pq1_15">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 15: Grounded for Poor Grades" id="reinforcement_v_punishment_grounded">
+      <KeyGrader>
+        <p>Aiden studies for tests to avoid being grounded for poor grades.</p>
+        <ChoiceInput>
+          <Key id="pq15_key">Reinforcement</Key>
+          <Distractor id="pq15_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting grounded for poor grades makes Aiden more likely to study,
+          so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>  
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1p">
+    <Markdown id="pq1_16">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 16: Removing dessert" id="reinforcement_v_punishment_removing_dessert">
+      <KeyGrader>
+        <p>Jackson doesn't try new foods because his favorite dessert 
+           was once removed for refusing broccoli.</p>
+        <ChoiceInput>
+          <Distractor id="pq16_distractor">Reinforcement</Distractor>
+          <Key id="pq16_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Removing desserts made Jackson less likely to try new foods,
+          so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>  
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1q">
+    <Markdown id="pq1_17">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 17: Being Told" id="reinforcement_v_punishment_being_told">
+      <KeyGrader>
+        <p>Chloe stops playing with scissors after being told by her teacher.</p>
+        <ChoiceInput>
+          <Distractor id="pq17_distractor">Reinforcement</Distractor>
+          <Key id="pq17_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          The teacher telling her to stop made Chloe less likely to play with scissors,
+          so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>  
+  
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1r">
+    <Markdown id="pq1_18">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 18: Offer Snack" id="reinforcement_v_punishment_offer_snack">
+      <KeyGrader>
+        <p>Jack refuses to put on his shoes until his parent offers a snack as a bribe.</p>
+        <ChoiceInput>
+          <Key id="pq18_key">Reinforcement</Key>
+          <Distractor id="pq18_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+        Offering a snack made Jack more likely to put on his shoes,
+        so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>  
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1s">
+    <Markdown id="pq1_19">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 19: Excluded" id="reinforcement_v_punishment_excluded">
+      <KeyGrader>
+        <p>Amelia stops participating in group activities after being excluded as punishment in the past.</p>
+        <ChoiceInput>
+          <Distractor id="pq19_distractor">Reinforcement</Distractor>
+          <Key id="pq19_key">Punishment</Key>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Being excluded made Amelia less likely to participate in group activities, so this is punishment.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>  
+
+  <!-- Quiz 1: Basic Reinforcement vs Punishment, ctd. -->
+  <Vertical id="reinforce_punish_practice_1t">
+    <Markdown id="pq1_20">
+      ## Practice Quiz: Reinforcement vs. Punishment
+    </Markdown>
+    <CapaProblem title="Question 20: Super-Organized Badge" id="reinforcement_v_punishment_badge">
+      <KeyGrader>
+        <p>Charlotte organizes her desk because she earns a "Super 
+           Organized" badge from her teacher for doing so.</p>
+        <ChoiceInput>
+          <Key id="pq20_key">Reinforcement</Key>
+          <Distractor id="pq20_distractor">Punishment</Distractor>
+        </ChoiceInput>
+      </KeyGrader>
+      <Explanation>
+          Getting the badge made Charlotte more likely to organized her desk,
+          so this is reinforcement.
+      </Explanation>
+    </CapaProblem>
+  </Vertical>  
+
 
 <!-- Positive/Negative Reinforcement/Punishment categorization -->
   <Vertical id="positive_negative_reinforcement_punishment">

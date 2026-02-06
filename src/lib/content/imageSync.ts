@@ -14,7 +14,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export async function copyImagesToPublic(provider) {
-  const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
+  const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.pdf'];
   const publicContentDir = './public/content';
 
   try {

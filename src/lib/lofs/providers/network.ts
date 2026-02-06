@@ -128,7 +128,7 @@ export class NetworkStorageProvider implements StorageProvider {
   }
 
   /**
-   * Check if an image file exists via HEAD request.
+   * Check if an asset file exists via HEAD request.
    */
   async validateAssetPath(assetPath: string): Promise<boolean> {
     const { isMediaFile } = await import('@/lib/util/fileTypes');

@@ -111,7 +111,7 @@ export async function syncContentFromStorage(
   const filesToParse = { ...changeSets.added, ...changeSets.changed };
   const errors = await parseAndIndexFiles(filesToParse, contentStore, provider);
 
-  // Step 5: Sync images
+  // Step 5: Sync static assets
   await copyAssetsToPublic(provider);
 
   // Return with legacy property names for backward compatibility

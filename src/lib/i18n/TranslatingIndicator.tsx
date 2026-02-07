@@ -1,4 +1,4 @@
-// src/lib/blocks/TranslatingIndicator.tsx
+// src/lib/i18n/TranslatingIndicator.tsx
 //
 // Visual indicator wrapping block content during translation.
 //
@@ -32,12 +32,12 @@ export default function TranslatingIndicator({ translationState, children }: Tra
   return (
     <div>
       {translationFailed ? (
-        <div className="flex items-center gap-2 px-3 py-1.5 mb-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
+        <div role="status" className="flex items-center gap-2 px-3 py-1.5 mb-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
           Translation failed ({fromLabel} → {toLabel})
         </div>
       ) : (
-        <div className="flex items-center gap-2 px-3 py-1.5 mb-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded">
-          <span className="inline-block w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <div role="status" aria-live="polite" className="flex items-center gap-2 px-3 py-1.5 mb-2 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded">
+          <span aria-hidden="true" className="inline-block w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
           Translating {fromLabel} → {toLabel}...
         </div>
       )}

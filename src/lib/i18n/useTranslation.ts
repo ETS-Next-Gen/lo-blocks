@@ -69,6 +69,8 @@ export function useTranslation(
 ): TranslationState {
   const translationAttempted = useRef(new Set<string>());
   const [failedKeys, setFailedKeys] = useState(new Set<string>());
+  const propsRef = useRef(props);
+  propsRef.current = props;
 
   const userLocale = props.runtime.locale.code;
   const blockId = olxJson?.id;
@@ -83,7 +85,7 @@ export function useTranslation(
 
   useEffect(() => {
     if (!blockId || !isFallback || !dedupeKey || !contentLang) return;
-    if (props.runtime.sideEffectFree) return;
+    if (propsRef.current.runtime.sideEffectFree) return;
     if (translationAttempted.current.has(dedupeKey) || translationsInFlight.has(dedupeKey)) return;
 
     translationAttempted.current.add(dedupeKey);
@@ -101,7 +103,7 @@ export function useTranslation(
       .then(res => res.json())
       .then(data => {
         if (data.ok && data.idMap) {
-          dispatchOlxJson(props, source, data.idMap);
+          dispatchOlxJson(propsRef.current, source, data.idMap);
         } else {
           console.warn(`[useTranslation] Translation failed for ${blockId}:`, data.error);
           setFailedKeys(prev => new Set(prev).add(dedupeKey));
@@ -114,7 +116,7 @@ export function useTranslation(
       .finally(() => {
         translationsInFlight.delete(dedupeKey);
       });
-  }, [blockId, userLocale, isFallback, contentLang, dedupeKey, source, props.runtime.sideEffectFree]);
+  }, [blockId, userLocale, isFallback, contentLang, dedupeKey, source]);
 
   if (!olxJson || !userLocale) {
     return NO_TRANSLATION;

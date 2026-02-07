@@ -63,6 +63,7 @@
 
 import { NextResponse } from 'next/server';
 import path from 'path';
+import fs from 'fs/promises';
 import { FileStorageProvider } from '@/lib/lofs/providers/file';
 import { syncContentFromStorage, getSourceFile, getBlocksForFiles, getBlockVariant, getOriginalVariant } from '@/lib/content/syncContentFromStorage';
 import { callLLM } from '@/lib/llm/serverCall';
@@ -189,7 +190,7 @@ async function checkExistingTranslation(
   } catch {
     return null; // Doesn't exist — proceed with translation
   }
-  await syncContentFromStorage();
+  await syncContentFromStorage(provider);
   return { ok: true, idMap: getBlocksForFiles(sourceFileUri, relPathToUri(targetRelPath)) };
 }
 
@@ -266,7 +267,6 @@ async function buildTranslatedFile(
 
 /** Write a translated file to storage, creating parent directories as needed. */
 async function writeTranslatedFile(targetRelPath: string, fileContent: string): Promise<void> {
-  const fs = await import('fs/promises');
   const fullTargetPath = path.resolve(contentDir, targetRelPath);
   await fs.mkdir(path.dirname(fullTargetPath), { recursive: true });
   await provider.write(targetRelPath, fileContent);
@@ -316,7 +316,7 @@ async function doTranslation(
   }
 
   // Re-sync and return blocks from both source and translated files
-  await syncContentFromStorage();
+  await syncContentFromStorage(provider);
   return { ok: true, idMap: getBlocksForFiles(sourceFileUri, relPathToUri(targetRelPath)) };
 }
 

@@ -46,6 +46,58 @@ interface ParsedFileEntry extends FileRecord {
 /** Language variant map: { 'en-Latn-US': OlxJson, 'ar-Arab-SA': OlxJson, ... } */
 type LangMap = Record<string, OlxJson>;
 
+// =============================================================================
+// Block Lookup (used by translate endpoint to find source files)
+// =============================================================================
+
+/**
+ * Find the source OLX file for a block in a given locale.
+ *
+ * Walks the block's provenance chain and returns the first entry that
+ * is a parsed OLX/XML file. This avoids depending on provenance ordering —
+ * the check is "which provenance entry is an OLX file we parsed?"
+ *
+ * Returns a file:// URI, or null if the block/locale doesn't exist.
+ */
+export function getSourceFile(blockId: string, locale: string): ProvenanceURI | null {
+  const langMap = contentStore.blockIndex[blockId];
+  if (!langMap?.[locale]?.provenance) return null;
+
+  for (const prov of langMap[locale].provenance) {
+    const entry = contentStore.parsedFiles[prov as ProvenanceURI];
+    if (entry && (entry.type === fileTypes.olx || entry.type === fileTypes.xml)) {
+      return prov as ProvenanceURI;
+    }
+  }
+  return null;
+}
+
+/**
+ * Return the full langMap for every block parsed from the given file(s).
+ *
+ * Accepts multiple URIs to cover both source and translated files — they
+ * have different auto-generated child IDs, and the client needs both sets
+ * so that whichever variant extractLocalizedVariant picks, its children
+ * are available.
+ */
+export function getBlocksForFiles(...fileUris: string[]): Record<string, LangMap> {
+  const result: Record<string, LangMap> = {};
+  for (const fileUri of fileUris) {
+    const entry = contentStore.parsedFiles[fileUri as ProvenanceURI];
+    if (!entry) continue;
+    for (const blockId of entry.blockIds) {
+      if (contentStore.blockIndex[blockId]) {
+        result[blockId] = contentStore.blockIndex[blockId];
+      }
+    }
+  }
+  return result;
+}
+
+// =============================================================================
+// Internal Types and Helpers
+// =============================================================================
+
 /** Typed iteration over IdMap entries (Object.entries loses branded key types) */
 function* entriesIdMap(idMap: IdMap): Generator<[OlxKey, IdMap[OlxKey]]> {
   for (const [id, variants] of Object.entries(idMap)) {

@@ -17,7 +17,7 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { renderOlxJson, renderCompiledKids } from '@/lib/render';
 import { DisplayError } from '@/lib/util/debug';
 import Spinner from '@/components/common/Spinner';
-import TranslatingIndicator from '@/components/common/TranslatingIndicator';
+import TranslatingIndicator from '@/lib/i18n/TranslatingIndicator';
 import type { OlxReference } from '@/lib/types';
 import { refToOlxKey } from '@/lib/blocks/idResolver';
 
@@ -43,8 +43,8 @@ export function useBlock(
   source: string = 'content'
 ): RenderedBlockResult {
   // Always call hooks unconditionally (React rules of hooks)
-  const { olxJson: reduxOlxJson, langMap, loading, error } = useOlxJson(props, id, source);
-  const translationState = useTranslation(props, reduxOlxJson, langMap, source);
+  const { olxJson: reduxOlxJson, loading, error } = useOlxJson(props, id, source);
+  const translationState = useTranslation(props, reduxOlxJson, source);
 
   if (!id) {
     return { block: null, ready: true, error: null };

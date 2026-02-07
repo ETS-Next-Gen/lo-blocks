@@ -54,16 +54,42 @@ function computeTranslationPath(sourceRelPath: string, targetLocale: string): st
   return `${base}/${targetLocale}${ext}`;
 }
 
+/** Extract leading XML comments and body from content.
+ *  Returns comment texts (for metadata extraction) and the body (root element onward).
+ *  Comments inside the document (child metadata, etc.) are preserved in body. */
+function extractLeadingComments(content: string): { comments: string[]; body: string } {
+  const comments: string[] = [];
+  let s = content;
+  while (true) {
+    s = s.trimStart();
+    if (!s.startsWith('<!--')) break;
+    const endIdx = s.indexOf('-->');
+    if (endIdx === -1) break;
+    comments.push(s.slice(4, endIdx).trim());
+    s = s.slice(endIdx + 3);
+  }
+  return { comments, body: s.trimStart() };
+}
+
+/** Try to parse YAML frontmatter from extracted comment texts.
+ *  Looks for a comment with --- delimiters and parses the YAML inside. */
+function parseMetadataFromComments(comments: string[]): Record<string, any> {
+  for (const text of comments) {
+    const match = text.match(/^---\s*\n([\s\S]*?)\n\s*---\s*$/);
+    if (!match) continue;
+    try {
+      return (yaml.load(match[1]) as Record<string, any>) || {};
+    } catch {
+      continue;
+    }
+  }
+  return {};
+}
+
 /** Build YAML frontmatter comment from a metadata object. */
 function buildFrontmatter(metadata: Record<string, any>): string {
   const body = yaml.dump(metadata, { lineWidth: -1 }).trimEnd();
   return `<!--\n---\n${body}\n---\n-->`;
-}
-
-/** Strip existing YAML frontmatter comment from OLX content */
-function stripFrontmatter(content: string): string {
-  const frontmatterRe = /^\s*<!--\s*\n---[\s\S]*?---\s*\n\s*-->\s*\n?/;
-  return content.replace(frontmatterRe, '').trimStart();
 }
 
 async function doTranslation(
@@ -117,33 +143,34 @@ async function doTranslation(
     // Doesn't exist — proceed with translation
   }
 
-  // 4. Call LLM
+  // 4. Call LLM — translate the full file including metadata comments
   const sourceLanguageName = getLanguageLabel(sourceLocale, 'en', 'name');
   const targetLanguageName = getLanguageLabel(targetLocale, 'en', 'name');
 
-  // Build LLM prompt — include description for translation if present
-  const sourceDescription = originalVariant?.description as string | undefined;
-  const descriptionLine = sourceDescription
-    ? `\nAlso translate this metadata description:\nDESCRIPTION: ${sourceDescription}`
-    : '';
-
   const systemPrompt = `You are a translator for educational content in OLX (XML) format.
 
-Rules:
-- Translate ALL human-readable text content (text between tags, attribute values like "title", "label", "placeholder", "description")
+Rules for XML content:
+- Translate ALL human-readable text (text between tags, attribute values like "title", "label", "placeholder", "description")
 - PRESERVE all XML tags, tag names, id attributes, and structural attributes unchanged
 - Do NOT translate: id values, ref values, tag names, CSS classes, LaTeX formulas, code blocks
-- Output ONLY the translated OLX - no explanations, no markdown fencing, no commentary
 - Maintain the exact same XML structure and nesting
 - For mathematical content, preserve formulas but translate surrounding text
 - Use natural, culturally appropriate phrasing
-${descriptionLine ? '- If a DESCRIPTION: line is provided, translate it and output it on its own line BEFORE the OLX, in the format: DESCRIPTION: <translated text>' : ''}`;
+
+Rules for YAML metadata comments (<!-- --- ... --- -->):
+- Translate "description" and "title" values
+- Do NOT translate "category" — keep it unchanged
+- Set "lang" to "${targetLocale}"
+- Keep all other fields unchanged
+- Preserve the exact <!-- --- ... --- --> comment format
+
+Output ONLY the translated content — no explanations, no markdown fencing, no commentary.`;
 
   let translatedContent: string;
   try {
     translatedContent = await callLLM([
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Translate the following OLX content from ${sourceLanguageName} to ${targetLanguageName}:${descriptionLine}\n\n${sourceContent}` },
+      { role: 'user', content: `Translate the following OLX content from ${sourceLanguageName} to ${targetLanguageName}:\n\n${sourceContent}` },
     ]);
     translatedContent = stripCodeFences(translatedContent);
   } catch (err: any) {
@@ -155,20 +182,18 @@ ${descriptionLine ? '- If a DESCRIPTION: line is provided, translate it and outp
   }
 
   // 5. Build translated file with metadata
-  // Extract translated description if the LLM included one
-  let translatedDescription = sourceDescription; // fallback to source
-  const descMatch = translatedContent.match(/^DESCRIPTION:\s*(.+)\n/);
-  if (descMatch) {
-    translatedDescription = descMatch[1].trim();
-    translatedContent = translatedContent.slice(descMatch[0].length);
-  }
+  // Extract the LLM's leading comments (may contain translated metadata),
+  // then rebuild frontmatter with correct provenance fields.
+  const { comments, body } = extractLeadingComments(translatedContent);
+  const llmMeta = parseMetadataFromComments(comments);
 
   const sourceVersion = await hashContent(sourceContent);
   const sourceFileName = path.basename(effectiveRelPath);
 
-  // Carry through source metadata, override translation-specific fields
+  // LLM-translated fields (description) + source fields (category) + provenance
   const translatedMeta: Record<string, any> = {
-    ...(translatedDescription && { description: translatedDescription }),
+    ...llmMeta,
+    // Override fields the LLM can't know or shouldn't change
     ...(originalVariant?.category && { category: originalVariant.category }),
     lang: targetLocale,
     autogenerated: true,
@@ -177,8 +202,7 @@ ${descriptionLine ? '- If a DESCRIPTION: line is provided, translate it and outp
   };
 
   const frontmatter = buildFrontmatter(translatedMeta);
-  const strippedTranslation = stripFrontmatter(translatedContent);
-  const fileContent = `${frontmatter}\n${strippedTranslation}`;
+  const fileContent = `${frontmatter}\n${body}`;
 
   // 5. Write translated file (create parent directory first)
   try {

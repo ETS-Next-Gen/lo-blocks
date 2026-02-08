@@ -383,7 +383,7 @@ export async function POST(request: Request) {
     const dedupeKey = `${sourceFileUri}::${targetLocale}`;
     if (inFlightTranslations.has(dedupeKey)) {
       const result = await inFlightTranslations.get(dedupeKey);
-      return NextResponse.json(result);
+      return NextResponse.json(result, result.ok ? undefined : { status: 500 });
     }
 
     const promise = doTranslation(blockId, sourceFileUri, targetLocale, sourceLocale);
